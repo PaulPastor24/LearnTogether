@@ -1,0 +1,119 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #e9f7ec;
+  color: #333;
+}
+
+.hero {
+  background: #95d5b2;
+  padding: 80px 20px;
+}
+.hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  color: #1b4332;
+}
+.hero p {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+.hero input {
+  padding: 10px;
+  width: 100%;
+  max-width: 500px;
+  border: none;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+.hero button {
+  padding: 10px 20px;
+  background: #1b4332;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.hero button:hover {
+  background: #0b3722;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  padding: 40px;
+  text-align: center;
+}
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+.card:hover {
+  transform: translateY(-5px);
+}
+@media (max-width: 992px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 576px) {
+  .cards { grid-template-columns: 1fr; }
+}
+
+.tutors, .events, .testimonials {
+  padding: 40px;
+  background: #d8f3dc;
+}
+.tutors h2, .events h2, .testimonials h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #1b4332;
+}
+.tutor-list {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+.tutor {
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  width: 200px;
+  margin: 10px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.events ul {
+  list-style: none;
+  padding: 0;
+  text-align: center;
+}
+.events li {
+  margin: 10px 0;
+}
+
+.testimonials p {
+  text-align: center;
+  max-width: 600px;
+  margin: auto;
+}
+
+footer {
+  background: #2d6a4f;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+footer a {
+  color: #d8f3dc;
+  margin: 0 10px;
+  text-decoration: none;
+}
+footer a:hover {
+  text-decoration: underline;
+  color: #fff;
+}

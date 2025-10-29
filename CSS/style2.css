@@ -1,0 +1,226 @@
+:root {
+    --bg:#f6fbf6; 
+    --card:#ffffff; 
+    --muted:#6b7280; 
+    --accent:#0f766e; 
+    --accent-2:#065f46; 
+    --radius:14px; 
+    --shadow: 0 6px 18px rgba(11,22,14,0.06);
+}
+
+body {
+    font-family: Inter, sans-serif;
+    margin: 0;
+    background: linear-gradient(180deg,#f6fbf6 0%, #e9f8f2 100%);
+    color: #0f172a;
+}
+
+.app {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+}
+
+/* SIDEBAR */
+aside {
+    padding: 28px 20px;
+}
+
+.sidebar {
+    position: fixed;
+    top: 22px;
+    left: 22px;
+    width: 220px;
+    padding: 18px;
+    border-radius: 16px;
+    background: linear-gradient(180deg,#ffffff, #f7fffb);
+    box-shadow: var(--shadow);
+}
+
+.profile {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: linear-gradient(180deg,var(--accent-2),var(--accent));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.navlinks {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.navlinks a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: var(--accent-2);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.navlinks a.active {
+    background: linear-gradient(90deg,#ecfdf7,#f0fdf4);
+}
+
+/* NAVBAR */
+.nav {
+    position: fixed;
+    left: 290px;
+    right: 24px;
+    top: 18px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    background: linear-gradient(180deg,var(--card),#f8fffb);
+    box-shadow: var(--shadow);
+    z-index: 10;
+}
+
+.logo {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-weight: 700;
+}
+
+.logo .mark {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: linear-gradient(180deg,var(--accent),var(--accent-2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 800;
+}
+
+.search {
+    flex: 1;
+}
+.search input {
+    width: 98%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #e6f2ee;
+    background: #fff;
+}
+
+.nav-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.icon-btn {
+    background: var(--card);
+    padding: 8px 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+    cursor: pointer;
+}
+
+/* MAIN CONTENT */
+main {
+    margin-left: 260px;
+    padding: 120px 40px 40px;
+}
+
+h1 {
+    margin-bottom: 24px;
+    color: var(--accent-2);
+    font-weight: 800;
+    font-size: 28px;
+}
+
+/* SUBJECTS GRID */
+.subjects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.subject-card {
+    background: var(--card);
+    padding: 22px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.subject-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.subject-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.subject-title {
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.subject-desc {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 14px;
+}
+
+/* Topics as tags */
+.topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.topic {
+    background: #f1f6f4;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent-2);
+}
+
+/* Responsive */
+@media (max-width:940px){
+    .app{grid-template-columns:1fr}
+    aside{display:none}
+    .nav{left:18px; right:18px}
+    main{margin-left:0; padding-top:110px}
+}
