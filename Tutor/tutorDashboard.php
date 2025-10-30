@@ -1,17 +1,25 @@
 <?php
 session_start();
-require 'db.php';
-require 'agora_config.php';
+require '../db.php';
+require '../agora_config.php';
 
-// Validate session
-$tutor_id = $_SESSION['tutor_id'] ?? null;
-if (!$tutor_id) {
+$user_id = $_SESSION['user_id'] ?? null;
+if (!$user_id) {
     header("Location: ../login.php");
     exit;
 }
-var_dump($_SESSION['tutor_id']);
 
-// Fetch tutor info (join tutors + users)
+$stmt = $pdo->prepare("SELECT id AS tutor_id FROM tutors WHERE user_id = ?");
+$stmt->execute([$user_id]);
+$tutor_row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$tutor_row) {
+    header("Location: ../roleSelector.php");
+    exit;
+}
+
+$tutor_id = $tutor_row['tutor_id'];
+
 $stmt = $pdo->prepare("
     SELECT u.first_name, u.last_name, t.profile_image
     FROM tutors t
@@ -20,9 +28,14 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([$tutor_id]);
 $tutor = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$tutor) {
+    die("Tutor data not found for ID: " . htmlspecialchars($tutor_id));
+}
+
 $tutor_name = trim($tutor['first_name'] . ' ' . $tutor['last_name']);
 
-// Fetch sessions
+
 $stmt = $pdo->prepare("
     SELECT subject, session_date, status
     FROM sessions
@@ -33,7 +46,6 @@ $stmt = $pdo->prepare("
 $stmt->execute([$tutor_id]);
 $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Statistics
 $total_students = $pdo->prepare("SELECT COUNT(DISTINCT learner_id) FROM sessions WHERE tutor_id = ?");
 $total_students->execute([$tutor_id]);
 $total_students = $total_students->fetchColumn();
@@ -54,11 +66,9 @@ $pending_requests = $pending_requests->fetchColumn();
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tutor Dashboard - LearnTogether</title>
 
-  <!-- Bootstrap & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
-  <!-- Agora SDKs -->
   <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/agora-chat@1.1.1/dist/agora-chat.min.js"></script>
 
@@ -98,7 +108,6 @@ $pending_requests = $pending_requests->fetchColumn();
 </head>
 
 <body>
-  <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-4 sticky-top">
     <a class="navbar-brand fw-bold text-primary" href="#">
       <i class="bi bi-journal-bookmark me-2"></i>LearnTogether
@@ -127,7 +136,6 @@ $pending_requests = $pending_requests->fetchColumn();
   <div class="container-fluid">
     <div class="row">
 
-      <!-- Sidebar -->
       <div class="col-md-2 sidebar d-none d-md-block">
         <h5 class="ps-3">Navigation</h5>
         <a href="dashboard.php" class="active"><i class="bi bi-house me-2"></i> Home</a>
@@ -136,13 +144,11 @@ $pending_requests = $pending_requests->fetchColumn();
         <a href="requests.php"><i class="bi bi-people me-2"></i> Student Requests</a>
       </div>
 
-      <!-- Main Content -->
       <div class="col-md-10 p-4">
         <h2 class="fw-bold mb-4">
           Welcome back, <span class="text-primary"><?= htmlspecialchars($tutor_name) ?></span> 👋
         </h2>
 
-        <!-- Quick Actions -->
         <div class="row g-4 mb-4">
           <div class="col-md-4">
             <div class="card card-custom p-4 text-center">
@@ -163,7 +169,6 @@ $pending_requests = $pending_requests->fetchColumn();
           </div>
         </div>
 
-        <!-- Upcoming Sessions -->
         <div class="card card-custom p-4 mb-4">
           <h5 class="mb-3 fw-bold">
             <i class="bi bi-calendar-event me-2 text-primary"></i> Upcoming Sessions
@@ -184,7 +189,6 @@ $pending_requests = $pending_requests->fetchColumn();
           </ul>
         </div>
 
-        <!-- Statistics -->
         <div class="row g-4">
           <div class="col-md-4">
             <div class="card card-custom text-center p-4">
@@ -209,7 +213,6 @@ $pending_requests = $pending_requests->fetchColumn();
     </div>
   </div>
 
-  <!-- Scripts -->
   <script>
     const AGORA_APP_ID = "<?= $AGORA_APP_ID ?>";
 

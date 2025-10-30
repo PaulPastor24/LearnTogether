@@ -2,16 +2,11 @@
 session_start();
 require 'db.php';
 
-$apiKey = '88c62f96d2d237d6089f8f5e4a669c14-d48eb1b3-fcd8-4411-b244-117ad8b23888';
-$baseUrl = 'https://jj1zdn.api.infobip.com/2fa/2';
-$senderId = 'LearnTogether';
-
-$applicationId = 'DAB2C464BC3678E0F5D1ED2D4D7E8133';
-$messageId = '00BB24F14EE9CEBF775DE865A5E58C51';
+$apiToken = 'f7decd4cf2fe2e1fac8e7843dc67e4a315432d9e';
+$apiUrl = 'https://sms.iprogtech.com/api/v1/sms_messages';
 
 $error = "";
 
-// --- CREATE ACCOUNT & SEND OTP ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_account'])) {
     $first = $_POST['first_name'];
     $last = $_POST['last_name'];
@@ -22,80 +17,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_account'])) {
     if (strpos($phone, '63') !== 0) {
         $phone = '63' . ltrim($phone, '0');
     }
-    $phone = '+' . $phone;
 
-    $stmt = $pdo->prepare("INSERT INTO users (first_name, last_name, email, password, phone, verified) VALUES (?, ?, ?, ?, ?, 0)");
-    $stmt->execute([$first, $last, $email, $password, $phone]);
+    $otp = rand(100000, 999999);
 
-    // cURL request to send OTP
-    $sendData = [
-        "applicationId" => $applicationId,
-        "messageId" => $messageId,
-        "from" => $senderId,
-        "to" => $phone
+    $stmt = $pdo->prepare("INSERT INTO users (first_name, last_name, email, password, phone, verified, otp_code) VALUES (?, ?, ?, ?, ?, 0, ?)");
+    $stmt->execute([$first, $last, $email, $password, $phone, $otp]);
+
+    $message = "Your LearnTogether verification code is $otp";
+    $data = [
+        'api_token' => $apiToken,
+        'message' => $message,
+        'phone_number' => $phone
     ];
 
-    $ch = curl_init("$baseUrl/pin");
-    curl_setopt($ch, CURLOPT_POST, true);
+    $ch = curl_init($apiUrl);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "Authorization: App $apiKey",
-        "Content-Type: application/json",
-        "Accept: application/json"
-    ]);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($sendData));
-    
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
     $response = curl_exec($ch);
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
-    if (in_array($status, [200, 201])) {
-        $responseData = json_decode($response, true);
-        $pinId = $responseData['pinId'] ?? null;
-
-        if ($pinId) {
-            $_SESSION['user_data'] = [
-                'email' => $email,
-                'phone' => $phone,
-                'pinId' => $pinId
-            ];
-            $_SESSION['step'] = 'verify';
-            header("Location: signup.php");
-            exit;
-        } else {
-            $error = "No PIN ID returned from Infobip.";
-        }
+    if ($status === 200 || $status === 201) {
+        $_SESSION['user_email'] = $email;
+        $_SESSION['step'] = 'verify';
+        header("Location: signup.php");
+        exit;
     } else {
-        $error = 'OTP request failed: ' . $status . ' - ' . $response;
+        $error = "OTP failed to send. Try again later.";
     }
 }
 
-// --- VERIFY OTP ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_code'])) {
     $entered_otp = implode('', $_POST['otp']);
-    $userData = $_SESSION['user_data'] ?? null;
+    $email = $_SESSION['user_email'] ?? null;
 
-    if ($userData) {
-        $pinId = $userData['pinId'];
+    if ($email) {
+        $stmt = $pdo->prepare("SELECT otp_code FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
 
-        $verifyData = ["pin" => $entered_otp];
-        $ch = curl_init("$baseUrl/pin/$pinId/verify");
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "Authorization: App $apiKey",
-            "Content-Type: application/json",
-            "Accept: application/json"
-        ]);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($verifyData));
-        
-        $response = curl_exec($ch);
-        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($status === 200) {
-            $email = $userData['email'];
-            $pdo->prepare("UPDATE users SET verified = 1 WHERE email = ?")->execute([$email]);
+        if ($user && $user['otp_code'] == $entered_otp) {
+            $pdo->prepare("UPDATE users SET verified = 1, otp_code = NULL WHERE email = ?")->execute([$email]);
             $_SESSION['step'] = 'complete';
         } else {
             $error = "Invalid or expired OTP. Please try again.";
@@ -103,7 +66,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_code'])) {
     }
 }
 
-// --- RESET STEP ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['back_to_create'])) {
     unset($_SESSION['step']);
     header("Location: signup.php");
@@ -111,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['back_to_create'])) {
 }
 
 if (($_SESSION['step'] ?? '') === 'complete') {
-    unset($_SESSION['user_data']);
+    unset($_SESSION['user_email']);
 }
 
 $step = $_SESSION['step'] ?? 'create';
@@ -159,7 +121,7 @@ $step = $_SESSION['step'] ?? 'create';
         <input type="password" name="password" class="form-control" placeholder="Password" required>
       </div>
       <div class="col-md-12">
-        <input type="text" name="phone" class="form-control" placeholder="Phone Number (e.g. +639123456789)" required>
+        <input type="text" name="phone" class="form-control" placeholder="Phone Number (e.g. 09123456789)" required>
       </div>
     </div>
     <button type="submit" name="create_account" class="btn btn-success w-100 mt-3">Sign Up</button>
@@ -180,7 +142,7 @@ $step = $_SESSION['step'] ?? 'create';
   </div>
 
   <h2 class="mb-3">Secure Your Account</h2>
-  <p class="text-muted">Enter the 4-digit code sent to your phone</p>
+  <p class="text-muted">Enter the 6-digit code sent to your phone</p>
 
   <?php if ($error): ?>
     <p class="text-danger"><?= htmlspecialchars($error) ?></p>
@@ -224,8 +186,8 @@ $(document).ready(function() {
     let phone = $('input[name="phone"]').val();
     let password = $('input[name="password"]').val();
 
-    if (!/^\+?\d{10,15}$/.test(phone)) {
-      alert("Please enter a valid phone number (e.g. +639123456789)");
+    if (!/^(09|\+639)\d{9}$/.test(phone)) {
+      alert("Please enter a valid phone number (e.g. 09123456789 or +639123456789)");
       e.preventDefault();
     }
 

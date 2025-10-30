@@ -9,7 +9,6 @@
 </head>
 <body>
   <div class="app">
-    <!-- Sidebar -->
     <aside>
       <div class="sidebar">
         <div class="profile">
@@ -30,7 +29,6 @@
       </div>
     </aside>
 
-    <!-- Navbar -->
     <div class="nav" role="navigation">
       <div class="logo"><div class="mark">LT</div><div style="font-weight:700">LearnTogether</div></div>
       <div class="search"><input placeholder="Search tutors, subjects or topics" /></div>
@@ -75,7 +73,6 @@
   </div>
 
   <script>
-    // Highlight active nav link
     document.querySelectorAll('.navlinks a').forEach(a => {
       a.addEventListener('click', () => {
         document.querySelectorAll('.navlinks a').forEach(x => x.classList.remove('active'));
