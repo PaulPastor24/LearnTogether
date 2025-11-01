@@ -1,3 +1,21 @@
+<?php
+session_start();
+require '../db.php';
+
+$user_id = $_SESSION['user_id'] ?? null;
+if (!$user_id) {
+  header("Location: ../login.php");
+  exit;
+}
+
+$stmt = $pdo->prepare("SELECT first_name, last_name, role FROM users WHERE id = ?");
+$stmt->execute([$user_id]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$sub_stmt = $pdo->prepare("SELECT * FROM subjects WHERE learner_id = ?");
+$sub_stmt->execute([$user_id]);
+$subjects = $sub_stmt->fetchAll(PDO::FETCH_ASSOC);
+?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -11,82 +29,138 @@
   <div class="app">
     <aside>
       <div class="sidebar">
-        <div class="profile">
-          <div class="avatar">A</div>
+        <div class="profile-dropdown" id="profileDropdown" 
+            style="position:relative;cursor:pointer;">
+          <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
           <div>
-            <div style="font-weight:700">Alex Mercado</div>
-            <div style="font-size:13px;color:var(--muted)">Active student</div>
+            <div style="font-weight:700">
+              <?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?>
+            </div>
+            <div>
+              <?php
+                $displayRole = '';
+                if (strtolower($user['role']) === 'learner') {
+                  $displayRole = 'Learner';
+                } elseif (strtolower($user['role']) === 'tutor') {
+                  $displayRole = 'Tutor';
+                } else {
+                  $displayRole = ucfirst($user['role']);
+                }
+              ?>
+                <div style="font-size:13px;color:var(--muted)">
+                  Active <?= htmlspecialchars($displayRole) ?>
+                </div>
+            </div>
           </div>
-        </div>
+
+          <div class="dropdown-menu" id="dropdownMenu"
+              style="display:none;position:absolute;top:60px;left:0;background:white;
+                      border:1px solid #ddd;border-radius:8px;
+                      box-shadow:0 4px 10px rgba(0,0,0,0.1);
+                      min-width:180px;z-index:999;">
+            <a href="profile.php"
+              style="display:block;padding:10px 15px;text-decoration:none;
+                      color:#333;font-size:14px;">🧑‍💻 View Profile</a>
+            <a href="settings.php"
+              style="display:block;padding:10px 15px;text-decoration:none;
+                      color:#333;font-size:14px;">⚙️ Settings</a>
+            <hr style="margin:5px 0;border:none;border-top:1px solid #eee;">
+            <a href="../logout.php"
+              style="display:block;padding:10px 15px;text-decoration:none;
+                      color:#333;font-size:14px;">🚪 Logout</a>
+          </div>
+
         <nav class="navlinks">
-          <a href="learner.html">🏠 Overview</a>
-          <a class="active" href="subjects.html">📚 My Subjects</a>
-          <a href="tutors.html">🔎 Find Tutors</a>
-          <a href="schedule.html">📅 My Schedule</a>
-          <a href="requests.html">✉️ Requests</a>
-          <a href="settings.html">⚙️ Settings</a>
+          <a href="learnerDashboard.php">🏠 Overview</a>
+          <a class="active" href="subjects.php">📚 My Subjects</a>
+          <a href="searchTutors.php">🔎 Find Tutors</a>
+          <a href="schedule.php">📅 My Schedule</a>
+          <a href="requests.php">✉️ Requests</a>
+          <a href="../logout.php">🚪 Logout</a>
         </nav>
       </div>
     </aside>
 
     <div class="nav" role="navigation">
-      <div class="logo"><div class="mark">LT</div><div style="font-weight:700">LearnTogether</div></div>
-      <div class="search"><input id="searchInput" placeholder="Search tutors, subjects or topics" /></div>
+      <div class="logo">
+        <div class="mark">LT</div>
+        <div style="font-weight:700">LearnTogether</div>
+      </div>
+
+      <div class="search">
+        <input id="searchInput" placeholder="Search my subjects..." />
+      </div>
+
       <div class="nav-actions">
         <button class="icon-btn">🔔</button>
         <button class="icon-btn">💬</button>
         <div style="display:flex;align-items:center;gap:8px">
-          <div style="text-align:right;margin-right:6px"><div style="font-weight:700">Alex</div><div style="font-size:12px;color:var(--muted)">Student</div></div>
-          <div class="avatar" style="width:40px;height:40px;border-radius:10px">AM</div>
+          <div style="text-align:right;margin-right:6px">
+            <div style="font-weight:700">
+              <?= htmlspecialchars($user['first_name']) ?>
+            </div>
+            <div style="font-size:12px;color:var(--muted)">
+              <?= htmlspecialchars(ucfirst($user['role'])) ?>
+            </div>
+          </div>
+          <div class="avatar" style="width:40px;height:40px;border-radius:10px">
+            <?= strtoupper(substr($user['first_name'], 0, 1) . substr($user['last_name'], 0, 1)) ?>
+          </div>
         </div>
       </div>
     </div>
 
     <main>
       <h1>My Subjects</h1>
-      <div id="subjectsGrid" class="subjects-grid"></div>
+
+      <div class="subjects-grid" id="subjectsGrid">
+        <?php if (count($subjects) > 0): ?>
+          <?php foreach ($subjects as $sub): ?>
+            <div class="subject-card">
+              <div class="subject-header">
+                <div class="icon" style="background:linear-gradient(180deg,#2563eb,#1e40af)">📚</div>
+                <div class="subject-title"><?= htmlspecialchars($sub['subject_name']) ?></div>
+              </div>
+              <div class="subject-desc">
+                Progress: <?= htmlspecialchars($sub['progress']) ?>%<br>
+                Status: <?= htmlspecialchars($sub['status']) ?>
+              </div>
+              <div style="font-size:12px;color:gray;margin-top:5px;">
+                Added on <?= date("M d, Y", strtotime($sub['created_at'])) ?>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <p style="color:gray;">You have no enrolled subjects yet.</p>
+        <?php endif; ?>
+      </div>
     </main>
   </div>
 
   <script>
-    const API_URL = "https://api.example.com/subjects"; 
-    const subjectsGrid = document.getElementById("subjectsGrid");
+    const searchInput = document.getElementById("searchInput");
+    const cards = document.querySelectorAll(".subject-card");
 
-    function renderSubjects(subjects) {
-      subjectsGrid.innerHTML = ""; 
-      subjects.forEach(sub => {
-        const card = document.createElement("div");
-        card.className = "subject-card";
-        card.innerHTML = `
-          <div class="subject-header">
-            <div class="icon" style="background:${sub.color || 'linear-gradient(180deg,#2563eb,#1e40af)'}">${sub.icon || "📚"}</div>
-            <div class="subject-title">${sub.title}</div>
-          </div>
-          <div class="subject-desc">${sub.description}</div>
-          <div class="topics">
-            ${sub.topics.map(t => `<span class="topic">${t}</span>`).join("")}
-          </div>
-        `;
-        subjectsGrid.appendChild(card);
+    searchInput.addEventListener("input", () => {
+      const term = searchInput.value.toLowerCase();
+      cards.forEach(card => {
+        const title = card.querySelector(".subject-title").textContent.toLowerCase();
+        card.style.display = title.includes(term) ? "block" : "none";
       });
-    }
-
-    async function loadSubjects(query = "") {
-      try {
-        const res = await fetch(`${API_URL}?q=${encodeURIComponent(query)}`);
-        const data = await res.json();
-        renderSubjects(data);
-      } catch (err) {
-        console.error("Error fetching subjects:", err);
-        subjectsGrid.innerHTML = "<p>⚠️ Failed to load subjects.</p>";
-      }
-    }
-
-    document.getElementById("searchInput").addEventListener("input", e => {
-      loadSubjects(e.target.value);
     });
 
-    loadSubjects();
+    const profile = document.getElementById('profileDropdown');
+    const dropdown = document.getElementById('dropdownMenu');
+
+    profile.addEventListener('click', () => {
+      dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!profile.contains(e.target)) {
+        dropdown.style.display = 'none';
+      }
+    });
   </script>
 </body>
 </html>

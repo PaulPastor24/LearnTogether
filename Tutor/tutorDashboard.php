@@ -138,10 +138,10 @@ $pending_requests = $pending_requests->fetchColumn();
 
       <div class="col-md-2 sidebar d-none d-md-block">
         <h5 class="ps-3">Navigation</h5>
-        <a href="dashboard.php" class="active"><i class="bi bi-house me-2"></i> Home</a>
-        <a href="subjects.php"><i class="bi bi-journal-bookmark me-2"></i> Subjects</a>
-        <a href="schedule.php"><i class="bi bi-calendar-check me-2"></i> My Schedule</a>
-        <a href="requests.php"><i class="bi bi-people me-2"></i> Student Requests</a>
+        <a href="tutorDashboard.php" class="active"><i class="bi bi-house me-2"></i> Home</a>
+        <a href="subjectsTutor.php"><i class="bi bi-journal-bookmark me-2"></i> Subjects</a>
+        <a href="scheduleTutor.php"><i class="bi bi-calendar-check me-2"></i> My Schedule</a>
+        <a href="requestsTutor.php"><i class="bi bi-people me-2"></i> Student Requests</a>
       </div>
 
       <div class="col-md-10 p-4">

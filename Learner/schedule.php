@@ -1,30 +1,87 @@
+<?php
+session_start();
+require '../db.php';
+
+$user_id = $_SESSION['user_id'] ?? null;
+if (!$user_id) {
+  header("Location: ../login.php");
+  exit;
+}
+
+$stmt = $pdo->prepare("SELECT first_name, last_name, role FROM users WHERE id = ?");
+$stmt->execute([$user_id]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$stmt = $pdo->prepare("
+  SELECT subject, tutor_name, session_date, session_time_start, session_time_end
+  FROM requests
+  WHERE user_id = ? AND status = 'Confirmed'
+  ORDER BY session_date ASC
+");
+$stmt->execute([$user_id]);
+$sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+?>
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>My Subjects — LearnTogether</title>
+  <title>My Schedule — LearnTogether</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../CSS/style2.css">
+  <link rel="stylesheet" href="../CSS/navbar.css">
 </head>
 <body>
   <div class="app">
     <aside>
       <div class="sidebar">
-        <div class="profile">
-          <div class="avatar">A</div>
+        <div class="profile-dropdown" id="profileDropdown" 
+            style="position:relative;cursor:pointer;">
+          <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
           <div>
-            <div style="font-weight:700">Alex Mercado</div>
-            <div style="font-size:13px;color:var(--muted)">Active student</div>
+            <div style="font-weight:700">
+              <?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?>
+            <div>
+              <?php
+                $displayRole = '';
+                if (strtolower($user['role']) === 'learner') {
+                  $displayRole = 'Learner';
+                } elseif (strtolower($user['role']) === 'tutor') {
+                  $displayRole = 'Tutor';
+                } else {
+                  $displayRole = ucfirst($user['role']);
+                }
+              ?>
+                <div style="font-size:13px;color:var(--muted)">
+                  Active <?= htmlspecialchars($displayRole) ?>
+                </div>
+            </div>
+          </div>  
+          <div class="dropdown-menu" id="dropdownMenu"
+              style="display:none;position:absolute;top:60px;left:0;background:white;
+                      border:1px solid #ddd;border-radius:8px;
+                      box-shadow:0 4px 10px rgba(0,0,0,0.1);
+                      min-width:180px;z-index:999;">
+            <a href="profile.php"
+              style="display:block;padding:10px 15px;text-decoration:none;
+                      color:#333;font-size:14px;">🧑‍💻 View Profile</a>
+            <a href="settings.php"
+              style="display:block;padding:10px 15px;text-decoration:none;
+                      color:#333;font-size:14px;">⚙️ Settings</a>
+            <hr style="margin:5px 0;border:none;border-top:1px solid #eee;">
+            <a href="../logout.php"
+              style="display:block;padding:10px 15px;text-decoration:none;
+                      color:#333;font-size:14px;">🚪 Logout</a>
           </div>
-        </div>
+
         <nav class="navlinks">
-          <a href="learner.html">🏠 Overview</a>
-          <a href="subjects.html">📚 My Subjects</a>
-          <a href="tutors.html">🔎 Find Tutors</a>
-          <a class="active" href="schedule.html">📅 My Schedule</a>
-          <a href="requests.html">✉️ Requests</a>
-          <a href="settings.html">⚙️ Settings</a>
+          <a href="learnerDashboard.php">🏠 Overview</a>
+          <a href="subjects.php">📚 My Subjects</a>
+          <a href="searchTutors.php">🔎 Find Tutors</a>
+          <a class="active" href="schedule.php">📅 My Schedule</a>
+          <a href="requests.php">✉️ Requests</a>
+          <a href="../logout.php">🚪 Logout</a>
         </nav>
       </div>
     </aside>
@@ -36,8 +93,13 @@
         <button class="icon-btn">🔔</button>
         <button class="icon-btn">💬</button>
         <div style="display:flex;align-items:center;gap:8px">
-          <div style="text-align:right;margin-right:6px"><div style="font-weight:700">Alex</div><div style="font-size:12px;color:var(--muted)">Student</div></div>
-          <div class="avatar" style="width:40px;height:40px;border-radius:10px">AM</div>
+          <div style="text-align:right;margin-right:6px">
+            <div style="font-weight:700"><?= htmlspecialchars($user['first_name']) ?></div>
+            <div style="font-size:12px;color:var(--muted)">Student</div>
+          </div>
+          <div class="avatar" style="width:40px;height:40px;border-radius:10px">
+            <?= strtoupper(substr($user['first_name'], 0, 1) . substr($user['last_name'], 0, 1)) ?>
+          </div>
         </div>
       </div>
     </div>
@@ -45,31 +107,28 @@
 <main>
   <h1>My Schedule</h1>
   <div class="subjects-grid">
-    <div class="subject-card">
-      <div class="subject-header">
-        <div class="icon" style="background: linear-gradient(180deg,#f59e0b,#d97706)">📅</div>
-        <div class="subject-title">Web Development</div>
-      </div>
-      <div class="subject-desc">Session with Tutor: Maria Santos</div>
-      <div class="topics">
-        <span class="topic">Date: Sept 25, 2025</span>
-        <span class="topic">Time: 3:00 PM - 5:00 PM</span>
-      </div>
-    </div>
-
-    <div class="subject-card">
-      <div class="subject-header">
-        <div class="icon" style="background: linear-gradient(180deg,#4f46e5,#4338ca)">📅</div>
-        <div class="subject-title">Calculus</div>
-      </div>
-      <div class="subject-desc">Session with Tutor: John Dela Cruz</div>
-      <div class="topics">
-        <span class="topic">Date: Sept 27, 2025</span>
-        <span class="topic">Time: 1:00 PM - 3:00 PM</span>
-      </div>
-    </div>
+    <?php if (count($sessions) > 0): ?>
+      <?php foreach ($sessions as $s): ?>
+        <div class="subject-card">
+          <div class="subject-header">
+            <div class="icon" style="background: linear-gradient(180deg,#4f46e5,#4338ca)">📅</div>
+            <div class="subject-title"><?= htmlspecialchars($s['subject']) ?></div>
+          </div>
+          <div class="subject-desc">Session with Tutor: <?= htmlspecialchars($s['tutor_name']) ?></div>
+          <div class="topics">
+            <span class="topic">Date: <?= date("M d, Y", strtotime($s['session_date'])) ?></span>
+            <span class="topic">
+              Time: <?= htmlspecialchars($s['session_time_start']) ?> - <?= htmlspecialchars($s['session_time_end']) ?>
+            </span>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    <?php else: ?>
+      <p style="color:#666;">You have no confirmed sessions yet.</p>
+    <?php endif; ?>
   </div>
 </main>
+
   </div>
 
   <script>
@@ -78,6 +137,19 @@
         document.querySelectorAll('.navlinks a').forEach(x => x.classList.remove('active'));
         a.classList.add('active');
       });
+    });
+
+    const profile = document.getElementById('profileDropdown');
+    const dropdown = document.getElementById('dropdownMenu');
+
+    profile.addEventListener('click', () => {
+      dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!profile.contains(e.target)) {
+        dropdown.style.display = 'none';
+      }
     });
   </script>
 </body>
