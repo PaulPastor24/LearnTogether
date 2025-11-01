@@ -2,9 +2,8 @@
 session_start();
 require '../db.php';
 
-$user_id = $_SESSION['user_id'] ?? null;
-if (!$user_id) {
-    header("Location: ../login.php");
+if (!isset($_SESSION['user_id'])) {
+    header("Location: /LearnTogether/login.php");
     exit;
 }
 

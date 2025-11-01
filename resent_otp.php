@@ -2,6 +2,11 @@
 session_start();
 require 'db.php';
 
+if (!isset($_SESSION['user_id'])) {
+    header("Location: /LearnTogether/login.php");
+    exit;
+}
+
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['user_data']['email'])) {

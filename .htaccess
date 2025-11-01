@@ -1,0 +1,2 @@
+DirectoryIndex login.php
+ErrorDocument 404 /LearnTogether/error.php

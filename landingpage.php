@@ -36,7 +36,7 @@
                     <p class="mt-3">
                     A collaborative learning hub designed to connect students with one another for academic support, skill-building,    and    knowledge sharing. Our platform empowers learners to become both teachers and students—offering guidance    in   subjects     they excel in while receiving help in areas they want to improve. With real-time chat, video     sessions,   and resource     sharing, the platform fosters an interactive and supportive environment where  education becomes more     accessible,    personalized, and engaging.
                 </p>
-                <a href="#contact" class="btn mt-3 text-white" style="background-color: rgba(11, 97, 43, 1);">Learn More</a>
+                <a href="login.php" class="btn mt-3 text-white" style="background-color: rgba(11, 97, 43, 1);">Learn More</a>
             </div>
         </div>
     </section>

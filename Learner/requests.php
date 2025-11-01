@@ -2,10 +2,9 @@
 session_start();
 require '../db.php';
 
-$user_id = $_SESSION['user_id'] ?? null;
-if (!$user_id) {
-  header("Location: ../login.php");
-  exit;
+if (!isset($_SESSION['user_id'])) {
+    header("Location: /LearnTogether/login.php");
+    exit;
 }
 
 $stmt = $pdo->prepare("SELECT first_name, last_name, role FROM users WHERE id = ?");
