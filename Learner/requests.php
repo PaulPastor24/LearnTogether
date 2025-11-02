@@ -99,11 +99,11 @@ $tutors = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
 
         <nav class="navlinks">
-          <a class="active" href="learnerDashboard.php">🏠 Overview</a>
+          <a href="learnerDashboard.php">🏠 Overview</a>
           <a href="subjects.php">📚 My Subjects</a>
           <a href="searchTutors.php">🔎 Find Tutors</a>
           <a href="schedule.php">📅 My Schedule</a>
-          <a href="requests.php">✉️ Requests</a>
+          <a class="active" href="requests.php">✉️ Requests</a>
           <a href="../logout.php">🚪 Logout</a>
         </nav>
       </div>
