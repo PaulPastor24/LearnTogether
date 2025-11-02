@@ -3,6 +3,7 @@ session_start();
 require '../db.php';
 require '../agora_config.php';
 
+$user_id = $_SESSION['user_id'];
 if (!isset($_SESSION['user_id'])) {
     header("Location: /LearnTogether/login.php");
     exit;

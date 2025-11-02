@@ -7,9 +7,16 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+$user_id = $_SESSION['user_id'];
+
 $stmt = $pdo->prepare("SELECT first_name, last_name, role FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+    echo "User not found.";
+    exit;
+}
 
 $stmt = $pdo->prepare("SELECT 
     COUNT(*) AS total_sessions,
@@ -50,8 +57,7 @@ $tutors = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <div class="app">
     <aside>
       <div class="sidebar">
-        <div class="profile-dropdown" id="profileDropdown" 
-            style="position:relative;cursor:pointer;">
+        <div class="profile-dropdown" id="profileDropdown" style="position:relative;cursor:pointer;">
           <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
           <div>
             <div style="font-weight:700">
@@ -68,9 +74,9 @@ $tutors = $stmt->fetchAll(PDO::FETCH_ASSOC);
                   $displayRole = ucfirst($user['role']);
                 }
               ?>
-                <div style="font-size:13px;color:var(--muted)">
-                  Active <?= htmlspecialchars($displayRole) ?>
-                </div>
+              <div style="font-size:13px;color:var(--muted)">
+                Active <?= htmlspecialchars($displayRole) ?>
+              </div>
             </div>
           </div>
 
@@ -90,6 +96,7 @@ $tutors = $stmt->fetchAll(PDO::FETCH_ASSOC);
               style="display:block;padding:10px 15px;text-decoration:none;
                       color:#333;font-size:14px;">🚪 Logout</a>
           </div>
+        </div>
 
         <nav class="navlinks">
           <a class="active" href="learnerDashboard.php">🏠 Overview</a>
@@ -117,11 +124,11 @@ $tutors = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <button class="icon-btn">💬</button>
         <div style="display:flex;align-items:center;gap:8px;">
           <div class="profile-info">
-            <div><?php echo htmlspecialchars($user['first_name']); ?></div>
+            <div><?= htmlspecialchars($user['first_name']) ?></div>
             <div>Student</div>
           </div>
           <div class="avatar">
-            <?php echo strtoupper($user['first_name'][0] . $user['last_name'][0]); ?>
+            <?= strtoupper($user['first_name'][0] . $user['last_name'][0]) ?>
           </div>
         </div>
       </div>
