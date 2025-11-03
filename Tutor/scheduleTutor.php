@@ -2,18 +2,30 @@
 session_start();
 require '../db.php';
 
-$user_id = $_SESSION['user_id'];
 if (!isset($_SESSION['user_id'])) {
     header("Location: /LearnTogether/login.php");
     exit;
 }
 
+$user_id = $_SESSION['user_id'];
+
+$stmt = $pdo->prepare("SELECT id AS tutor_id FROM tutors WHERE user_id = ?");
+$stmt->execute([$user_id]);
+$tutor_row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$tutor_row) {
+    header("Location: ../roleSelector.php");
+    exit;
+}
+
+$tutor_id = $tutor_row['tutor_id'];
+
 $stmt = $pdo->prepare("SELECT first_name, last_name FROM users WHERE id = ?");
-$stmt->execute([$tutor_id]);
+$stmt->execute([$user_id]);
 $tutor = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $stmt = $pdo->prepare("
-  SELECT subject, session_date, session_time_start, session_time_end, 
+  SELECT r.subject, r.session_date, r.session_time_start, r.session_time_end,
          CONCAT(u.first_name, ' ', u.last_name) AS student_name
   FROM requests r
   JOIN users u ON r.user_id = u.id
@@ -23,7 +35,6 @@ $stmt = $pdo->prepare("
 $stmt->execute([$tutor_id]);
 $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -73,29 +84,28 @@ $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
       </div>
     </div>
 
-<main>
-  <h1>My Schedule</h1>
-  <div class="subjects-grid">
-    <?php if (count($sessions) > 0): ?>
-      <?php foreach ($sessions as $s): ?>
-        <div class="subject-card">
-          <div class="subject-header">
-            <div class="icon" style="background: linear-gradient(180deg,#4f46e5,#4338ca)">📅</div>
-            <div class="subject-title"><?= htmlspecialchars($s['subject']) ?></div>
-          </div>
-          <div class="subject-desc">Session with Student: <?= htmlspecialchars($s['student_name']) ?></div>
-          <div class="topics">
-            <span class="topic">Date: <?= date("M d, Y", strtotime($s['session_date'])) ?></span>
-            <span class="topic">Time: <?= htmlspecialchars($s['session_time_start']) ?> - <?= htmlspecialchars($s['session_time_end']) ?></span>
-          </div>
-        </div>
-      <?php endforeach; ?>
-    <?php else: ?>
-      <p style="color:#666;">No scheduled sessions yet.</p>
-    <?php endif; ?>
-  </div>
-</main>
-
+    <main>
+      <h1>My Schedule</h1>
+      <div class="subjects-grid">
+        <?php if (count($sessions) > 0): ?>
+          <?php foreach ($sessions as $s): ?>
+            <div class="subject-card">
+              <div class="subject-header">
+                <div class="icon" style="background: linear-gradient(180deg,#4f46e5,#4338ca)">📅</div>
+                <div class="subject-title"><?= htmlspecialchars($s['subject']) ?></div>
+              </div>
+              <div class="subject-desc">Session with Student: <?= htmlspecialchars($s['student_name']) ?></div>
+              <div class="topics">
+                <span class="topic">Date: <?= date("M d, Y", strtotime($s['session_date'])) ?></span>
+                <span class="topic">Time: <?= htmlspecialchars($s['session_time_start']) ?> - <?= htmlspecialchars($s['session_time_end']) ?></span>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <p style="color:#666;">No scheduled sessions yet.</p>
+        <?php endif; ?>
+      </div>
+    </main>
   </div>
 
   <script>

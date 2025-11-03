@@ -35,7 +35,6 @@ if (!$tutor) {
 
 $tutor_name = trim($tutor['first_name'] . ' ' . $tutor['last_name']);
 
-
 $stmt = $pdo->prepare("
     SELECT subject, session_date, status
     FROM sessions
@@ -65,152 +64,107 @@ $pending_requests = $pending_requests->fetchColumn();
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tutor Dashboard - LearnTogether</title>
-
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../CSS/style2.css">
+  <link rel="stylesheet" href="../CSS/navbar.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-
-  <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/agora-chat@1.1.1/dist/agora-chat.min.js"></script>
-
-  <style>
-    body {
-      background-color: #f8fafc;
-      font-family: "Inter", "Segoe UI", sans-serif;
-    }
-
-    .sidebar {
-      min-height: 100vh;
-      background: linear-gradient(180deg, #1e3a8a, #2563eb);
-      color: #fff;
-      padding-top: 1.5rem;
-    }
-
-    .sidebar a {
-      color: #cbd5e1;
-      display: block;
-      padding: 0.75rem 1rem;
-      border-radius: 10px;
-      text-decoration: none;
-    }
-
-    .sidebar a:hover,
-    .sidebar a.active {
-      background: rgba(255, 255, 255, 0.15);
-      color: #fff;
-    }
-
-    .card-custom {
-      border: none;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-    }
-  </style>
 </head>
 
 <body>
-  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm px-4 sticky-top">
-    <a class="navbar-brand fw-bold text-primary" href="#">
-      <i class="bi bi-journal-bookmark me-2"></i>LearnTogether
-    </a>
-
-    <div class="ms-auto d-flex align-items-center">
-      <i class="bi bi-bell me-3 fs-5"></i>
-      <div class="dropdown">
-        <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
-          <img src="<?= htmlspecialchars($tutor['profile_image'] ?? 'https://via.placeholder.com/40') ?>"
-               alt="profile"
-               class="rounded-circle me-2"
-               width="40">
-          <span class="fw-semibold"><?= htmlspecialchars($tutor_name) ?></span>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item" href="profile.php">Profile</a></li>
-          <li><a class="dropdown-item" href="settings.php">Settings</a></li>
-          <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" href="../logout.php">Logout</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <div class="container-fluid">
-    <div class="row">
-
-      <div class="col-md-2 sidebar d-none d-md-block">
-        <h5 class="ps-3">Navigation</h5>
-        <a href="tutorDashboard.php" class="active"><i class="bi bi-house me-2"></i> Home</a>
-        <a href="subjectsTutor.php"><i class="bi bi-journal-bookmark me-2"></i> Subjects</a>
-        <a href="scheduleTutor.php"><i class="bi bi-calendar-check me-2"></i> My Schedule</a>
-        <a href="requestsTutor.php"><i class="bi bi-people me-2"></i> Student Requests</a>
-      </div>
-
-      <div class="col-md-10 p-4">
-        <h2 class="fw-bold mb-4">
-          Welcome back, <span class="text-primary"><?= htmlspecialchars($tutor_name) ?></span> 👋
-        </h2>
-
-        <div class="row g-4 mb-4">
-          <div class="col-md-4">
-            <div class="card card-custom p-4 text-center">
-              <i class="bi bi-chat-dots fs-1 text-primary mb-3"></i>
-              <h5>Messages</h5>
-              <p class="text-muted">Chat with your students in real time.</p>
-              <button class="btn btn-outline-primary btn-sm" onclick="openChat()">Open Chat</button>
-            </div>
-          </div>
-
-          <div class="col-md-4">
-            <div class="card card-custom p-4 text-center">
-              <i class="bi bi-camera-video fs-1 text-success mb-3"></i>
-              <h5>Start Call</h5>
-              <p class="text-muted">Launch a video call with a student.</p>
-              <button class="btn btn-outline-success btn-sm" onclick="startCall()">Start Call</button>
-            </div>
+  <div class="app">
+    <aside>
+      <div class="sidebar">
+        <div class="profile">
+          <img src="<?= htmlspecialchars($tutor['profile_image'] ?? 'https://via.placeholder.com/52') ?>"
+               class="avatar" alt="Tutor Image">
+          <div>
+            <h6><?= htmlspecialchars($tutor_name) ?></h6>
+            <small class="text-muted">Tutor</small>
           </div>
         </div>
 
-        <div class="card card-custom p-4 mb-4">
-          <h5 class="mb-3 fw-bold">
-            <i class="bi bi-calendar-event me-2 text-primary"></i> Upcoming Sessions
-          </h5>
-
-          <ul class="list-group list-group-flush">
-            <?php foreach ($sessions as $s): ?>
-              <li class="list-group-item">
-                <strong><?= htmlspecialchars($s['subject']) ?></strong> —
-                <?= date("M d, h:i A", strtotime($s['session_date'])) ?>
-                <span class="badge bg-<?= $s['status'] == 'confirmed'
-                  ? 'success'
-                  : ($s['status'] == 'pending' ? 'warning text-dark' : 'secondary') ?> float-end">
-                  <?= ucfirst($s['status']) ?>
-                </span>
-              </li>
-            <?php endforeach; ?>
-          </ul>
+        <div class="navlinks">
+          <a href="tutorDashboard.php" class="active"><i class="bi bi-house"></i> Home</a>
+          <a href="subjectsTutor.php"><i class="bi bi-journal-bookmark"></i> Subjects</a>
+          <a href="scheduleTutor.php"><i class="bi bi-calendar-check"></i> My Schedule</a>
+          <a href="requestsTutor.php"><i class="bi bi-people"></i> Student Requests</a>
         </div>
+      </div>
+    </aside>
 
-        <div class="row g-4">
-          <div class="col-md-4">
-            <div class="card card-custom text-center p-4">
-              <h2 class="text-primary"><?= $total_students ?></h2>
-              <p class="text-muted mb-0">Total Students</p>
-            </div>
+    <div class="nav">
+      <div class="logo">
+        <div class="mark">LT</div>
+        <div>LearnTogether</div>
+      </div>
+      <div class="search">
+        <input type="text" placeholder="Search students, subjects..." />
+      </div>
+      <div class="nav-actions">
+        <button class="icon-btn">🔔</button>
+        <button class="icon-btn">💬</button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="profile-info">
+            <div><?= htmlspecialchars($tutor['first_name']) ?></div>
+            <div>Tutor</div>
           </div>
-          <div class="col-md-4">
-            <div class="card card-custom text-center p-4">
-              <h2 class="text-success"><?= $confirmed_sessions ?></h2>
-              <p class="text-muted mb-0">Confirmed Sessions</p>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="card card-custom text-center p-4">
-              <h2 class="text-warning"><?= $pending_requests ?></h2>
-              <p class="text-muted mb-0">Pending Requests</p>
-            </div>
+          <div class="avatar">
+            <?= strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]) ?>
           </div>
         </div>
       </div>
     </div>
+
+    <main>
+      <h1>Welcome back, <?= htmlspecialchars($tutor['first_name']) ?> 👋</h1>
+
+      <div class="subjects-grid">
+        <div class="subject-card">
+          <div class="subject-header">
+            <div class="icon" style="background:#0f766e;">💬</div>
+            <div class="subject-title">Messages</div>
+          </div>
+          <div class="subject-desc">Chat with your students in real time.</div>
+          <button class="btn btn-outline-primary btn-sm" onclick="openChat()">Open Chat</button>
+        </div>
+
+        <div class="subject-card">
+          <div class="subject-header">
+            <div class="icon" style="background:#10b981;">🎥</div>
+            <div class="subject-title">Start Call</div>
+          </div>
+          <div class="subject-desc">Launch a video call with a student.</div>
+          <button class="btn btn-outline-success btn-sm" onclick="startCall()">Start Call</button>
+        </div>
+      </div>
+
+      <h2 style="margin-top:40px;">Upcoming Sessions</h2>
+      <ul>
+        <?php foreach ($sessions as $s): ?>
+          <li>
+            <strong><?= htmlspecialchars($s['subject']) ?></strong> —
+            <?= date("M d, h:i A", strtotime($s['session_date'])) ?>
+            <span style="color:<?= $s['status']=='confirmed'?'green':($s['status']=='pending'?'orange':'gray') ?>;">
+              <?= ucfirst($s['status']) ?>
+            </span>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+
+      <div class="subjects-grid" style="margin-top:40px;">
+        <div class="subject-card text-center">
+          <h2><?= $total_students ?></h2>
+          <p class="text-muted">Total Students</p>
+        </div>
+        <div class="subject-card text-center">
+          <h2><?= $confirmed_sessions ?></h2>
+          <p class="text-muted">Confirmed Sessions</p>
+        </div>
+        <div class="subject-card text-center">
+          <h2><?= $pending_requests ?></h2>
+          <p class="text-muted">Pending Requests</p>
+        </div>
+      </div>
+    </main>
   </div>
 
   <script>
@@ -235,6 +189,7 @@ $pending_requests = $pending_requests->fetchColumn();
     }
   </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/agora-chat@1.1.1/dist/agora-chat.min.js"></script>
 </body>
 </html>
