@@ -53,24 +53,6 @@ $subjects = $sub_stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             </div>
           </div>
-
-          <div class="dropdown-menu" id="dropdownMenu"
-              style="display:none;position:absolute;top:60px;left:0;background:white;
-                      border:1px solid #ddd;border-radius:8px;
-                      box-shadow:0 4px 10px rgba(0,0,0,0.1);
-                      min-width:180px;z-index:999;">
-            <a href="profile.php"
-              style="display:block;padding:10px 15px;text-decoration:none;
-                      color:#333;font-size:14px;">🧑‍💻 View Profile</a>
-            <a href="settings.php"
-              style="display:block;padding:10px 15px;text-decoration:none;
-                      color:#333;font-size:14px;">⚙️ Settings</a>
-            <hr style="margin:5px 0;border:none;border-top:1px solid #eee;">
-            <a href="../logout.php"
-              style="display:block;padding:10px 15px;text-decoration:none;
-                      color:#333;font-size:14px;">🚪 Logout</a>
-          </div>
-
         <nav class="navlinks">
           <a href="learnerDashboard.php">🏠 Overview</a>
           <a class="active" href="subjects.php">📚 My Subjects</a>

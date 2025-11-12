@@ -1,7 +1,8 @@
 <?php
 session_start();
 require '../db.php';
-require '../agora_config.php';
+require '../Agora/agora_config.php';
+
 
 $user_id = $_SESSION['user_id'];
 if (!isset($_SESSION['user_id'])) {
@@ -82,12 +83,12 @@ $pending_requests = $pending_requests->fetchColumn();
           </div>
         </div>
 
-        <div class="navlinks">
-          <a href="tutorDashboard.php" class="active"><i class="bi bi-house"></i> Home</a>
-          <a href="subjectsTutor.php"><i class="bi bi-journal-bookmark"></i> Subjects</a>
-          <a href="scheduleTutor.php"><i class="bi bi-calendar-check"></i> My Schedule</a>
-          <a href="requestsTutor.php"><i class="bi bi-people"></i> Student Requests</a>
-        </div>
+      <nav class="navlinks">
+        <a class="active" href="tutorDashboard.php">🏠 Overview</a>
+        <a href="scheduleTutor.php">📅 My Schedule</a>
+        <a href="requests.php">✉️ Requests</a>
+        <a href="../logout.php">🚪 Logout</a>
+      </nav>
       </div>
     </aside>
 
@@ -167,27 +168,94 @@ $pending_requests = $pending_requests->fetchColumn();
     </main>
   </div>
 
-  <script>
-    const AGORA_APP_ID = "<?= $AGORA_APP_ID ?>";
-
-    function openChat() {
-      alert("Agora Chat integration placeholder — chat UI coming soon!");
+<script>
+async function fetchTokens(channelName, uid) {
+  try {
+    const response = await fetch(`../Agora/generate_token.php?channel=${channelName}&uid=${uid}`);
+    
+    if (!response.ok) {
+      throw new Error(`Server returned status ${response.status}`);
     }
 
-    async function startCall() {
-      const response = await fetch('start_call.php');
-      const { token, channelName } = await response.json();
+    const data = await response.json().catch(() => {
+      throw new Error('Invalid JSON response from server');
+    });
 
-      const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-      await client.join(AGORA_APP_ID, channelName, token, null);
-
-      const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-      const playerContainer = document.createElement("div");
-      playerContainer.id = "local-player";
-      document.body.append(playerContainer);
-      videoTrack.play("local-player");
+    if (data.error) {
+      throw new Error(data.error);
     }
-  </script>
+
+    return data;
+
+  } catch (err) {
+    console.error('Failed to fetch tokens:', err.message);
+    alert('⚠️ Token fetch failed: ' + err.message);
+    return null;
+  }
+}
+
+async function fetchTokens(channelName, uid) {
+  const response = await fetch(`../Agora/generate_token.php?channel=${channelName}&uid=${uid}`);
+  if (!response.ok) throw new Error("Failed to fetch tokens");
+  return await response.json();
+}
+
+async function startCall() {
+  const channelName = "tutor_<?= $user_id ?>";
+  const uid = Math.floor(Math.random() * 10000);
+
+  const data = await fetchTokens(channelName, uid);
+  if (!data.rtcToken) return alert("Failed to get RTC token.");
+
+  const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+  await client.join("<?= $AGORA_APP_ID ?>", channelName, data.rtcToken, uid);
+
+  const [micTrack, camTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+
+  const localDiv = document.createElement("div");
+  localDiv.id = "local-player";
+  localDiv.style = "width:400px;height:300px;border:2px solid green;margin-top:20px;";
+  document.body.appendChild(localDiv);
+  camTrack.play(localDiv);
+
+  await client.publish([micTrack, camTrack]);
+
+  client.on("user-published", async (user, mediaType) => {
+    await client.subscribe(user, mediaType);
+    if (mediaType === "video") {
+      const remoteDiv = document.createElement("div");
+      remoteDiv.id = `remote-player-${user.uid}`;
+      remoteDiv.style = "width:400px;height:300px;border:2px solid orange;margin-top:20px;";
+      document.body.appendChild(remoteDiv);
+      user.videoTrack.play(remoteDiv);
+    }
+    if (mediaType === "audio") user.audioTrack.play();
+  });
+
+  alert("🎥 Video call started!");
+}
+
+async function openChat() {
+  const uid = "tutor_<?= $user_id ?>";
+  const channelName = "tutor_<?= $user_id ?>";
+  const data = await fetchTokens(channelName, uid);
+  if (!data.rtmToken) return alert("Failed to get RTM token.");
+
+  const client = AgoraChat.createClient({ appId: "<?= $AGORA_APP_ID ?>" });
+
+  client.addEventHandler("onTextMessage", (msg) => {
+    console.log("📩 Message received:", msg);
+    alert(`💬 New message from ${msg.from}: ${msg.msg}`);
+  });
+
+  await client.open({
+    user: uid,
+    agoraToken: data.rtmToken,
+  });
+
+  alert("💬 Chat connected! Type in console:\nclient.sendTextMessage('receiver', 'Hello!')");
+}
+</script>
 
   <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/agora-chat@1.1.1/dist/agora-chat.min.js"></script>

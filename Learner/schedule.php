@@ -59,23 +59,7 @@ $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             </div>
           </div>  
-          <div class="dropdown-menu" id="dropdownMenu"
-              style="display:none;position:absolute;top:60px;left:0;background:white;
-                      border:1px solid #ddd;border-radius:8px;
-                      box-shadow:0 4px 10px rgba(0,0,0,0.1);
-                      min-width:180px;z-index:999;">
-            <a href="profile.php"
-              style="display:block;padding:10px 15px;text-decoration:none;
-                      color:#333;font-size:14px;">🧑‍💻 View Profile</a>
-            <a href="settings.php"
-              style="display:block;padding:10px 15px;text-decoration:none;
-                      color:#333;font-size:14px;">⚙️ Settings</a>
-            <hr style="margin:5px 0;border:none;border-top:1px solid #eee;">
-            <a href="../logout.php"
-              style="display:block;padding:10px 15px;text-decoration:none;
-                      color:#333;font-size:14px;">🚪 Logout</a>
-          </div>
-
+          
         <nav class="navlinks">
           <a href="learnerDashboard.php">🏠 Overview</a>
           <a href="subjects.php">📚 My Subjects</a>
@@ -105,30 +89,30 @@ $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
       </div>
     </div>
 
-<main>
-  <h1>My Schedule</h1>
-  <div class="subjects-grid">
-    <?php if (count($sessions) > 0): ?>
-      <?php foreach ($sessions as $s): ?>
-        <div class="subject-card">
-          <div class="subject-header">
-            <div class="icon" style="background: linear-gradient(180deg,#4f46e5,#4338ca)">📅</div>
-            <div class="subject-title"><?= htmlspecialchars($s['subject']) ?></div>
+  <main>
+    <h1>My Schedule</h1>
+    <div class="subjects-grid">
+      <?php if (count($sessions) > 0): ?>
+        <?php foreach ($sessions as $s): ?>
+          <div class="subject-card">
+            <div class="subject-header">
+              <div class="icon" style="background: linear-gradient(180deg,#4f46e5,#4338ca)">📅</div>
+              <div class="subject-title"><?= htmlspecialchars($s['subject']) ?></div>
+            </div>
+            <div class="subject-desc">Session with Tutor: <?= htmlspecialchars($s['tutor_name']) ?></div>
+            <div class="topics">
+              <span class="topic">Date: <?= date("M d, Y", strtotime($s['session_date'])) ?></span>
+              <span class="topic">
+                Time: <?= htmlspecialchars($s['session_time_start']) ?> - <?= htmlspecialchars($s['session_time_end']) ?>
+              </span>
+            </div>
           </div>
-          <div class="subject-desc">Session with Tutor: <?= htmlspecialchars($s['tutor_name']) ?></div>
-          <div class="topics">
-            <span class="topic">Date: <?= date("M d, Y", strtotime($s['session_date'])) ?></span>
-            <span class="topic">
-              Time: <?= htmlspecialchars($s['session_time_start']) ?> - <?= htmlspecialchars($s['session_time_end']) ?>
-            </span>
-          </div>
-        </div>
-      <?php endforeach; ?>
-    <?php else: ?>
-      <p style="color:#666;">You have no confirmed sessions yet.</p>
-    <?php endif; ?>
-  </div>
-</main>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <p style="color:#666;">You have no confirmed sessions yet.</p>
+      <?php endif; ?>
+    </div>
+  </main>
 
   </div>
 

@@ -1,17 +1,19 @@
 :root {
-  --accent: #4f46e5;
+  --accent: #0f766e;
+  --accent-hover: #065f46;
   --accent-2: #22c55e;
   --muted: #6b7280;
-  --bg: #f9fafb;
+  --bg: linear-gradient(180deg,#f6fbf6 0%, #e9f8f2 100%);
   --card-bg: #ffffff;
   --border: #e5e7eb;
+  --shadow: 0 6px 18px rgba(11,22,14,0.06);
 }
 
 body {
   font-family: 'Poppins', sans-serif;
   background: var(--bg);
-  margin: 0;
   color: #1f2937;
+  margin: 0;
 }
 
 .app {
@@ -21,9 +23,11 @@ body {
 
 aside {
   width: 250px;
-  background: #ffffff;
-  border-right: 1px solid var(--border);
-  padding: 20px;
+  background: linear-gradient(180deg,#ffffff,#f7fffb);
+  border-right: none;
+  box-shadow: var(--shadow);
+  padding: 22px;
+  border-radius: 0 16px 16px 0;
 }
 
 .sidebar .profile {
@@ -31,16 +35,16 @@ aside {
   align-items: center;
   gap: 10px;
   margin-bottom: 30px;
-  position: relative;
   cursor: pointer;
+  position: relative;
 }
 
 .avatar {
   width: 50px;
   height: 50px;
-  background: var(--accent);
-  color: white;
-  border-radius: 50%;
+  background: linear-gradient(180deg,var(--accent-2),var(--accent));
+  color: #fff;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -62,7 +66,7 @@ aside {
   position: absolute;
   top: 60px;
   left: 0;
-  background: white;
+  background: #fff;
   border: 1px solid #ddd;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -76,10 +80,11 @@ aside {
   text-decoration: none;
   color: #333;
   font-size: 14px;
+  transition: background 0.2s;
 }
 
 .dropdown-menu a:hover {
-  background-color: #f0f0f0;
+  background: #f3f4f6;
 }
 
 .navlinks {
@@ -97,9 +102,10 @@ aside {
   transition: 0.2s;
 }
 
-.navlinks a:hover, .navlinks a.active {
-  background: var(--accent);
-  color: white;
+.navlinks a:hover,
+.navlinks a.active {
+  background: linear-gradient(90deg,#ecfdf7,#f0fdf4);
+  color: var(--accent-2);
 }
 
 main {
@@ -112,6 +118,8 @@ main {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
 .highlight {
@@ -122,6 +130,7 @@ main {
   display: flex;
   gap: 12px;
   margin-top: 20px;
+  flex-wrap: wrap;
 }
 
 .card {
@@ -132,7 +141,12 @@ main {
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+  box-shadow: var(--shadow);
+  transition: transform 0.15s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-3px);
 }
 
 .icon {
@@ -141,7 +155,7 @@ main {
 
 .cta {
   background: var(--accent);
-  color: white;
+  color: #fff;
   padding: 6px 12px;
   border-radius: 6px;
   text-decoration: none;
@@ -150,7 +164,7 @@ main {
 }
 
 .cta:hover {
-  background: #4338ca;
+  background: var(--accent-hover);
 }
 
 .progress-card {
@@ -158,7 +172,7 @@ main {
   padding: 24px;
   border-radius: 16px;
   text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow);
 }
 
 .progress-value {
@@ -182,7 +196,7 @@ main {
 }
 
 .pill {
-  background: #f3f4f6;
+  background: #f1f6f4;
   padding: 10px 14px;
   border-radius: 12px;
   text-align: center;
@@ -200,13 +214,14 @@ main {
 .layout {
   display: flex;
   gap: 24px;
+  flex-wrap: wrap;
 }
 
 .card-lg {
   background: var(--card-bg);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow);
 }
 
 .card-header {
@@ -263,6 +278,8 @@ main {
 .empty-text {
   font-size: 14px;
   color: var(--muted);
+  text-align: center;
+  margin-top: 8px;
 }
 
 .tutors-grid {
@@ -275,12 +292,26 @@ main {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.tutor:hover {
+  background: #f9fafb;
 }
 
 .tutor-avatar {
   width: 56px;
   height: 56px;
   border-radius: 10px;
+  background: linear-gradient(180deg,var(--accent),var(--accent-2));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
 }
 
 .tutor-name {
@@ -303,4 +334,24 @@ main {
   padding: 10px;
   border-radius: 10px;
   margin-bottom: 6px;
+}
+
+@media (max-width: 900px) {
+  aside {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .welcome {
+    flex-direction: column;
+  }
+
+  .quick {
+    flex-direction: column;
+  }
+
+  .layout {
+    flex-direction: column;
+  }
 }

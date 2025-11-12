@@ -1,0 +1,15 @@
+{
+    "name": "learntogether/app",
+    "autoload": {
+        "psr-4": {
+            "Learntogether\\App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "PaulPastor24",
+            "email": "paulcedric71@gmail.com"
+        }
+    ],
+    "require": {}
+}

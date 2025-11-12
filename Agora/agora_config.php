@@ -1,0 +1,4 @@
+<?php 
+    $AGORA_APP_ID = "ba85d26a0db94dec82214e061ceaa39c"; 
+    $AGORA_APP_CERT = "94b38499a3704fccb2b0b91ad28ab8ec"; 
+?>

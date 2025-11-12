@@ -58,9 +58,8 @@ $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
         <nav class="navlinks">
           <a href="tutorDashboard.php">🏠 Overview</a>
-          <a href="subjectsTutor.php">📚 My Subjects</a>
           <a class="active" href="scheduleTutor.php">📅 Schedule</a>
-          <a href="requestsTutor.php">✉️ Requests</a>
+          <a href="requests.php">✉️ Requests</a>
           <a href="settings.php">⚙️ Settings</a>
         </nav>
       </div>
