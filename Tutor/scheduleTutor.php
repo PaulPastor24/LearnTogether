@@ -60,7 +60,7 @@ $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
           <a href="tutorDashboard.php">🏠 Overview</a>
           <a class="active" href="scheduleTutor.php">📅 Schedule</a>
           <a href="requests.php">✉️ Requests</a>
-          <a href="settings.php">⚙️ Settings</a>
+          <a href="../logout.php">🚪 Logout</a>
         </nav>
       </div>
     </aside>

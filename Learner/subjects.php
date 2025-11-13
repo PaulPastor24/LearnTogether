@@ -48,9 +48,7 @@ $subjects = $sub_stmt->fetchAll(PDO::FETCH_ASSOC);
                   $displayRole = ucfirst($user['role']);
                 }
               ?>
-                <div style="font-size:13px;color:var(--muted)">
-                  Active <?= htmlspecialchars($displayRole) ?>
-                </div>
+                <div style="font-size:13px;color:var(--muted)">Active <?= htmlspecialchars(ucfirst($user['role'] === 'tutor' ? 'learner' : $user['role'])) ?></div>
             </div>
           </div>
         <nav class="navlinks">

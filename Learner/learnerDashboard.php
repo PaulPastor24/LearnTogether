@@ -1,67 +1,67 @@
 <?php
-session_start();
-require '../db.php';
+  session_start();
+  require '../db.php';
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: /LearnTogether/login.php");
-    exit;
-}
+  if (!isset($_SESSION['user_id'])) {
+      header("Location: /LearnTogether/login.php");
+      exit;
+  }
 
-$user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'];
 
-$stmt = $pdo->prepare("SELECT first_name, last_name, role FROM users WHERE id = ?");
-$stmt->execute([$user_id]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+  $stmt = $pdo->prepare("SELECT first_name, last_name, role FROM users WHERE id = ?");
+  $stmt->execute([$user_id]);
+  $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$user) {
-    echo "User not found.";
-    exit;
-}
+  if (!$user) {
+      echo "User not found.";
+      exit;
+  }
 
-$stmt = $pdo->prepare("
-    SELECT 
-        r.id,
-        r.subject,
-        r.date AS session_date,
-        r.time AS session_time,
-        r.status,
-        u.first_name AS tutor_first_name,
-        u.last_name AS tutor_last_name
-    FROM reservations r
-    JOIN users u ON r.tutor_id = u.id
-    WHERE r.learner_id = ?
-    ORDER BY r.date DESC, r.time DESC
-");
-$stmt->execute([$user_id]);
-$requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  $stmt = $pdo->prepare("
+      SELECT 
+          r.id,
+          r.subject,
+          r.date AS session_date,
+          r.time AS session_time,
+          r.status,
+          u.first_name AS tutor_first_name,
+          u.last_name AS tutor_last_name
+      FROM reservations r
+      JOIN users u ON r.tutor_id = u.id
+      WHERE r.learner_id = ?
+      ORDER BY r.date DESC, r.time DESC
+  ");
+  $stmt->execute([$user_id]);
+  $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$topSubjectStmt = $pdo->prepare("
-    SELECT subject, COUNT(*) AS count 
-    FROM reservations 
-    WHERE learner_id = ? 
-    GROUP BY subject 
-    ORDER BY count DESC 
-    LIMIT 1
-");
-$topSubjectStmt->execute([$user_id]);
-$topSubject = $topSubjectStmt->fetch(PDO::FETCH_ASSOC);
+  $topSubjectStmt = $pdo->prepare("
+      SELECT subject, COUNT(*) AS count 
+      FROM reservations 
+      WHERE learner_id = ? 
+      GROUP BY subject 
+      ORDER BY count DESC 
+      LIMIT 1
+  ");
+  $topSubjectStmt->execute([$user_id]);
+  $topSubject = $topSubjectStmt->fetch(PDO::FETCH_ASSOC);
 
-$recommendedTutors = [];
+  $recommendedTutors = [];
 
-if ($topSubject) {
-    $subject = $topSubject['subject'];
+  if ($topSubject) {
+      $subject = $topSubject['subject'];
 
-    $tutorStmt = $pdo->prepare("
-        SELECT u.id, u.first_name, u.last_name, t.specialization, t.rating, t.hours_taught, t.availability
-        FROM tutors t
-        JOIN users u ON t.user_id = u.id
-        WHERE t.specialization LIKE ? AND u.role = 'tutor'
-        ORDER BY RAND()
-        LIMIT 3
-    ");
-    $tutorStmt->execute(["%$subject%"]);
-    $recommendedTutors = $tutorStmt->fetchAll(PDO::FETCH_ASSOC);
-}
+      $tutorStmt = $pdo->prepare("
+          SELECT u.id, u.first_name, u.last_name, t.specialization, t.rating, t.hours_taught, t.availability
+          FROM tutors t
+          JOIN users u ON t.user_id = u.id
+          WHERE t.specialization LIKE ? AND u.role = 'tutor'
+          ORDER BY RAND()
+          LIMIT 3
+      ");
+      $tutorStmt->execute(["%$subject%"]);
+      $recommendedTutors = $tutorStmt->fetchAll(PDO::FETCH_ASSOC);
+  }
 ?>
 <!doctype html>
 <html lang="en">
@@ -85,18 +85,16 @@ if ($topSubject) {
           <div style="font-weight:700">
             <?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?>
           </div>
-          <div style="font-size:13px;color:var(--muted)">
-            Active <?= htmlspecialchars(ucfirst($user['role'])) ?>
-          </div>
+          <div style="font-size:13px;color:var(--muted)">Active <?= htmlspecialchars(ucfirst($user['role'] === 'tutor' ? 'learner' : $user['role'])) ?></div>
         </div>
       </div>
 
       <nav class="navlinks">
-        <a href="learnerDashboard.php">🏠 Overview</a>
+        <a class="active" href="learnerDashboard.php">🏠 Overview</a>
         <a href="subjects.php">📚 My Subjects</a>
         <a href="searchTutors.php">🔎 Find Tutors</a>
         <a href="schedule.php">📅 My Schedule</a>
-        <a class="active" href="requests.php">✉️ Requests</a>
+        <a href="requests.php">✉️ Requests</a>
         <a href="../logout.php">🚪 Logout</a>
       </nav>
     </div>

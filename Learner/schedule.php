@@ -1,26 +1,26 @@
 <?php
-session_start();
-require '../db.php';
+  session_start();
+  require '../db.php';
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: /LearnTogether/login.php");
-    exit;
-}
+  if (!isset($_SESSION['user_id'])) {
+      header("Location: /LearnTogether/login.php");
+      exit;
+  }
 
-$user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'];
 
-$stmt = $pdo->prepare("SELECT first_name, last_name, role FROM users WHERE id = ?");
-$stmt->execute([$user_id]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+  $stmt = $pdo->prepare("SELECT first_name, last_name, role FROM users WHERE id = ?");
+  $stmt->execute([$user_id]);
+  $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$stmt = $pdo->prepare("
-  SELECT subject, tutor_name, session_date, session_time_start, session_time_end
-  FROM requests
-  WHERE user_id = ? AND status = 'Confirmed'
-  ORDER BY session_date ASC
-");
-$stmt->execute([$user_id]);
-$sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  $stmt = $pdo->prepare("
+    SELECT subject, tutor_name, session_date, session_time_start, session_time_end
+    FROM requests
+    WHERE user_id = ? AND status = 'Confirmed'
+    ORDER BY session_date ASC
+  ");
+  $stmt->execute([$user_id]);
+  $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!doctype html>
@@ -54,9 +54,7 @@ $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
                   $displayRole = ucfirst($user['role']);
                 }
               ?>
-                <div style="font-size:13px;color:var(--muted)">
-                  Active <?= htmlspecialchars($displayRole) ?>
-                </div>
+                <div style="font-size:13px;color:var(--muted)">Active <?= htmlspecialchars(ucfirst($user['role'] === 'tutor' ? 'learner' : $user['role'])) ?></div>
             </div>
           </div>  
           
