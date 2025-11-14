@@ -146,35 +146,32 @@ let client, micTrack, camTrack;
 const videoContainer = document.getElementById("videoContainer");
 
 async function joinCall(reservationId) {
-    try {
-        const response = await fetch(`../Agora/generate_token.php?reservation_id=${reservationId}`);
-        const data = await response.json();
-        console.log(data);
-        if (!data.token) return alert("Failed to get token.");
+    const response = await fetch(`../Agora/generate_token.php?reservation_id=${reservationId}`);
+    const data = await response.json();
+    if (!data.token) return alert("Failed to get token.");
 
-        client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-        await client.join(AGORA_APP_ID, data.channelName, data.token, data.uid);
+    client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+    await client.join(AGORA_APP_ID, data.channelName, data.token, data.uid);
 
-        [micTrack, camTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+    [micTrack, camTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+    await client.publish([micTrack, camTrack]);
+    addVideoBox(camTrack, "You");
 
-        addVideoBox(camTrack, "You");
-        await client.publish([micTrack, camTrack]);
+    client.on("user-published", async (user, mediaType) => {
+        await client.subscribe(user, mediaType);
 
-        client.on("user-published", async (user, mediaType) => {
-            await client.subscribe(user, mediaType);
-            if (mediaType === "video") addVideoBox(user.videoTrack, `User ${user.uid}`, user.uid);
-            if (mediaType === "audio") user.audioTrack.play();
-        });
+        if (mediaType === "video") {
+            const remoteVideoTrack = user.videoTrack;
+            addVideoBox(remoteVideoTrack, `User ${user.uid}`, user.uid);
+        }
+        if (mediaType === "audio") {
+            user.audioTrack.play();
+        }
+    });
 
-        client.on("user-unpublished", user => removeVideoBox(user.uid));
-
-        createControls();
-
-    } catch (err) {
-        console.error(err);
-        alert("Failed to join call: " + err.message);
-    }
+    client.on("user-unpublished", user => removeVideoBox(user.uid));
 }
+
 
 function addVideoBox(track, name, uid = "local") {
     const box = document.createElement("div");

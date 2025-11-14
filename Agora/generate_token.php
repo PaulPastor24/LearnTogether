@@ -1,14 +1,8 @@
 <?php
 ob_start();
-
-if (session_status() === PHP_SESSION_NONE) session_start();
+session_start();
 
 header("Content-Type: application/json");
-
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
-ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/error.log');
 
 require_once __DIR__ . '/RtcTokenBuilder2.php';
 require_once __DIR__ . '/RtmTokenBuilder.php';
@@ -16,57 +10,48 @@ require_once __DIR__ . '/RtmTokenBuilder.php';
 $appID = "ba85d26a0db94dec82214e061ceaa39c";
 $appCertificate = "94b38499a3704fccb2b0b91ad28ab8ec";
 
-// Roles
 const ROLE_PUBLISHER = 1;
-if (!defined('ROLE_RTM_USER')) define('ROLE_RTM_USER', 1);
-
-function generateRTCToken($channelName, $uid, $expireTimeInSeconds = 3600) {
-    global $appID, $appCertificate;
-    $privilegeExpiredTs = time() + $expireTimeInSeconds;
-    return RtcTokenBuilder2::buildTokenWithUid(
-        $appID,
-        $appCertificate,
-        $channelName,
-        $uid,
-        ROLE_PUBLISHER,
-        $privilegeExpiredTs
-    );
-}
-
-function generateRTMToken($userId, $expireTimeInSeconds = 3600) {
-    global $appID, $appCertificate;
-    $privilegeExpiredTs = time() + $expireTimeInSeconds;
-    return RtmTokenBuilder::buildToken(
-        $appID,
-        $appCertificate,
-        $userId,
-        ROLE_RTM_USER,
-        $privilegeExpiredTs
-    );
-}
+const ROLE_RTM_USER = 1;
 
 if (!isset($_SESSION['user_id'])) {
-    ob_clean();
     http_response_code(401);
     echo json_encode(["status" => "error", "message" => "Not logged in"]);
     exit;
 }
 
-$userId = $_SESSION['user_id'];
 $reservationId = $_GET['reservation_id'] ?? null;
+if (!$reservationId) {
+    http_response_code(400);
+    echo json_encode(["status" => "error", "message" => "Missing reservation_id"]);
+    exit;
+}
 
-$channelName = $reservationId ? "session_" . $reservationId : "session_" . $userId;
+$uid = (int)$_SESSION['user_id'];
+$channelName = "session_" . $reservationId;
 
 try {
-    $rtcToken = generateRTCToken($channelName, (int)$userId);
-    $rtmToken = generateRTMToken((string)$userId);
+    $rtcToken = RtcTokenBuilder2::buildTokenWithUid(
+        $appID,
+        $appCertificate,
+        $channelName,
+        $uid,
+        ROLE_PUBLISHER,
+        time() + 3600
+    );
+
+    $rtmToken = RtmTokenBuilder::buildToken(
+        $appID,
+        $appCertificate,
+        (string)$uid,
+        ROLE_RTM_USER,
+        time() + 3600
+    );
 
     ob_clean();
-
     echo json_encode([
         "status" => "success",
         "channelName" => $channelName,
-        "uid" => (int)$userId,
+        "uid" => $uid,
         "token" => $rtcToken,
         "rtmToken" => $rtmToken
     ]);

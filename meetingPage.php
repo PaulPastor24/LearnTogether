@@ -9,15 +9,9 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 $reservationId = $_GET['reservation_id'] ?? null;
-
 if (!$reservationId) die("Reservation ID missing");
 
-$stmt = $pdo->prepare("SELECT role FROM users WHERE id=?");
-$stmt->execute([$user_id]);
-$userRole = $stmt->fetchColumn();
-
 $AGORA_APP_ID = "ba85d26a0db94dec82214e061ceaa39c";
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -54,6 +48,13 @@ async function startMeeting() {
 
         client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
+        client.on("user-joined", user => { remoteUsers[user.uid] = user; });
+        client.on("user-left", user => {
+            delete remoteUsers[user.uid];
+            const div = document.getElementById(`user-${user.uid}`);
+            if (div) div.remove();
+        });
+
         const uid = await client.join(AGORA_APP_ID, data.channelName, data.token, data.uid);
 
         [localTracks.audioTrack, localTracks.videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
@@ -65,83 +66,59 @@ async function startMeeting() {
         localTracks.videoTrack.play(localDiv);
 
         await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
-        console.log("Local tracks published successfully");
 
-        client.remoteUsers.forEach(user => {
-            subscribeToUser(user, "all");
-        });
+        Object.values(client.remoteUsers).forEach(user => subscribeToUser(user));
 
         client.on("user-published", async (user, mediaType) => {
             await client.subscribe(user, mediaType);
-            subscribeToUser(user, mediaType);
-        });
-
-        client.on("user-unpublished", user => {
-            if (remoteUsers[user.uid]) {
-                remoteUsers[user.uid].remove();
-                delete remoteUsers[user.uid];
-            }
+            subscribeToUser(user);
         });
 
         setupControls();
-
     } catch (err) {
         console.error(err);
         alert("Failed to start call: " + err.message);
     }
 }
 
-function subscribeToUser(user, mediaType) {
-    if (!remoteUsers[user.uid]) {
-        const remoteDiv = document.createElement("div");
-        remoteDiv.className = "video-box";
-        remoteDiv.id = `user-${user.uid}`;
-        document.getElementById("videoContainer").appendChild(remoteDiv);
-        remoteUsers[user.uid] = remoteDiv;
+function subscribeToUser(user) {
+    if (!remoteUsers[user.uid]) remoteUsers[user.uid] = user;
+
+    let div = document.getElementById(`user-${user.uid}`);
+    if (!div) {
+        div = document.createElement("div");
+        div.className = "video-box";
+        div.id = `user-${user.uid}`;
+        document.getElementById("videoContainer").appendChild(div);
     }
 
-    if ((mediaType === "video" || mediaType === "all") && user.videoTrack) {
-        user.videoTrack.play(remoteUsers[user.uid]);
-    }
-    if ((mediaType === "audio" || mediaType === "all") && user.audioTrack) {
-        user.audioTrack.play();
-    }
+    if (user.videoTrack) user.videoTrack.play(div);
+    if (user.audioTrack) user.audioTrack.play();
 }
 
 function setupControls() {
-    const micBtn = document.getElementById("toggleMic");
-    const camBtn = document.getElementById("toggleCam");
-    const leaveBtn = document.getElementById("leaveBtn");
-
-    micBtn.onclick = () => {
+    document.getElementById("toggleMic").onclick = () => {
         if (!localTracks.audioTrack) return;
-        localTracks.audioTrack.setEnabled(localTracks.audioTrack.isMuted);
-        micBtn.innerText = localTracks.audioTrack.isMuted ? "🎤 Mute" : "🎤 Unmute";
+        const enabled = localTracks.audioTrack.isEnabled;
+        localTracks.audioTrack.setEnabled(!enabled);
+        document.getElementById("toggleMic").innerText = enabled ? "🎤 Unmute" : "🎤 Mute";
     };
-
-    camBtn.onclick = () => {
+    document.getElementById("toggleCam").onclick = () => {
         if (!localTracks.videoTrack) return;
-        localTracks.videoTrack.setEnabled(localTracks.videoTrack.isMuted);
-        camBtn.innerText = localTracks.videoTrack.isMuted ? "📷 Camera Off" : "📷 Camera On";
+        const enabled = localTracks.videoTrack.isEnabled;
+        localTracks.videoTrack.setEnabled(!enabled);
+        document.getElementById("toggleCam").innerText = enabled ? "📷 Camera On" : "📷 Camera Off";
     };
-
-    leaveBtn.onclick = leaveCall;
+    document.getElementById("leaveBtn").onclick = leaveCall;
 }
 
 async function leaveCall() {
-    for (let trackName in localTracks) {
-        const track = localTracks[trackName];
-        if (track) {
-            track.stop();
-            track.close();
-        }
-    }
+    for (let t of Object.values(localTracks)) if (t) { t.stop(); t.close(); }
     remoteUsers = {};
     if (client) await client.leave();
     window.location.href = document.referrer || '/LearnTogether/';
 }
 
-// Start meeting
 startMeeting();
 </script>
 </body>
