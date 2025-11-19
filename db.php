@@ -4,10 +4,10 @@
 // $username = 'if0_40430607';
 // $password = 'AJtE6DQxSI';
 
-$host = 'localhost';
-$dbname = 'learntogetherdb';
-$username = 'root';
-$password = '';
+// $host = 'localhost';
+// $dbname = 'learntogetherdb';
+// $username = 'root';
+// $password = '';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password, [

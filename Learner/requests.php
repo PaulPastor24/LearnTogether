@@ -12,12 +12,10 @@ $user_id = $_SESSION['user_id'];
 $stmt = $pdo->prepare("SELECT first_name, last_name, role FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
-if (!$user) die("User not found.");
 
 $stmt = $pdo->prepare("SELECT id FROM learners WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $learner = $stmt->fetch(PDO::FETCH_ASSOC);
-if (!$learner) die("Learner profile not found.");
 $learner_id = $learner['id'];
 
 $stmt = $pdo->prepare("
@@ -39,7 +37,6 @@ $stmt = $pdo->prepare("
 $stmt->execute([$learner_id]);
 $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,15 +46,12 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../CSS/style2.css">
 <link rel="stylesheet" href="../CSS/navbar.css">
-<script>
-const AGORA_APP_ID = "ba85d26a0db94dec82214e061ceaa39c";
-</script>
 </head>
 <body>
 <div class="app">
     <aside>
         <div class="sidebar">
-            <div class="profile-dropdown" id="profileDropdown">
+            <div class="profile-dropdown">
                 <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
                 <div>
                     <div style="font-weight:700"><?= htmlspecialchars($user['first_name'].' '.$user['last_name']) ?></div>
@@ -115,15 +109,13 @@ const AGORA_APP_ID = "ba85d26a0db94dec82214e061ceaa39c";
                                     default => '#6b7280'
                                 };
                                 ?>
-                                <span style="color:<?= $statusColor ?>;font-weight:600;">
-                                    <?= htmlspecialchars($req['status']) ?>
-                                </span>
+                                <span style="color:<?= $statusColor ?>;font-weight:600;"><?= htmlspecialchars($req['status']) ?></span>
                             </td>
                             <td style="padding:10px;">
                             <?php if ($req['status'] === 'Confirmed'): ?>
-                                <button onclick="window.location.href='../meetingPage.php?reservation_id=<?= $req['reservation_id'] ?>'"
-                                    style="padding:5px 10px;background:#4f46e5;color:white;border:none;border-radius:5px;">
-                                    Join Call
+                                <button onclick="window.open('../agoraconvo.php?user=<?= $req['tutor_id'] ?>&reservation_id=<?= $req['reservation_id'] ?>', '_blank')"
+                                        style="padding:5px 10px;background:#4f46e5;color:white;border:none;border-radius:5px;">
+                                    View
                                 </button>
                             <?php else: ?>
                                 <span style="color:#999;">N/A</span>
@@ -134,80 +126,7 @@ const AGORA_APP_ID = "ba85d26a0db94dec82214e061ceaa39c";
                 </tbody>
             </table>
         <?php endif; ?>
-
-        <div id="videoContainer"></div>
-        <div id="callControls"></div>
     </main>
 </div>
-
-<script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
-<script>
-let client, micTrack, camTrack;
-const videoContainer = document.getElementById("videoContainer");
-
-async function joinCall(reservationId) {
-    const response = await fetch(`../Agora/generate_token.php?reservation_id=${reservationId}`);
-    const data = await response.json();
-    if (!data.token) return alert("Failed to get token.");
-
-    client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-    await client.join(AGORA_APP_ID, data.channelName, data.token, data.uid);
-
-    [micTrack, camTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-    await client.publish([micTrack, camTrack]);
-    addVideoBox(camTrack, "You");
-
-    client.on("user-published", async (user, mediaType) => {
-        await client.subscribe(user, mediaType);
-
-        if (mediaType === "video") {
-            const remoteVideoTrack = user.videoTrack;
-            addVideoBox(remoteVideoTrack, `User ${user.uid}`, user.uid);
-        }
-        if (mediaType === "audio") {
-            user.audioTrack.play();
-        }
-    });
-
-    client.on("user-unpublished", user => removeVideoBox(user.uid));
-}
-
-
-function addVideoBox(track, name, uid = "local") {
-    const box = document.createElement("div");
-    box.className = "video-box";
-    box.id = `video-${uid}`;
-    const label = document.createElement("div");
-    label.className = "video-label";
-    label.innerText = name;
-    box.appendChild(label);
-    videoContainer.appendChild(box);
-    track.play(box);
-}
-
-function removeVideoBox(uid) {
-    const box = document.getElementById(`video-${uid}`);
-    if (box) box.remove();
-}
-
-function createControls() {
-    const controls = document.getElementById("callControls");
-    controls.innerHTML = `
-        <button onclick="toggleMic()">🎤 Mute/Unmute</button>
-        <button onclick="toggleCam()">📷 Camera On/Off</button>
-        <button onclick="leaveCall()">❌ Leave Call</button>
-    `;
-}
-
-function toggleMic() { if (micTrack) micTrack.setEnabled(!micTrack.enabled); }
-function toggleCam() { if (camTrack) camTrack.setEnabled(!camTrack.enabled); }
-async function leaveCall() {
-    if (micTrack) micTrack.close();
-    if (camTrack) camTrack.close();
-    if (client) await client.leave();
-    videoContainer.innerHTML = "";
-    alert("You left the call.");
-}
-</script>
 </body>
 </html>

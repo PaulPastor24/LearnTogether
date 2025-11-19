@@ -75,20 +75,19 @@ $pending_requests = $pending_requests->fetchColumn();
     <aside>
       <div class="sidebar">
         <div class="profile">
-          <img src="<?= htmlspecialchars($tutor['profile_image'] ?? 'https://via.placeholder.com/52') ?>"
-               class="avatar" alt="Tutor Image">
+          <div class="avatar"><?= strtoupper($tutor['first_name'][0]) ?></div>
           <div>
-            <h6><?= htmlspecialchars($tutor_name) ?></h6>
-            <small class="text-muted">Tutor</small>
+            <div style="font-weight:700"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
+            <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
           </div>
         </div>
-
-      <nav class="navlinks">
-        <a class="active" href="tutorDashboard.php">🏠 Overview</a>
-        <a href="scheduleTutor.php">📅 My Schedule</a>
-        <a href="requests.php">✉️ Requests</a>
-        <a href="../logout.php">🚪 Logout</a>
-      </nav>
+        <nav class="navlinks">
+          <a class="active" href="tutorDashboard.php">🏠 Overview</a>
+          <a href="subjects.php">📚 Subjects</a>
+          <a href="scheduleTutor.php">📅 Schedule</a>
+          <a href="requests.php">✉️ Requests</a>
+          <a href="../logout.php">🚪 Logout</a>
+        </nav>
       </div>
     </aside>
 

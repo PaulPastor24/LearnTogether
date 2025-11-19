@@ -9,6 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+// Get tutor_id
 $stmt = $pdo->prepare("SELECT id AS tutor_id FROM tutors WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $tutor_row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -20,100 +21,145 @@ if (!$tutor_row) {
 
 $tutor_id = $tutor_row['tutor_id'];
 
+// Handle scheduling form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id'])) {
+    $request_id = $_POST['request_id'];
+    $session_date = $_POST['session_date'];
+    $session_time_start = $_POST['session_time_start'];
+    $session_time_end = $_POST['session_time_end'];
+
+    $update = $pdo->prepare("UPDATE requests SET status='Confirmed', session_date=?, session_time_start=?, session_time_end=? WHERE id=? AND tutor_id=?");
+    $update->execute([$session_date, $session_time_start, $session_time_end, $request_id, $tutor_id]);
+    header("Location: scheduleTutor.php");
+    exit;
+}
+
+// Fetch pending requests
+$pending_stmt = $pdo->prepare("
+    SELECT r.id, r.subject, r.message, CONCAT(u.first_name, ' ', u.last_name) AS student_name
+    FROM requests r
+    JOIN users u ON r.user_id = u.id
+    WHERE r.tutor_id = ? AND r.status='Pending'
+    ORDER BY r.id ASC
+");
+$pending_stmt->execute([$tutor_id]);
+$pending_requests = $pending_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch confirmed sessions
+$confirmed_stmt = $pdo->prepare("
+    SELECT r.subject, r.session_date, r.session_time_start, r.session_time_end,
+           CONCAT(u.first_name, ' ', u.last_name) AS student_name
+    FROM requests r
+    JOIN users u ON r.user_id = u.id
+    WHERE r.tutor_id = ? AND r.status='Confirmed'
+    ORDER BY r.session_date ASC
+");
+$confirmed_stmt->execute([$tutor_id]);
+$confirmed_sessions = $confirmed_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch tutor info
 $stmt = $pdo->prepare("SELECT first_name, last_name FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $tutor = $stmt->fetch(PDO::FETCH_ASSOC);
-
-$stmt = $pdo->prepare("
-  SELECT r.subject, r.session_date, r.session_time_start, r.session_time_end,
-         CONCAT(u.first_name, ' ', u.last_name) AS student_name
-  FROM requests r
-  JOIN users u ON r.user_id = u.id
-  WHERE r.tutor_id = ? AND r.status = 'Confirmed'
-  ORDER BY r.session_date ASC
-");
-$stmt->execute([$tutor_id]);
-$sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>My Schedule — LearnTogether</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../CSS/style2.css">
-  <link rel="stylesheet" href="../CSS/navbar.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Schedule Management — LearnTogether</title>
+<link rel="stylesheet" href="../CSS/style2.css">
+<link rel="stylesheet" href="../CSS/navbar.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
-  <div class="app">
-    <aside>
-      <div class="sidebar">
-        <div class="profile">
-          <div class="avatar"><?= strtoupper($tutor['first_name'][0]) ?></div>
-          <div>
-            <div style="font-weight:700"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
-            <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
-          </div>
-        </div>
-        <nav class="navlinks">
-          <a href="tutorDashboard.php">🏠 Overview</a>
-          <a class="active" href="scheduleTutor.php">📅 Schedule</a>
-          <a href="requests.php">✉️ Requests</a>
-          <a href="../logout.php">🚪 Logout</a>
-        </nav>
-      </div>
-    </aside>
-
-    <div class="nav" role="navigation">
-      <div class="logo"><div class="mark">LT</div><div style="font-weight:700">LearnTogether</div></div>
-      <div class="search"><input placeholder="Search students or subjects" /></div>
-      <div class="nav-actions">
-        <button class="icon-btn">🔔</button>
-        <button class="icon-btn">💬</button>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="text-align:right;margin-right:6px">
-            <div style="font-weight:700"><?= htmlspecialchars($tutor['first_name']) ?></div>
-            <div style="font-size:12px;color:var(--muted)">Tutor</div>
-          </div>
-          <div class="avatar" style="width:40px;height:40px;border-radius:10px">
-            <?= strtoupper(substr($tutor['first_name'], 0, 1) . substr($tutor['last_name'], 0, 1)) ?>
-          </div>
+<div class="app">
+  <aside>
+    <div class="sidebar">
+      <div class="profile">
+        <div class="avatar"><?= strtoupper($tutor['first_name'][0]) ?></div>
+        <div>
+          <div style="font-weight:700"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
+          <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
         </div>
       </div>
+      <nav class="navlinks">
+        <a href="tutorDashboard.php">🏠 Overview</a>
+        <a href="subjects.php">📚 Subjects</a>
+        <a class="active" href="scheduleTutor.php">📅 Schedule</a>
+        <a href="requests.php">✉️ Requests</a>
+        <a href="../logout.php">🚪 Logout</a>
+      </nav>
     </div>
+  </aside>
 
-    <main>
-      <h1>My Schedule</h1>
-      <div class="subjects-grid">
-        <?php if (count($sessions) > 0): ?>
-          <?php foreach ($sessions as $s): ?>
-            <div class="subject-card">
-              <div class="subject-header">
-                <div class="icon" style="background: linear-gradient(180deg,#4f46e5,#4338ca)">📅</div>
-                <div class="subject-title"><?= htmlspecialchars($s['subject']) ?></div>
-              </div>
-              <div class="subject-desc">Session with Student: <?= htmlspecialchars($s['student_name']) ?></div>
-              <div class="topics">
-                <span class="topic">Date: <?= date("M d, Y", strtotime($s['session_date'])) ?></span>
-                <span class="topic">Time: <?= htmlspecialchars($s['session_time_start']) ?> - <?= htmlspecialchars($s['session_time_end']) ?></span>
-              </div>
-            </div>
-          <?php endforeach; ?>
-        <?php else: ?>
-          <p style="color:#666;">No scheduled sessions yet.</p>
-        <?php endif; ?>
-      </div>
-    </main>
+  <div class="nav">
+    <div class="logo"><div class="mark">LT</div><div>LearnTogether</div></div>
   </div>
 
-  <script>
-    document.querySelectorAll('.navlinks a').forEach(a => {
-      a.addEventListener('click', () => {
-        document.querySelectorAll('.navlinks a').forEach(x => x.classList.remove('active'));
-        a.classList.add('active');
-      });
-    });
-  </script>
+  <main>
+    <h1>Schedule Management</h1>
+
+    <!-- Pending Requests -->
+    <h2>Pending Requests</h2>
+    <?php if (count($pending_requests) > 0): ?>
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <?php foreach ($pending_requests as $req): ?>
+          <div class="col">
+            <div class="card h-100 shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title"><?= htmlspecialchars($req['subject']) ?></h5>
+                <p class="card-text">From: <?= htmlspecialchars($req['student_name']) ?></p>
+                <p class="card-text"><em><?= htmlspecialchars($req['message']) ?></em></p>
+                <form method="POST">
+                  <input type="hidden" name="request_id" value="<?= $req['id'] ?>">
+                  <div class="mb-2">
+                    <label class="form-label">Date</label>
+                    <input type="date" name="session_date" class="form-control" required>
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">Start Time</label>
+                    <input type="time" name="session_time_start" class="form-control" required>
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">End Time</label>
+                    <input type="time" name="session_time_end" class="form-control" required>
+                  </div>
+                  <button type="submit" class="btn btn-success btn-sm mt-2">Confirm & Schedule</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php else: ?>
+      <p style="color:#666;">No pending requests.</p>
+    <?php endif; ?>
+
+    <!-- Confirmed Sessions -->
+    <h2 class="mt-5">Confirmed Sessions</h2>
+    <?php if (count($confirmed_sessions) > 0): ?>
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <?php foreach ($confirmed_sessions as $s): ?>
+          <div class="col">
+            <div class="card h-100 shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title"><?= htmlspecialchars($s['subject']) ?></h5>
+                <p class="card-text">Student: <?= htmlspecialchars($s['student_name']) ?></p>
+                <p class="card-text">Date: <?= date("M d, Y", strtotime($s['session_date'])) ?></p>
+                <p class="card-text">Time: <?= htmlspecialchars($s['session_time_start']) ?> - <?= htmlspecialchars($s['session_time_end']) ?></p>
+              </div>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php else: ?>
+      <p style="color:#666;">No scheduled sessions yet.</p>
+    <?php endif; ?>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

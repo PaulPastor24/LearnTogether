@@ -1,0 +1,56 @@
+body { margin:0; font-family:Inter, Arial; background:#f0f2f5; }
+.container { display:flex; height:100vh; }
+.sidebar { width:25%; background:#fff; border-right:1px solid #ddd; display:flex; flex-direction:column; }
+.sidebar-header { padding:15px; font-weight:bold; font-size:16px; border-bottom:1px solid #ddd; background:#f9fafb; }
+.contact { padding:12px 15px; border-bottom:1px solid #f1f1f1; cursor:pointer; display:flex; align-items:center; transition:0.2s; }
+.contact a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    width: 100%;
+}
+.contact:hover { background:#f5f5f5; }
+.contact.active { background:#e2f8e7; font-weight:bold; }
+.contact-name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.chat-area { flex:1; display:flex; flex-direction:column; background:#dbece0; }
+.chat-header { background:white; padding:15px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #ddd; }
+.video-btn-small {
+    background: linear-gradient(135deg, #4f46e5, #6b63ff);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.25s ease;
+    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+}
+
+.video-btn-small:hover {
+    transform: scale(1.12);
+    box-shadow: 0 6px 14px rgba(79, 70, 229, 0.5);
+}
+
+.video-btn-small:active {
+    transform: scale(0.95);
+}
+
+.messages { flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; }
+.message { padding:10px 14px; border-radius:20px; word-wrap:break-word; max-width:70%; display:inline-block; }
+.message.me { align-self:flex-end; background:#d2f3d6; }
+.message.other { align-self:flex-start; background:white; }
+.input-area { display:flex; padding:10px; background:white; border-top:1px solid #ddd; align-items:center; gap:10px; }
+.input-area input[type="text"] { flex:1; padding:12px; border-radius:20px; border:1px solid #ccc; }
+.file-btn, .image-btn { display:flex; align-items:center; justify-content:center; width:40px; height:40px; background:#4f46e5; border-radius:50%; color:white; font-size:18px; cursor:pointer; }
+input[type="file"] { display:none; }
+.input-area button { padding:12px 20px; background:#4f46e5; color:white; border:none; border-radius:20px; cursor:pointer; }
+@media(max-width:768px){
+    .container { flex-direction:column; }
+    .sidebar { width:100%; height:150px; display:flex; overflow-x:auto; }
+    .chat-area { flex:1; }
+    .contact { min-width:150px; text-align:center; }
+}

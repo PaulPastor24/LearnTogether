@@ -39,6 +39,36 @@ const RESERVATION_ID = "<?= $reservationId ?>";
 let client;
 let localTracks = { audioTrack: null, videoTrack: null };
 let remoteUsers = {};
+let micEnabled = true;
+let camEnabled = true;
+
+async function leaveCall() {
+    for (let t of Object.values(localTracks)) if (t) { t.stop(); t.close(); }
+    remoteUsers = {};
+    if (client) await client.leave();
+    window.location.href = document.referrer || '/LearnTogether/';
+}
+
+function setupControls() {
+    const micBtn = document.getElementById("toggleMic");
+    const camBtn = document.getElementById("toggleCam");
+
+    micBtn.onclick = async () => {
+        micEnabled = !micEnabled;
+        await localTracks.audioTrack.setEnabled(micEnabled);
+        micBtn.innerText = micEnabled ? "🎤 Mute" : "🎤 Unmute";
+        micBtn.style.backgroundColor = micEnabled ? "#28a745" : "#f44336";
+    };
+
+    camBtn.onclick = async () => {
+        camEnabled = !camEnabled;
+        await localTracks.videoTrack.setEnabled(camEnabled);
+        camBtn.innerText = camEnabled ? "📷 Camera Off" : "📷 Camera On";
+        camBtn.style.backgroundColor = camEnabled ? "#28a745" : "#f44336";
+    };
+
+    document.getElementById("leaveBtn").onclick = leaveCall;
+}
 
 async function startMeeting() {
     try {
@@ -48,16 +78,26 @@ async function startMeeting() {
 
         client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
-        client.on("user-joined", user => { remoteUsers[user.uid] = user; });
+        client.on("user-published", async (user, mediaType) => {
+            await client.subscribe(user, mediaType);
+            subscribeToUser(user);
+        });
+
         client.on("user-left", user => {
             delete remoteUsers[user.uid];
             const div = document.getElementById(`user-${user.uid}`);
             if (div) div.remove();
         });
 
-        const uid = await client.join(AGORA_APP_ID, data.channelName, data.token, data.uid);
+        const uid = await client.join(
+            AGORA_APP_ID,
+            data.channelName,
+            data.token,
+            data.uid
+        );
 
-        [localTracks.audioTrack, localTracks.videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+        [localTracks.audioTrack, localTracks.videoTrack] =
+            await AgoraRTC.createMicrophoneAndCameraTracks();
 
         const localDiv = document.createElement("div");
         localDiv.className = "video-box";
@@ -66,13 +106,6 @@ async function startMeeting() {
         localTracks.videoTrack.play(localDiv);
 
         await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
-
-        Object.values(client.remoteUsers).forEach(user => subscribeToUser(user));
-
-        client.on("user-published", async (user, mediaType) => {
-            await client.subscribe(user, mediaType);
-            subscribeToUser(user);
-        });
 
         setupControls();
     } catch (err) {
@@ -96,30 +129,8 @@ function subscribeToUser(user) {
     if (user.audioTrack) user.audioTrack.play();
 }
 
-function setupControls() {
-    document.getElementById("toggleMic").onclick = () => {
-        if (!localTracks.audioTrack) return;
-        const enabled = localTracks.audioTrack.isEnabled;
-        localTracks.audioTrack.setEnabled(!enabled);
-        document.getElementById("toggleMic").innerText = enabled ? "🎤 Unmute" : "🎤 Mute";
-    };
-    document.getElementById("toggleCam").onclick = () => {
-        if (!localTracks.videoTrack) return;
-        const enabled = localTracks.videoTrack.isEnabled;
-        localTracks.videoTrack.setEnabled(!enabled);
-        document.getElementById("toggleCam").innerText = enabled ? "📷 Camera On" : "📷 Camera Off";
-    };
-    document.getElementById("leaveBtn").onclick = leaveCall;
-}
-
-async function leaveCall() {
-    for (let t of Object.values(localTracks)) if (t) { t.stop(); t.close(); }
-    remoteUsers = {};
-    if (client) await client.leave();
-    window.location.href = document.referrer || '/LearnTogether/';
-}
-
 startMeeting();
 </script>
+
 </body>
 </html>
