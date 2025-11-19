@@ -69,7 +69,6 @@ aside {
     border-radius: 10px;
     color: var(--accent-2);
     text-decoration: none;
-    font-weight: 600;
 }
 
 .navlinks a.active {
@@ -212,21 +211,23 @@ h1 {
     color: var(--accent-2);
 }
 
-  #videoContainer {
+#videoContainer {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     margin-top: 20px;
     justify-content: center;
-  }
-  .video-box {
+}
+
+.video-box {
     width: 300px;
     height: 225px;
     border: 2px solid #444;
     position: relative;
     background-color: black;
-  }
-  .video-label {
+ }
+
+.video-label {
     position: absolute;
     bottom: 5px;
     left: 5px;
@@ -234,17 +235,26 @@ h1 {
     background-color: rgba(0,0,0,0.5);
     padding: 2px 5px;
     border-radius: 4px;
-  }
-  #callControls {
+}
+
+#callControls {
     margin-top: 10px;
     display: flex;
     gap: 10px;
     justify-content: center;
-  }
+}
+
+  
 
 @media (max-width:940px){
     .app{grid-template-columns:1fr}
     aside{display:none}
     .nav{left:18px; right:18px}
     main{margin-left:0; padding-top:110px}
+}
+
+@media (min-width: 768px) {
+  main {
+    margin-left: 255px;
+  }
 }

@@ -2,13 +2,12 @@
 session_start();
 require '../db.php';
 
-$user_id = $_SESSION['user_id'];
-if (!isset($user_id)) {
+$user_id = $_SESSION['user_id'] ?? null;
+if (!$user_id) {
     header("Location: /LearnTogether/login.php");
     exit;
 }
 
-// Get tutor ID
 $stmt = $pdo->prepare("SELECT id AS tutor_id FROM tutors WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $tutor_row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -17,29 +16,26 @@ if (!$tutor_row) {
     header("Location: ../roleSelector.php");
     exit;
 }
-
 $tutor_id = $tutor_row['tutor_id'];
 
-// Handle add subject
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add') {
+$stmt = $pdo->prepare("SELECT first_name, last_name FROM users WHERE id = ?");
+$stmt->execute([$user_id]);
+$tutor = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $subject_name = trim($_POST['subject_name'] ?? '');
     $description = trim($_POST['description'] ?? '');
     $topics = trim($_POST['topics'] ?? '');
-    if ($subject_name) {
+
+    if ($_POST['action'] === 'add' && $subject_name) {
         $stmt = $pdo->prepare("INSERT INTO tutor_subjects (tutor_id, subject_name, description, topics) VALUES (?, ?, ?, ?)");
         $stmt->execute([$tutor_id, $subject_name, $description, $topics]);
         header("Location: subjects.php");
         exit;
     }
-}
 
-// Handle edit subject
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'edit') {
-    $subject_id = $_POST['subject_id'];
-    $subject_name = trim($_POST['subject_name'] ?? '');
-    $description = trim($_POST['description'] ?? '');
-    $topics = trim($_POST['topics'] ?? '');
-    if ($subject_name) {
+    if ($_POST['action'] === 'edit' && $subject_name) {
+        $subject_id = $_POST['subject_id'];
         $stmt = $pdo->prepare("UPDATE tutor_subjects SET subject_name = ?, description = ?, topics = ? WHERE id = ? AND tutor_id = ?");
         $stmt->execute([$subject_name, $description, $topics, $subject_id, $tutor_id]);
         header("Location: subjects.php");
@@ -47,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Handle delete subject
 if (isset($_GET['delete_id'])) {
     $delete_id = $_GET['delete_id'];
     $stmt = $pdo->prepare("DELETE FROM tutor_subjects WHERE id = ? AND tutor_id = ?");
@@ -56,7 +51,6 @@ if (isset($_GET['delete_id'])) {
     exit;
 }
 
-// Fetch tutor subjects
 $stmt = $pdo->prepare("SELECT * FROM tutor_subjects WHERE tutor_id = ? ORDER BY id DESC");
 $stmt->execute([$tutor_id]);
 $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -65,80 +59,98 @@ $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tutor Subjects - LearnTogether</title>
-<link rel="stylesheet" href="../CSS/style2.css">
-<link rel="stylesheet" href="../CSS/navbar.css">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tutor Subjects - LearnTogether</title>
+  <link rel="stylesheet" href="../CSS/style2.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="app">
   <aside>
-    <div class="sidebar">
+    <div class="sidebar" style="width: 255px; height: 345px;">
       <div class="profile">
-        <div class="avatar"><?= strtoupper($user_id[0]) ?></div>
+        <div class="avatar">
+          <?= isset($tutor['first_name'], $tutor['last_name']) 
+              ? strtoupper($tutor['first_name'][0]) 
+              : 'T' ?>
+        </div>
         <div>
-          <div style="font-weight:700">Tutor</div>
+          <div style="font-weight:750"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
           <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
         </div>
       </div>
-      <nav class="navlinks">
+      <nav class="navlinks fw-bold" style="margin-top: 12px;">
         <a href="tutorDashboard.php">🏠 Overview</a>
+        <a class="active" href="subjects.php">📚 Subjects</a>
         <a href="scheduleTutor.php">📅 Schedule</a>
         <a href="requests.php">✉️ Requests</a>
-        <a class="active" href="subjects.php">📚 Subjects</a>
         <a href="../logout.php">🚪 Logout</a>
       </nav>
     </div>
   </aside>
 
-  <div class="nav">
-    <div class="logo">
-      <div class="mark">LT</div>
-      <div>LearnTogether</div>
+  <div class="nav" style="height: 85px;">
+      <div class="logo">
+        <div class="mark" style="margin-left: 20px;">LT</div>
+        <div>LearnTogether</div>
+      </div>
+      <div class="search">
+        <input type="text" placeholder="Search students, subjects..." />
+      </div>
+      <div class="nav-actions"> 
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="profile-info">
+            <div><?= htmlspecialchars($tutor['first_name'] ?? 'Tutor') ?></div>
+            <div>Tutor</div>
+          </div>
+          <div class="avatar">
+            <?= isset($tutor['first_name'], $tutor['last_name']) ? strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]) : 'T' ?>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <main>
+  <main class="p-3" style="margin-left: 260px; margin-top: 100px;">
     <h1>Manage Your Subjects</h1>
 
-    <!-- Add Subject Form -->
-    <div class="card mb-4 shadow-sm" style="max-width:600px;">
-        <div class="card-header" style="font-weight:700; font-size:1.2rem;">
-            Manage Your Subjects
-        </div>
-        <div class="card-body">
-            <form method="POST" style="display:flex;flex-direction:column;gap:15px;">
-            <input type="hidden" name="action" value="add">
+    <div class="mb-4">
+        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#addSubjectForm" aria-expanded="false" aria-controls="addSubjectForm">
+            + Add New Subject
+        </button>
+    </div>
 
-            <div class="mb-3">
-                <label for="subject_name" class="form-label">Subject Name</label>
-                <input type="text" name="subject_name" id="subject_name" class="form-control" placeholder="Enter subject name" required>
+    <div class="collapse" id="addSubjectForm">
+        <div class="card mb-4 shadow-sm" style="max-width:600px;">
+            <div class="card-header" style="font-weight:700; font-size:1.2rem;">
+                Add New Subject
             </div>
-
-            <div class="mb-3">
-                <label for="description" class="form-label">Short Description</label>
-                <textarea name="description" id="description" class="form-control" rows="3" placeholder="Brief description of your expertise"></textarea>
+            <div class="card-body">
+                <form method="POST" style="display:flex;flex-direction:column;gap:15px;">
+                    <input type="hidden" name="action" value="add">
+                    <div class="mb-3">
+                        <label for="subject_name" class="form-label">Subject Name</label>
+                        <input type="text" name="subject_name" id="subject_name" class="form-control" placeholder="Enter subject name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Short Description</label>
+                        <textarea name="description" id="description" class="form-control" rows="3" placeholder="Brief description of your expertise"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="topics" class="form-label">Topics (comma separated)</label>
+                        <input type="text" name="topics" id="topics" class="form-control" placeholder="e.g. Algebra, Calculus, Physics">
+                    </div>
+                    <button type="submit" class="btn btn-success">Add Subject</button>
+                </form>
             </div>
-
-            <div class="mb-3">
-                <label for="topics" class="form-label">Topics (comma separated)</label>
-                <input type="text" name="topics" id="topics" class="form-control" placeholder="e.g. Algebra, Calculus, Physics">
-            </div>
-
-            <button type="submit" class="btn btn-primary">Add Subject</button>
-            </form>
         </div>
     </div>
- 
-    <!-- Subjects Cards Grid -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-2">
       <?php if (count($subjects) > 0): ?>
         <?php foreach ($subjects as $sub): ?>
           <div class="col">
-            <div class="card h-100 shadow-sm">
+            <div class="card card-subject h-100 shadow-sm">
               <div class="card-body">
                 <h5 class="card-title"><?= htmlspecialchars($sub['subject_name']) ?></h5>
                 <p class="card-text"><em><?= htmlspecialchars($sub['description']) ?></em></p>
@@ -151,7 +163,6 @@ $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
           </div>
 
-          <!-- Edit Modal -->
           <div class="modal fade" id="editModal<?= $sub['id'] ?>" tabindex="-1" aria-labelledby="editModalLabel<?= $sub['id'] ?>" aria-hidden="true">
             <div class="modal-dialog">
               <div class="modal-content">

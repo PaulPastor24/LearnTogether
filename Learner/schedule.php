@@ -31,7 +31,6 @@
   <title>My Schedule — LearnTogether</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../CSS/style2.css">
-  <link rel="stylesheet" href="../CSS/navbar.css">
 </head>
 <body>
   <div class="app">
