@@ -71,33 +71,34 @@ $avatar_initial = strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]);
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tutor Requests — LearnTogether</title>
+<link rel="stylesheet" href="../CSS/topics2.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous"><link rel="stylesheet" href="../CSS/style2.css">
 </head>
 <body class="bg-light">
 
 <div class="app d-flex">
     <aside>
-    <div class="sidebar" style="width: 255px; height: 345px;">
-      <div class="profile">
-        <div class="avatar">
-          <?= isset($tutor['first_name'], $tutor['last_name']) 
-              ? strtoupper($tutor['first_name'][0]) 
-              : 'T' ?>
+        <div class="sidebar" style="width: 255px; height: 345px;">
+        <div class="profile">
+            <div class="avatar">
+            <?= isset($tutor['first_name'], $tutor['last_name']) 
+                ? strtoupper($tutor['first_name'][0]) 
+                : 'T' ?>
+            </div>
+            <div>
+            <div style="font-weight:750"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
+            <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
+            </div>
         </div>
-        <div>
-          <div style="font-weight:750"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
-          <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
+        <nav class="navlinks fw-bold" style="margin-top: 12px;">
+            <a href="tutorDashboard.php">🏠 Overview</a>
+            <a href="subjects.php">📚 Subjects</a>
+            <a href="scheduleTutor.php">📅 Schedule</a>
+            <a class="active" href="requests.php">✉️ Requests</a>
+            <a href="../logout.php">🚪 Logout</a>
+        </nav>
         </div>
-      </div>
-      <nav class="navlinks fw-bold" style="margin-top: 12px;">
-        <a href="tutorDashboard.php">🏠 Overview</a>
-        <a href="subjects.php">📚 Subjects</a>
-        <a href="scheduleTutor.php">📅 Schedule</a>
-        <a class="active" href="requests.php">✉️ Requests</a>
-        <a href="../logout.php">🚪 Logout</a>
-      </nav>
-    </div>
-  </aside>
+    </aside>
 
   <div class="nav" style="height: 85px;">
       <div class="logo">

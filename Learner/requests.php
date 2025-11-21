@@ -54,7 +54,7 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
                 <div>
                     <div style="font-weight:700"><?= htmlspecialchars($user['first_name'].' '.$user['last_name']) ?></div>
-                    <div style="font-size:13px;color:var(--muted)">Active <?= htmlspecialchars(ucfirst($user['role'])) ?></div>
+                    <div style="font-size:13px;color:var(--muted)">Active Learner</div>
                 </div>
             </div>
             <nav class="navlinks">

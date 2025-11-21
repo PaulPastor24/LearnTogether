@@ -1,0 +1,40 @@
+.nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    z-index: 1001;
+    background: #f6fbf6;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.sidebar {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    width: 255px;
+    height: 345px;
+    border-radius: 0 16px 16px 0;
+    box-shadow: 0 6px 18px rgba(11, 22, 14, 0.06);
+    background: linear-gradient(180deg, #ffffff, #f7fffb);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    z-index: 1000;
+}
+
+@media (max-width: 940px) {
+    .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        border-radius: 0;
+        margin-bottom: 0;
+    }
+
+    .nav {
+        height: 80px;
+    }
+}
