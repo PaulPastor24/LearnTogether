@@ -1,62 +1,94 @@
-/* Make layout responsive & aligned properly */
 main {
-  margin-left: 270px;
-  padding: 40px 20px;
+    margin-left: 400px;  
+    margin-top: -350px;
+    padding: 40px 50px;
 }
 
-/* Topic badges aesthetic */
-.topic-badge {
-  background: #e7f9ec;
-  padding: 5px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  margin: 2px;
-  display: inline-block;
+main h1 {
+    text-align: start;
+    font-weight: 800;
+    margin-bottom: 40px;
 }
 
-/* Add subject box UI */
-.add-box {
-  height: 230px;
-  border-radius: 15px;
-  background: #f4f8f4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: .3s ease;
+.subjects-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    width: 100%;
+    margin-top: 10px;
 }
 
-.add-box:hover {
-  background: #e3f3e6;
-  transform: translateY(-4px);
+@media (max-width: 992px) {
+    .subjects-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
-.topic-input-row {
-  display:flex; 
-  gap:10px; 
-  margin-bottom:10px;
+@media (max-width: 576px) {
+    .subjects-grid {
+        grid-template-columns: 1fr;
+    }
 }
-
-.topic-field { flex:1; }
 
 .subject-card {
-    border-radius:15px;
-    background:white;
-    padding:20px;
-    min-height: 180px;
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 40px;
+    width: 400px;
+    height: 300px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform .15s ease, box-shadow .15s ease;
 }
 
-/* Fix card container spacing */
-main .row {
-    display:flex;
-    flex-wrap:wrap;
-    gap: 20px;
+.subject-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.18);
 }
 
-/* Make. columns responsive */
-.col-lg-4, .col-md-6 {
-    display:flex;
+.subject-card h4 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.subject-card p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 12px;
+}
+
+.topic-badge {
+    background: #d8f4db;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    margin: 4px 4px 0 0;
+    display: inline-block;
+    font-weight: 500;
+}
+
+.subject-card.add-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+}
+
+.subject-card.add-card:hover {
+    background: #f5fff3;
+}
+
+.add-icon {
+    font-size: 42px;
+    color: #0d6efd;
+    font-weight: bold;
+}
+
+.add-label {
+    margin-top: 8px;
+    font-weight: 700;
 }

@@ -1,0 +1,164 @@
+:root{
+  --calendar-bg: #f7fff7;
+  --cell-border: #e6efe9;
+  --accent: #0f766e;
+  --accent-dark: #065f46;
+  --session-bg: #9dc9b6;
+  --session-bg-2: #7fb99f;
+  --slot-height: 64px;
+  --radius:12px;
+  --sidebar-space: 400px; /* matches calendar.php main left margin */
+  --page-padding: 24px;
+}
+
+/* page/main layout tweaks */
+main.calendar-main{
+  margin-left: var(--sidebar-space);
+  margin-top: -10px;
+  padding: var(--page-padding);
+  box-sizing: border-box;
+  min-height: calc(100vh - 120px);
+  background: linear-gradient(180deg,#f6fbf6 0%, #ecfdf3 100%);
+}
+
+/* wrapper and header */
+.calendar-wrapper{
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 6px 18px rgba(11,22,14,0.03);
+  position: relative;
+  overflow: visible;
+}
+
+.calendar-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom: 14px;
+}
+.calendar-title{
+  font-size:20px;
+  font-weight:700;
+  color: var(--accent-dark);
+}
+.calendar-actions .btn{
+  border-radius: 8px;
+}
+
+/* calendar table */
+.calendar-table{
+  width:100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(11,22,14,0.03);
+}
+
+/* header cells */
+.calendar-table thead th{
+  background: #f1fbf6;
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--cell-border);
+  font-weight:700;
+  color: var(--accent-dark);
+}
+
+/* time column */
+.time-col{
+  width: 120px;
+  padding: 12px;
+  background: #ffffff;
+  border-right: 1px solid var(--cell-border);
+  font-weight:700;
+  color: var(--accent-dark);
+  vertical-align: middle;
+}
+
+/* body cells */
+.calendar-table tbody td{
+  border-bottom: 1px solid var(--cell-border);
+  border-right: 1px solid var(--cell-border);
+  vertical-align: top;
+  height: var(--slot-height);
+  padding: 6px;
+  position: relative;
+  background: #fbfffB;
+  min-width: 120px;
+}
+
+/* last row cleanup */
+.calendar-table tbody tr:last-child td{
+  border-bottom: none;
+}
+
+.slot-cell{
+  min-height: var(--slot-height);
+  padding: 8px;
+  overflow: visible;
+}
+
+/* session block appearance */
+.session-block{
+  background: linear-gradient(180deg,var(--session-bg),var(--session-bg-2));
+  color: #043018;
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  box-shadow: 0 2px 6px rgba(11,22,14,0.06);
+  max-width: 100%;
+  word-wrap: break-word;
+}
+.session-subject{
+  font-weight:700;
+  margin-bottom:4px;
+}
+.session-student{
+  font-size:12px;
+  opacity:0.9;
+}
+
+/* floating Add Schedule button (bottom-right of wrapper) */
+.add-schedule-btn{
+  display:inline-block;
+  padding:10px 16px;
+  border-radius: 999px;
+  background: linear-gradient(180deg,#38a169,#2f855a);
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(11,22,14,0.08);
+  position: absolute;
+  right: 20px;
+  bottom: 18px;
+  font-weight:600;
+  border: none;
+}
+
+/* responsive adjustments */
+@media (max-width: 1200px){
+  :root { --sidebar-space: 320px; }
+  .time-col { width: 100px; }
+}
+@media (max-width: 940px){
+  main.calendar-main{
+    margin-left: 0;
+    padding: 16px;
+  }
+  .calendar-wrapper {
+    padding-bottom: 80px;
+  }
+  .add-schedule-btn{
+    right: 16px;
+    bottom: 12px;
+  }
+  .calendar-table thead th {
+    font-size: 13px;
+    padding: 10px 8px;
+  }
+  .time-col { display:none; }
+  .calendar-table tbody td { padding-left: 6px; }
+}

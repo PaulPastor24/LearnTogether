@@ -56,15 +56,14 @@ $learners = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tutor Dashboard - LearnTogether</title>
-<link rel="stylesheet" href="../CSS/style2.css">
+<link rel="stylesheet" href="../CSS/req.css">
 <link rel="stylesheet" href="../CSS/tutor.css">
-<link rel="stylesheet" href="../CSS/topics2.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="app">
   <aside>
-    <div class="sidebar" style="width: 255px; height: 345px;">
+    <div class="sidebar" style="width: 230px; height: 345px;">
       <div class="profile">
         <div class="avatar">
           <?= isset($tutor['first_name'], $tutor['last_name']) ? strtoupper($tutor['first_name'][0]) : 'T' ?>
@@ -78,7 +77,7 @@ $learners = $stmt->fetchAll(PDO::FETCH_ASSOC);
       <nav class="navlinks fw-bold" style="margin-top: 12px;">
         <a class="active" href="tutorDashboard.php">🏠 Overview</a>
         <a href="subjects.php">📚 Subjects</a>
-        <a href="scheduleTutor.php">📅 Schedule</a>
+        <a href="calendar.php">📅 Schedule</a>
         <a href="requests.php">✉️ Requests</a>
         <a href="../logout.php">🚪 Logout</a>
       </nav>
@@ -108,7 +107,7 @@ $learners = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
   </div>
 
-  <main>
+  <main style="padding: 40px 50px; margin-left: 300px; margin-top: -350px;">
     <h1>Welcome back, <?= htmlspecialchars($tutor['first_name']) ?> 👋</h1>
     <p>Connect, Learn, and grow </p>    
     <?php if (!empty($learners)): ?>

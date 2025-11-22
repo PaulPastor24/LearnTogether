@@ -16,7 +16,15 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 $stmt = $pdo->prepare("SELECT id FROM learners WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $learner = $stmt->fetch(PDO::FETCH_ASSOC);
-$learner_id = $learner['id'];
+$learner_id = $learner['id'] ?? null;
+
+if (isset($_GET['delete']) && $learner_id) {
+    $delete_id = (int) $_GET['delete'];
+    $stmt = $pdo->prepare("DELETE FROM reservations WHERE id = ? AND learner_id = ?");
+    $stmt->execute([$delete_id, $learner_id]);
+    header("Location: requests.php");
+    exit;
+}
 
 $stmt = $pdo->prepare("
     SELECT 
@@ -111,14 +119,20 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <span style="color:<?= $statusColor ?>;font-weight:600;"><?= htmlspecialchars($req['status']) ?></span>
                             </td>
                             <td style="padding:10px;">
-                            <?php if ($req['status'] === 'Confirmed'): ?>
-                                <button onclick="window.open('../agoraconvo.php?user=<?= $req['tutor_id'] ?>&reservation_id=<?= $req['reservation_id'] ?>', '_blank')"
-                                        style="padding:5px 10px;background:#4f46e5;color:white;border:none;border-radius:5px;">
-                                    View
-                                </button>
-                            <?php else: ?>
-                                <span style="color:#999;">N/A</span>
-                            <?php endif; ?>
+                                <?php if ($req['status'] === 'Confirmed'): ?>
+                                    <button onclick="window.open('../agoraconvo.php?user=<?= $req['tutor_id'] ?>&reservation_id=<?= $req['reservation_id'] ?>', '_blank')"
+                                            style="padding:5px 10px;background:#4f46e5;color:white;border:none;border-radius:5px;">
+                                        View
+                                    </button>
+                                <?php elseif ($req['status'] === 'Rejected'): ?>
+                                    <a href="requests.php?delete=<?= $req['reservation_id'] ?>"
+                                       onclick="return confirm('Delete this rejected request?');"
+                                       style="display:inline-block;padding:6px 10px;background:#ef4444;color:#fff;border-radius:6px;text-decoration:none;">
+                                        Delete
+                                    </a>
+                                <?php else: ?>
+                                    <span style="color:#999;">N/A</span>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

@@ -64,22 +64,15 @@ $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
 <meta charset="UTF-8">
 <title>Tutor Subjects - LearnTogether</title>
-<link rel="stylesheet" href="../CSS/style2.css">
-<link rel="stylesheet" href="../CSS/topics2.css">
+<link rel="stylesheet" href="../CSS/req.css">
+<link rel="stylesheet" href="../CSS/subjects.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-<style>
-.topic-badge { background:#c9f3ce; padding:5px 12px; border-radius:20px; font-size:13px; margin:3px; display:inline-block; }
-.topic-input-row { display:flex; gap:10px; margin-bottom:10px; }
-.topic-field { flex:1; }
-.subject-card { border-radius:15px; background:white; padding:20px; }
-</style>
 </head>
 <body>
 
 <div class="app">
   <aside>
-    <div class="sidebar" style="width:255px;height:345px;">
+    <div class="sidebar" style="width:230px;height:345px;">
       <div class="profile">
         <div class="avatar">
           <?= strtoupper($tutor['first_name'][0]) ?>
@@ -93,7 +86,7 @@ $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
       <nav class="navlinks fw-bold" style="margin-top:12px;">
         <a href="tutorDashboard.php">🏠 Overview</a>
         <a class="active" href="subjects.php">📚 Subjects</a>
-        <a href="scheduleTutor.php">📅 Schedule</a>
+        <a href="calendar.php">📅 Schedule</a>
         <a href="requests.php">✉️ Requests</a>
         <a href="../logout.php">🚪 Logout</a>
       </nav>
@@ -121,12 +114,11 @@ $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
   </div>
 
-  <main class="p-3" style="margin-left:260px;margin-top:100px;">
-
+  <main class="p-3">
     <h1 class="mb-4">Manage Your Subjects</h1>
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <div class="subjects-grid">
       <?php foreach ($subjects as $sub): ?>
-        <div class="col-lg-4 col-md-6">
+        <div>
             <div class="subject-card shadow-sm">
 
                 <h4 class="fw-bold"><?= htmlspecialchars($sub['subject_name']) ?></h4>
@@ -188,7 +180,7 @@ $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
         <?php endforeach; ?>
 
-        <div class="col-lg-4 col-md-6">
+        <div>
             <div class="subject-card shadow-sm d-flex align-items-center justify-content-center"
                 style="cursor:pointer;"
                 data-bs-toggle="modal" data-bs-target="#addSubjectModal">
