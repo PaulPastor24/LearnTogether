@@ -4,7 +4,7 @@ require 'vendor/autoload.php';
 $client = new Google_Client();
 
 $client->setClientId("630084650794-7dma8caltgmf1a97bc9411qn9g0cs71e.apps.googleusercontent.com");
-$client->setClientSecret("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");
+$client->setClientSecret("messenger");
 
 $host = $_SERVER['HTTP_HOST'];
 $folder = dirname($_SERVER['PHP_SELF']); 
