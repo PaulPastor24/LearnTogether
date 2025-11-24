@@ -34,6 +34,7 @@ $stmt = $pdo->prepare("
         r.time AS session_time,
         r.status,
         t.id AS tutor_id,
+        u.id AS tutor_user_id,
         u.first_name AS tutor_first_name,
         u.last_name AS tutor_last_name
     FROM reservations r
@@ -76,10 +77,26 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </aside>
 
-    <div class="nav">
-        <div class="logo">
-            <div class="mark">LT</div>
-            <div style="font-weight:700">LearnTogether</div>
+    <div class="nav" role="navigation">
+            <div class="logo" style="display:flex; align-items:center;">
+                <div>
+                    <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;">
+                </div>
+                <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
+            </div>
+        <div class="search">
+            <input placeholder="Search tutors, subjects or topics" />
+        </div>
+        <div class="nav-actions">
+            <div style="display:flex;align-items:center;gap:8px">
+                <div style="text-align:right;margin-right:6px">
+                    <div style="font-weight:700"><?= htmlspecialchars($user['first_name']) ?></div>
+                    <div style="font-size:12px;color:var(--muted)">Learner</div>
+                </div>
+                <div class="avatar" style="width:40px;height:40px;border-radius:10px">
+                    <?= strtoupper(substr($user['first_name'], 0, 1) . substr($user['last_name'], 0, 1)) ?>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -120,7 +137,7 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </td>
                             <td style="padding:10px;">
                                 <?php if ($req['status'] === 'Confirmed'): ?>
-                                    <button onclick="window.open('../agoraconvo.php?user=<?= $req['tutor_id'] ?>&reservation_id=<?= $req['reservation_id'] ?>', '_blank')"
+                                    <button onclick="window.open('../agoraconvo.php?user=<?= $req['tutor_user_id'] ?>&reservation_id=<?= $req['reservation_id'] ?>', '_blank')"
                                             style="padding:5px 10px;background:#4f46e5;color:white;border:none;border-radius:5px;">
                                         View
                                     </button>

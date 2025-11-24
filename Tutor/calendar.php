@@ -9,7 +9,6 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-/* find tutor id for current user */
 $stmt = $pdo->prepare("SELECT id AS tutor_id FROM tutors WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $tutor_row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -19,25 +18,27 @@ if (!$tutor_row) {
 }
 $tutor_id = $tutor_row['tutor_id'];
 
-/* fetch scheduled sessions for this tutor */
-$confirmed_stmt = $pdo->prepare("
-    SELECT r.id AS reservation_id, r.subject, r.date AS session_date, r.time AS session_time,
-           CONCAT(u.first_name, ' ', u.last_name) AS student_name
-    FROM reservations r
-    JOIN learners l ON r.learner_id = l.id
-    JOIN users u ON l.user_id = u.id
-    WHERE r.tutor_id = ? AND r.status = 'Scheduled'
-    ORDER BY r.date ASC, r.time ASC
-");
-$confirmed_stmt->execute([$tutor_id]);
-$confirmed_sessions = $confirmed_stmt->fetchAll(PDO::FETCH_ASSOC);
-
-/* tutor user info for sidebar */
 $stmt = $pdo->prepare("SELECT first_name, last_name FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $tutor = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$tutor_row) {
+    header("Location: ../roleSelector.php");
+    exit;
+}
+$tutor_id = $tutor_row['tutor_id'];
 
-/* build grid structure */
+$sess_stmt = $pdo->prepare("
+    SELECT s.id, s.subject, s.date AS session_date, s.time AS session_time,
+           CONCAT(u.first_name,' ',u.last_name) AS student_name
+    FROM schedules s
+    JOIN learners l ON s.learner_id = l.id
+    JOIN users u ON l.user_id = u.id
+    WHERE s.tutor_id = ?
+    ORDER BY s.date ASC, s.time ASC
+");
+$sess_stmt->execute([$tutor_id]);
+$confirmed_sessions = $sess_stmt->fetchAll(PDO::FETCH_ASSOC);
+
 $weekdays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 $times = [];
 for ($h = 8; $h < 20; $h++) {
@@ -47,28 +48,24 @@ for ($h = 8; $h < 20; $h++) {
 }
 
 $grid = [];
-for ($i = 0; $i < count($times); $i++) {
-    $grid[$i] = array_fill(0, 7, []);
-}
+for ($i = 0; $i < count($times); $i++) $grid[$i] = array_fill(0, 7, []);
 
-/* place sessions into grid */
 foreach ($confirmed_sessions as $s) {
-    $date = $s['session_date'];
-    $time = $s['session_time'];
-    $ts = strtotime($date . ' ' . $time);
+    $ts = strtotime($s['session_date'] . ' ' . $s['session_time']);
     if ($ts === false) continue;
-    $dayIndex = (int)date('N', $ts) - 1; // 0=Mon .. 6=Sun
-    $hour = (int)date('H', $ts);
+    $dayIndex = (int)date('N',$ts)-1;
+    $hour = (int)date('H',$ts);
     $slotIndex = $hour - 8;
     if ($slotIndex < 0 || $slotIndex >= count($times)) continue;
     $grid[$slotIndex][$dayIndex][] = [
-        'subject' => $s['subject'],
-        'student' => $s['student_name'],
-        'time' => date('H:i', $ts),
-        'id' => $s['reservation_id']
+        'subject'=>$s['subject'],
+        'student'=>$s['student_name'],
+        'time'=>date('H:i',$ts),
+        'id'=>$s['id']
     ];
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -162,8 +159,8 @@ foreach ($confirmed_sessions as $s) {
           </tbody>
         </table>
 
-        <a class="add-schedule-btn" href="scheduleTutor.php">Add Schedule</a>
       </div>
+              <a class="add-schedule-btn" href="scheduleTutor.php">Add Schedule</a>
     </main>
   </div>
 

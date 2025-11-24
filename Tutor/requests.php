@@ -7,22 +7,6 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-if (isset($_GET['approve'])) {
-    $id = $_GET['approve'];
-    $stmt = $pdo->prepare("UPDATE reservations SET status = 'Confirmed' WHERE id = ?");
-    $stmt->execute([$id]);
-    header("Location: requests.php");
-    exit;
-}
-
-if (isset($_GET['reject'])) {
-    $id = $_GET['reject'];
-    $stmt = $pdo->prepare("UPDATE reservations SET status = 'Rejected' WHERE id = ?");
-    $stmt->execute([$id]);
-    header("Location: requests.php");
-    exit;
-}
-
 $user_id = $_SESSION['user_id'];
 
 $stmt = $pdo->prepare("
@@ -39,7 +23,31 @@ if (!$tutor) {
     exit;
 }
 
-$tutor_id = $tutor['tutor_id'];
+$tutor_id = (int)$tutor['tutor_id'];
+
+if (isset($_GET['approve'])) {
+    $id = (int)$_GET['approve'];
+    $stmt = $pdo->prepare("UPDATE reservations SET status = 'Confirmed' WHERE id = ? AND tutor_id = ?");
+    $stmt->execute([$id, $tutor_id]);
+    header("Location: requests.php");
+    exit;
+}
+
+if (isset($_GET['reject'])) {
+    $id = (int)$_GET['reject'];
+    $stmt = $pdo->prepare("UPDATE reservations SET status = 'Rejected' WHERE id = ? AND tutor_id = ?");
+    $stmt->execute([$id, $tutor_id]);
+    header("Location: requests.php");
+    exit;
+}
+
+if (isset($_GET['delete'])) {
+    $id = (int)$_GET['delete'];
+    $stmt = $pdo->prepare("DELETE FROM reservations WHERE id = ? AND tutor_id = ?");
+    $stmt->execute([$id, $tutor_id]);
+    header("Location: requests.php");
+    exit;
+}
 
 $stmt = $pdo->prepare("
     SELECT 
@@ -64,7 +72,6 @@ $tutor_first = htmlspecialchars($tutor['first_name']);
 $tutor_last = htmlspecialchars($tutor['last_name']);
 $avatar_initial = strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -72,8 +79,7 @@ $avatar_initial = strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]);
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Tutor Requests — LearnTogether</title>
 <link rel="stylesheet" href="../CSS/req.css">
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 </head>
 <body>
 
@@ -136,33 +142,40 @@ $avatar_initial = strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]);
                     <th>Subject</th>
                     <th>Date</th>
                     <th>Time</th>
-                    <th>Status</th>
+                    <th class="text-center">Status</th>
                     <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   <?php foreach ($requests as $req): ?>
+                    <?php
+                      $status = $req['status'];
+                      $color = $status === 'Pending' ? '#f59e0b'
+                             : ($status === 'Confirmed' ? '#10b981'
+                             : ($status === 'Rejected' ? '#ef4444' : '#6b7280'));
+                    ?>
                     <tr>
                       <td><?= htmlspecialchars($req['learner_first_name'].' '.$req['learner_last_name']) ?></td>
                       <td><?= htmlspecialchars($req['subject']) ?></td>
                       <td><?= htmlspecialchars($req['session_date']) ?></td>
                       <td><?= htmlspecialchars($req['session_time']) ?></td>
-                      <td>
-                        <?php
-                        $color = $req['status'] === 'Pending' ? '#f59e0b' :
-                                 ($req['status'] === 'Confirmed' ? '#10b981' :
-                                 ($req['status'] === 'Rejected' ? '#ef4444' : '#6b7280'));
-                        ?>
-                        <span class="fw-semibold" style="color:<?= $color ?>;">
-                          <?= htmlspecialchars($req['status']) ?>
+                      <td class="text-center">
+                        <span class="fw-semibold" style="color:<?= $color ?>;display:inline-block;min-width:72px;">
+                          <?= htmlspecialchars($status) ?>
                         </span>
                       </td>
                       <td>
-                        <?php if ($req['status'] === 'Pending'): ?>
+                        <?php if ($status === 'Pending'): ?>
                           <a href="requests.php?approve=<?= $req['reservation_id'] ?>" class="btn btn-success btn-sm">Approve</a>
                           <a href="requests.php?reject=<?= $req['reservation_id'] ?>" class="btn btn-danger btn-sm ms-1">Reject</a>
-                        <?php elseif ($req['status'] === 'Confirmed'): ?>
+                        <?php elseif ($status === 'Confirmed'): ?>
                           <button onclick="window.open('../agoraconvo.php?reservation_id=<?= $req['reservation_id'] ?>', '_blank')" class="btn btn-primary btn-sm">View</button>
+                        <?php elseif ($status === 'Rejected'): ?>
+                          <a href="requests.php?delete=<?= $req['reservation_id'] ?>"
+                             onclick="return confirm('Delete this rejected request?');"
+                             class="btn btn-outline-danger btn-sm">
+                            Delete
+                          </a>
                         <?php else: ?>
                           <span class="text-muted">N/A</span>
                         <?php endif; ?>

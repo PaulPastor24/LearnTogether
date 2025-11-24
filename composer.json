@@ -12,6 +12,7 @@
         }
     ],
     "require": {
-        "firebase/php-jwt": "^6.11"
+        "firebase/php-jwt": "^6.11",
+        "google/apiclient": "2.15"
     }
 }

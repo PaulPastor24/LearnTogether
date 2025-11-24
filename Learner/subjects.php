@@ -9,13 +9,31 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+// Fetch user info
 $stmt = $pdo->prepare("SELECT first_name, last_name, role FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$sub_stmt = $pdo->prepare("SELECT * FROM subjects WHERE learner_id = ?");
-$sub_stmt->execute([$user_id]);
-$subjects = $sub_stmt->fetchAll(PDO::FETCH_ASSOC);
+// Fetch learner ID
+$learner_stmt = $pdo->prepare("SELECT id FROM learners WHERE user_id = ?");
+$learner_stmt->execute([$user_id]);
+$learner = $learner_stmt->fetch(PDO::FETCH_ASSOC);
+$learner_id = $learner['id'] ?? null;
+
+// Fetch learner's confirmed reservations
+$reservations = [];
+if ($learner_id) {
+    $res_stmt = $pdo->prepare("
+        SELECT r.*, u.first_name AS tutor_first, u.last_name AS tutor_last
+        FROM reservations r
+        JOIN tutors t ON r.tutor_id = t.id
+        JOIN users u ON t.user_id = u.id
+        WHERE r.learner_id = ? AND r.status = 'Confirmed'
+        ORDER BY r.created_at DESC
+    ");
+    $res_stmt->execute([$learner_id]);
+    $reservations = $res_stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -30,25 +48,12 @@ $subjects = $sub_stmt->fetchAll(PDO::FETCH_ASSOC);
   <div class="app">
     <aside>
       <div class="sidebar">
-        <div class="profile-dropdown" id="profileDropdown" 
-            style="position:relative;cursor:pointer;">
+        <div class="profile-dropdown" id="profileDropdown" style="position:relative;cursor:pointer;">
           <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
           <div>
-            <div style="font-weight:700">
-              <?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?>
-            </div>
+            <div style="font-weight:700"><?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?></div>
             <div>
-              <?php
-                $displayRole = '';
-                if (strtolower($user['role']) === 'learner') {
-                  $displayRole = 'Learner';
-                } elseif (strtolower($user['role']) === 'tutor') {
-                  $displayRole = 'Tutor';
-                } else {
-                  $displayRole = ucfirst($user['role']);
-                }
-              ?>
-                <div style="font-size:13px;color:var(--muted)">Active <?= htmlspecialchars(ucfirst($user['role'] === 'tutor' ? 'learner' : $user['role'])) ?></div>
+              <div style="font-size:13px;color:var(--muted)">Active <?= htmlspecialchars(ucfirst($user['role'])) ?></div>
             </div>
           </div>
         <nav class="navlinks">
@@ -63,26 +68,21 @@ $subjects = $sub_stmt->fetchAll(PDO::FETCH_ASSOC);
     </aside>
 
     <div class="nav" role="navigation">
-      <div class="logo">
-        <div class="mark">LT</div>
-        <div style="font-weight:700">LearnTogether</div>
+      <div class="logo" style="display:flex; align-items:center;">
+        <div>
+          <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;">
+        </div>
+        <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
       </div>
-
       <div class="search">
         <input id="searchInput" placeholder="Search my subjects..." />
       </div>
 
       <div class="nav-actions">
-        <button class="icon-btn">🔔</button>
-        <button class="icon-btn">💬</button>
         <div style="display:flex;align-items:center;gap:8px">
           <div style="text-align:right;margin-right:6px">
-            <div style="font-weight:700">
-              <?= htmlspecialchars($user['first_name']) ?>
-            </div>
-            <div style="font-size:12px;color:var(--muted)">
-              <?= htmlspecialchars(ucfirst($user['role'])) ?>
-            </div>
+            <div style="font-weight:700"><?= htmlspecialchars($user['first_name']) ?></div>
+            <div style="font-size:12px;color:var(--muted)"><?= htmlspecialchars(ucfirst($user['role'])) ?></div>
           </div>
           <div class="avatar" style="width:40px;height:40px;border-radius:10px">
             <?= strtoupper(substr($user['first_name'], 0, 1) . substr($user['last_name'], 0, 1)) ?>
@@ -95,24 +95,19 @@ $subjects = $sub_stmt->fetchAll(PDO::FETCH_ASSOC);
       <h1>My Subjects</h1>
 
       <div class="subjects-grid" id="subjectsGrid">
-        <?php if (count($subjects) > 0): ?>
-          <?php foreach ($subjects as $sub): ?>
+        <?php if (!empty($reservations)): ?>
+          <?php foreach ($reservations as $res): ?>
             <div class="subject-card">
               <div class="subject-header">
-                <div class="icon" style="background:linear-gradient(180deg,#2563eb,#1e40af)">📚</div>
-                <div class="subject-title"><?= htmlspecialchars($sub['subject_name']) ?></div>
+                <div class="subject-title"><?= htmlspecialchars($res['subject']) ?></div>
               </div>
               <div class="subject-desc">
-                Progress: <?= htmlspecialchars($sub['progress']) ?>%<br>
-                Status: <?= htmlspecialchars($sub['status']) ?>
-              </div>
-              <div style="font-size:12px;color:gray;margin-top:5px;">
-                Added on <?= date("M d, Y", strtotime($sub['created_at'])) ?>
+                Reserved with Tutor: <?= htmlspecialchars($res['tutor_first'] . ' ' . $res['tutor_last']) ?>
               </div>
             </div>
           <?php endforeach; ?>
         <?php else: ?>
-          <p style="color:gray;">You have no enrolled subjects yet.</p>
+          <p style="color:gray;">You have no reservations yet.</p>
         <?php endif; ?>
       </div>
     </main>
@@ -128,19 +123,6 @@ $subjects = $sub_stmt->fetchAll(PDO::FETCH_ASSOC);
         const title = card.querySelector(".subject-title").textContent.toLowerCase();
         card.style.display = title.includes(term) ? "block" : "none";
       });
-    });
-
-    const profile = document.getElementById('profileDropdown');
-    const dropdown = document.getElementById('dropdownMenu');
-
-    profile.addEventListener('click', () => {
-      dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!profile.contains(e.target)) {
-        dropdown.style.display = 'none';
-      }
     });
   </script>
 </body>

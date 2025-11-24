@@ -4,6 +4,7 @@ require 'db.php';
 
 $error = "";
 
+// Handle email/password login
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
@@ -49,7 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>Log In - LearnTogether</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-
 <body class="d-flex align-items-center justify-content-center vh-100 bg-light" style="background:#f8f9fa;">
 
   <div class="card shadow p-4" style="max-width:400px;width:100%;border-radius:12px;">
@@ -71,6 +71,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
       <button type="submit" class="btn btn-success w-100" style="border-radius:6px;">Log In</button>
     </form>
+
+    <div class="text-center mt-3">
+      <a href="google-login.php" class="btn btn-light w-100" style="border:1px solid #ccc;border-radius:6px;">
+        <img src="https://developers.google.com/identity/images/g-logo.png" width="20" style="margin-right:8px;">
+        Login with Google
+      </a>
+    </div>
 
     <div class="mt-3 text-center">
       <a href="forgotPassword.php" class="text-decoration-none">Forgot password?</a><br>

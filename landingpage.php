@@ -1,115 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  <link rel="stylesheet" href="style.css">
-  <title>Learn Together</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="CSS/index.css" />
+  <title>LearnTogether</title>
 </head>
 <body>
 
-  <nav class="navbar navbar-expand-lg fixed-top shadow-sm">
-    <div class="container">
-    <a class="navbar-brand fw-bold" href="#home">
-        Learn<span style="color: rgba(11, 97, 43, 1);">Together</span>
-    </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
-          <li class="nav-item"><a class="nav-link" href="#skills">Skills</a></li>
-          <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
-        </ul>
-      </div>
+  <div class="nav shadow-sm justify-content-between">
+    <div class="logo d-flex align-items-center">
+      <div class="mark">LT</div>
+      <div class="logo-text">LearnTogether</div>
     </div>
-  </nav>
 
-    <section id="home" style="background-color: rgba(199, 236, 178, 1);">
-        <div class="container d-flex align-items-center justify-content-between min-vh-100">
-            <div class="home-text">
-                <h1 class="fw-bold">Peer-to-Peer Tutoring Platform</h1>
-                    <p class="mt-3">
-                    A collaborative learning hub designed to connect students with one another for academic support, skill-building,    and    knowledge sharing. Our platform empowers learners to become both teachers and students—offering guidance    in   subjects     they excel in while receiving help in areas they want to improve. With real-time chat, video     sessions,   and resource     sharing, the platform fosters an interactive and supportive environment where  education becomes more     accessible,    personalized, and engaging.
-                </p>
-                <a href="login.php" class="btn mt-3 text-white" style="background-color: rgba(11, 97, 43, 1);">Learn More</a>
-            </div>
+    <div class="nav-links d-none d-md-flex gap-4">
+      <a href="#home" class="nav-link-custom">Home</a>
+      <a href="#about" class="nav-link-custom">About</a>
+      <a href="#services" class="nav-link-custom">Services</a>
+      <a href="#contact" class="nav-link-custom">Contact</a>
+    </div>
+
+    <div class="login-btn d-none d-md-flex">
+      <a href="login.php" class="btn btn-success">Login</a>
+    </div>
+  </div>
+
+
+  <section id="home" class="hero-section">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-6 text-center text-md-start">
+          <h1 class="fw-bold">Peer-to-Peer Tutoring Platform</h1>
+          <p>
+            A collaborative learning hub designed to connect students with one another for academic support, skill-building, and knowledge sharing.
+          </p>
+          <a href="login.php" class="btn btn-success mt-3 px-4">Learn More</a>
         </div>
-    </section>
 
-    <section class="py-5" id="about">
-        <div class="container">
-            <div class="row align-items-center">
-                    <div class="col-md-7">
-                    <h2 class="fw-bold mb-3" style="color: rgba(11, 97, 43, 1);">About Us</h2>
-                    <p>
-                    At LearnTogether, we believe that every student has the potential <br>
-                    to both learn and teach. Our platform connects learners to share <br>
-                    knowledge, build skills, and grow together in a supportive community.
-                    </p>
-                </div>
-            </div>
-            <div class="container my-4" style="color: black;">
-                <div class="row gy-3">
-                    <div class="col-12 d-flex align-items-start">
-                        <i class="bi bi-mortarboard-fill text-success fs-3 me-3"></i>
-                    <div>
-                        <h6 class="fw-bold mb-1">Empowering Students</h6>
-                        <p class="mb-0">Become both a learner and a tutor.</p>
-                    </div>
-                    </div>
-
-                    <div class="col-12 d-flex align-items-start">
-                        <i class="bi bi-lightbulb-fill text-success fs-3 me-3"></i>
-                    <div>
-                        <h6 class="fw-bold mb-1">Sharing Knowledge</h6>
-                        <p class="mb-0">Exchange skills, notes, and resources.</p>
-                    </div>
-                    </div>
-
-                    <div class="col-12 d-flex align-items-start">
-                        <i class="bi bi-globe2 text-success fs-3 me-3"></i>
-                        <div>
-                            <h6 class="fw-bold mb-1">Building Community</h6>
-                            <p class="mb-0">Learn together, beyond classrooms.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <a href="#contact" class="btn mt-3 text-white" style="background-color: rgba(11, 97, 43, 1);">Learn More</a>
+        <div class="col-md-6 text-center mt-4 mt-md-0">
+          <img src="images/home.png" class="img-fluid illustration"/>
         </div>
-    </section>
-
-
-    <section class="py-5 text-white" id="skills">
-        <div class="container">
-            <h2 class="fw-bold mb-5">My Skills</h2>
-    
-        </div>
-    </section>
-
-  <section class="py-5 text-white" id="contact">
-    <div class="container text-center">
-      <h2 class="fw-bold">Contact Me</h2>
-      <p class="mt-3">Let’s connect! You can reach me via email, LinkedIn, or GitHub.</p>
-      <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
-        <a href="mailto:paulcedric71@gmail.com" class="btn btn-dark border">
-          <i class="fas fa-envelope me-2"></i>Email
-        </a>
-        <a href="https://www.linkedin.com/in/yourprofile" target="_blank" class="btn btn-dark border">
-          <i class="fab fa-linkedin me-2"></i>LinkedIn
-        </a>
-        <a href="https://github.com/yourgithub" target="_blank" class="btn btn-dark border">
-          <i class="fab fa-github me-2"></i>GitHub
-        </a>
       </div>
     </div>
   </section>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-  </body>
+
+  <section id="about" class="about-section">
+    <div class="container">
+      <div class="row align-items-center">
+
+        <div class="col-md-6">
+          <h2 class="fw-bold text-success mb-3">About Us</h2>
+          <p>
+            At <strong>LearnTogether</strong>, we believe that every student has the potential to both learn and teach.
+          </p>
+
+          <div class="mt-4">
+            <div class="d-flex align-items-start mb-3">
+              <img src="icons/empower.png" width="40" class="me-3">
+              <div>
+                <h6 class="fw-bold">Empowering Students</h6>
+                <p class="mb-0">Become both a learner and a tutor.</p>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-start mb-3">
+              <img src="icons/share.png" width="40" class="me-3">
+              <div>
+                <h6 class="fw-bold">Sharing Knowledge</h6>
+                <p class="mb-0">Exchange skills, notes, and resources.</p>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-start">
+              <img src="icons/community.png" width="40" class="me-3">
+              <div>
+                <h6 class="fw-bold">Building Community</h6>
+                <p class="mb-0">Learn together, beyond classrooms.</p>
+              </div>
+            </div>
+          </div>
+
+          <a href="#" class="btn btn-success mt-4 px-4">Join the Community</a>
+        </div>
+
+        <div class="col-md-6 text-center">
+          <img src="images/about.png" class="img-fluid" style="max-width:80%; mix-blend-mode: multiply;">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="services" class="services-section">
+    <div class="container">
+      <div class="row align-items-center">
+
+        <div class="col-md-6 text-center mb-4 mb-md-0">
+          <img src="IMAGES/services.png" class="img-fluid">
+        </div>
+
+        <div class="col-md-6">
+          <h2 class="fw-bold text-success">Our Services</h2>
+          <p class="mt-3">We extend our learning support to the peer community.</p>
+
+          <div class="row g-3 mt-4">
+            <div class="col-12">
+              <div class="service-card p-3">
+                <h6 class="fw-bold">One-on-One Tutoring</h6>
+                <p class="mb-0">Personalized help from peers.</p>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="service-card p-3">
+                <h6 class="fw-bold">Group Study Sessions</h6>
+                <p class="mb-0">Collaborate and learn together.</p>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="service-card p-3">
+                <h6 class="fw-bold">Resource Sharing</h6>
+                <p class="mb-0">Notes and study materials.</p>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="service-card p-3">
+                <h6 class="fw-bold">Skill Exchange</h6>
+                <p class="mb-0">Teach and learn new skills.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="contact-section">
+    <div class="container">
+      <div class="row align-items-center">
+
+        <div class="col-md-6 text-center mb-4 mb-md-0">
+          <img src="images/contact.png" class="img-fluid" width="350">
+        </div>
+
+        <div class="col-md-6">
+          <h2 class="fw-bold text-success">Contact Us</h2>
+          <p>Have questions? We're here to help.</p>
+
+          <form class="text-start">
+            <input type="text" class="form-control mb-3" placeholder="Name">
+            <input type="email" class="form-control mb-3" placeholder="Email">
+            <textarea class="form-control mb-3" placeholder="Message" rows="4"></textarea>
+            <button class="btn btn-success px-4">Send Message</button>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>
-             

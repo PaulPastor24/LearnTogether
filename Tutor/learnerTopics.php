@@ -44,11 +44,9 @@ if (!$learner) {
 }
 
 $stmt = $pdo->prepare("
-    SELECT r.subject, r.status
+    SELECT r.id AS reservation_id, r.subject, r.status
     FROM reservations r
-    WHERE r.learner_id = ?
-      AND r.tutor_id = ?
-      AND r.status = 'Confirmed'
+    WHERE r.learner_id = ? AND r.tutor_id = ? AND r.status = 'Confirmed'
 ");
 $stmt->execute([$learner_id, $tutor_id]);
 $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -59,12 +57,10 @@ foreach ($reservations as $res) {
     $stmt = $pdo->prepare("
         SELECT topics
         FROM tutor_subjects
-        WHERE tutor_id = ?
-          AND subject_name = ?
+        WHERE tutor_id = ? AND subject_name = ?
     ");
     $stmt->execute([$tutor_id, $subject]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
     if ($row && !empty($row['topics'])) {
         $topics = array_map('trim', explode(',', $row['topics']));
         foreach ($topics as $t) {
@@ -83,11 +79,8 @@ $totalTopics = count($allTopics);
 $doneTopics = 0;
 $pendingTopics = 0;
 foreach ($allTopics as $topic) {
-    if ($topic['status'] === 'Done') {
-        $doneTopics++;
-    } else {
-        $pendingTopics++;
-    }
+    if ($topic['status'] === 'Done') $doneTopics++;
+    else $pendingTopics++;
 }
 $progress = $totalTopics > 0 ? round(($doneTopics / $totalTopics) * 100) : 0;
 $sessionsCount = count($allTopics);
@@ -98,120 +91,97 @@ $pendingCount = $pendingTopics;
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Topics for <?= htmlspecialchars($learner['first_name'] . ' ' . $learner['last_name']) ?></title>
+<title>Topics for <?= htmlspecialchars($learner['first_name'].' '.$learner['last_name']) ?></title>
 <link rel="stylesheet" href="../CSS/req.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="app">
   <aside>
-      <div class="sidebar" style="width: 230px; height: 345px;">
-        <div class="profile">
-          <div class="avatar">
-            <?= isset($tutor['first_name'], $tutor['last_name']) ? strtoupper($tutor['first_name'][0]) : 'T' ?>
-          </div>
-          <div>
-            <div style="font-weight:750"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
-            <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
-          </div>
-        </div>
-        <nav class="navlinks fw-bold" style="margin-top: 12px;">
-          <a href="tutorDashboard.php">🏠 Overview</a>
-          <a href="subjects.php">📚 Subjects</a>
-          <a href="calendar.php">📅 Schedule</a>
-          <a href="requests.php">✉️ Requests</a>
-          <a href="../logout.php">🚪 Logout</a>
-        </nav>
-      </div>
-    </aside>
-
-    <div class="nav" style="height: 85px; width: calc(100% - 0px); ">
-      <div class="logo">
-        <div class="mark" style="margin-left: 20px;">LT</div>
-        <div>LearnTogether</div>
-      </div>
-      <div class="search">
-        <input type="text" placeholder="Search students, subjects...">
-      </div>
-      <div class="nav-actions">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div class="profile-info">
-            <div><?= htmlspecialchars($tutor['first_name'] ?? 'Tutor') ?></div>
-            <div>Tutor</div>
-          </div>
-          <div class="avatar">
-            <?= isset($tutor['first_name'], $tutor['last_name']) ? strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]) : 'T' ?>
-          </div>
+    <div class="sidebar" style="width:230px;">
+      <div class="profile">
+        <div class="avatar"><?= strtoupper($tutor['first_name'][0]) ?></div>
+        <div>
+          <div style="font-weight:750"><?= htmlspecialchars($tutor['first_name'].' '.$tutor['last_name']) ?></div>
+          <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
         </div>
       </div>
+      <nav class="navlinks fw-bold" style="margin-top:12px;">
+        <a href="tutorDashboard.php">🏠 Overview</a>
+        <a href="subjects.php">📚 Subjects</a>
+        <a href="calendar.php">📅 Schedule</a>
+        <a href="requests.php">✉️ Requests</a>
+        <a href="../logout.php">🚪 Logout</a>
+      </nav>
     </div>
-    <main class="main-content">
-      <div class="main-container bg-white p-4 rounded shadow-sm" style="margin-left: -150px;  margin-top: -20px; width: 1400px;">
-        <div class="mb-4 d-flex align-items-center justify-content-between">
-          <div>
-            <h1 class="fw-bold text-primary"><?= htmlspecialchars($reservations[0]['subject'] ?? 'No Subject') ?></h1>
-            <h4 class="text-muted"><?= htmlspecialchars($learner['first_name'] . ' ' . $learner['last_name']) ?></h4>
-          </div>
-          <div class="d-flex gap-3">
-            <div class="stats-box text-center">
-              <div class="fs-4 fw-bold text-success"><?= $progress ?>%</div>
-              <div class="text-muted">Progress</div>
-            </div>
-            <div class="stats-box text-center">
-              <div class="fs-4 fw-bold text-info"><?= $sessionsCount ?></div>
-              <div class="text-muted">Sessions</div>
-            </div>
-            <div class="stats-box text-center">
-              <div class="fs-4 fw-bold text-warning"><?= $pendingCount ?></div>
-              <div class="text-muted">Pending</div>
-            </div>
-          </div>
-        </div>
-        <div class="d-flex justify-content-end mb-4 gap-2">
-          <button id="callButton" class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-size: 20px;">💬</button>
-          <button id="videoButton" class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-size: 20px;">🎥</button>
-        </div>
-        <div class="lessons-section">
-          <h5 class="fw-bold text-secondary">Lessons</h5>
-          <?php if (!empty($allTopics)): ?>
-            <?php foreach ($reservations as $res): ?>
-              <h5 class="fw-semibold mt-4 mb-3 text-primary"><?= htmlspecialchars($res['subject']) ?></h5>
-                <?php 
-                $num = 1;
-                foreach ($allTopics as $topic):
-                    if ($topic['subject'] !== $res['subject']) continue;
-                    $status = $topic['status'];
-                    $badgeClass = $status === 'Done' ? 'bg-success' : 'bg-warning';
-                    $topicId = urlencode($topic['title']);
-                ?>
-                <a href="lessonDetails.php?learner_id=<?= $learner_id ?>&subject=<?= urlencode($topic['subject']) ?>&topic=<?= $topicId ?>" class="lesson-card d-flex justify-content-between align-items-center p-3 mb-2 border rounded bg-light text-decoration-none text-dark">
-                    <div>
-                        <div class="fw-bold">Topic <?= $num++ ?></div>
-                        <div><?= htmlspecialchars($topic['title']) ?></div>
-                    </div>
-                    <div class="status-badge <?= $badgeClass ?> px-3 py-1 rounded text-white fw-bold">
-                        <?= htmlspecialchars($status) ?>
-                    </div>
-                </a>
-                <?php endforeach; ?>
-            <?php endforeach; ?>
-          <?php else: ?>
-            <p class="no-topics text-muted">No topics available for this learner yet.</p>
-          <?php endif; ?>
-        </div>
-        <a href="tutorDashboard.php" class="btn btn-secondary back-btn mt-4">Back to Dashboard</a>
-      </div>
-    </main>
+  </aside>
+  <div class="nav" style="height:85px;">
+    <div class="logo">
+      <div class="mark" style="margin-left:20px;">LT</div>
+      <div>LearnTogether</div>
+    </div>
   </div>
+  <main class="main-content">
+    <div class="main-container bg-white p-4 rounded shadow-sm" style="margin-left:-150px;margin-top:-20px;width:1400px;">
+      <div class="mb-4 d-flex align-items-center justify-content-between">
+        <div>
+          <h1 class="fw-bold text-primary"><?= htmlspecialchars($reservations[0]['subject'] ?? 'No Subject') ?></h1>
+          <h4 class="text-muted"><?= htmlspecialchars($learner['first_name'].' '.$learner['last_name']) ?></h4>
+        </div>
+        <div class="d-flex gap-3">
+          <div class="stats-box text-center">
+            <div class="fs-4 fw-bold text-success"><?= $progress ?>%</div>
+            <div class="text-muted">Progress</div>
+          </div>
+          <div class="stats-box text-center">
+            <div class="fs-4 fw-bold text-info"><?= $sessionsCount ?></div>
+            <div class="text-muted">Sessions</div>
+          </div>
+          <div class="stats-box text-center">
+            <div class="fs-4 fw-bold text-warning"><?= $pendingCount ?></div>
+            <div class="text-muted">Pending</div>
+          </div>
+        </div>
+      </div>
+      <?php foreach ($reservations as $res): ?>
+        <div class="d-flex justify-content-end mb-4 gap-2">
+          <a href="../agoraconvo.php?reservation_id=<?= $res['reservation_id'] ?>" target="_blank"
+             class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center"
+             style="width:50px;height:50px;font-size:20px;">💬</a>
+          <a href="../meetingPage.php?reservation_id=<?= $res['reservation_id'] ?>" target="_blank"
+             class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center"
+             style="width:50px;height:50px;font-size:20px;">🎥</a>
+        </div>
+      <?php endforeach; ?>
+      <div class="lessons-section">
+        <h5 class="fw-bold text-secondary">Lessons</h5>
+        <?php if (!empty($allTopics)): ?>
+          <?php foreach ($reservations as $res): ?>
+            <h5 class="fw-semibold mt-4 mb-3 text-primary"><?= htmlspecialchars($res['subject']) ?></h5>
+            <?php 
+            $num = 1;
+            foreach ($allTopics as $topic):
+              if ($topic['subject'] !== $res['subject']) continue;
+              $status = $topic['status'];
+              $badgeClass = $status === 'Done' ? 'bg-success' : 'bg-warning';
+              $topicId = urlencode($topic['title']);
+            ?>
+              <a href="lessonDetails.php?learner_id=<?= $learner_id ?>&subject=<?= urlencode($topic['subject']) ?>&topic=<?= $topicId ?>" class="lesson-card d-flex justify-content-between align-items-center p-3 mb-2 border rounded bg-light text-decoration-none text-dark">
+                <div>
+                  <div class="fw-bold">Topic <?= $num++ ?></div>
+                  <div><?= htmlspecialchars($topic['title']) ?></div>
+                </div>
+                <div class="status-badge <?= $badgeClass ?> px-3 py-1 rounded text-white fw-bold"><?= htmlspecialchars($status) ?></div>
+              </a>
+            <?php endforeach; ?>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <p class="no-topics text-muted">No topics available for this learner yet.</p>
+        <?php endif; ?>
+      </div>
+      <a href="tutorDashboard.php" class="btn btn-secondary back-btn mt-4">Back to Dashboard</a>
+    </div>
+  </main>
 </div>
-<script>
-document.getElementById('callButton').addEventListener('click', function() {
-    // Connect to Agora audio call here
-});
-
-document.getElementById('videoButton').addEventListener('click', function() {
-    // Connect to Agora video call here
-});
-</script>
 </body>
 </html>

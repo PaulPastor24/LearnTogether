@@ -7,11 +7,47 @@
   --session-bg-2: #7fb99f;
   --slot-height: 64px;
   --radius:12px;
-  --sidebar-space: 400px; /* matches calendar.php main left margin */
+  --sidebar-space: 300px;
+
+  --table-min-width: 1500px;
+  --day-min-width: 140px;
+
   --page-padding: 24px;
 }
 
-/* page/main layout tweaks */
+html, body {
+  overflow-x: hidden;
+}
+
+main.calendar-main {
+  overflow-x: hidden;
+  position: relative;
+  z-index: 5;
+  margin-top: 70px;
+}
+
+.calendar-wrapper {
+  overflow-x: auto;  
+  overflow-y: visible; 
+  -webkit-overflow-scrolling: touch;
+  max-width: calc(100vw - var(--sidebar-space) - 48px);
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+.nav, .sidebar, .logo, .profile-dropdown {
+  position: center;  
+  z-index: 10;
+}
+
+.add-schedule-btn {
+  z-index: 12;
+}
+.calendar-wrapper::-webkit-scrollbar {
+  height: 12px;
+}
+
+
 main.calendar-main{
   margin-left: var(--sidebar-space);
   margin-top: -10px;
@@ -21,14 +57,15 @@ main.calendar-main{
   background: linear-gradient(180deg,#f6fbf6 0%, #ecfdf3 100%);
 }
 
-/* wrapper and header */
 .calendar-wrapper{
   background: #fff;
   border-radius: 12px;
   padding: 18px;
   box-shadow: 0 6px 18px rgba(11,22,14,0.03);
   position: relative;
-  overflow: visible;
+  overflow: auto;    
+  width: calc(100% - 0px);
+  max-width: calc(100% - var(--page-padding) * 2);
 }
 
 .calendar-header{
@@ -38,36 +75,37 @@ main.calendar-main{
   gap:12px;
   margin-bottom: 14px;
 }
+
 .calendar-title{
   font-size:20px;
   font-weight:700;
   color: var(--accent-dark);
 }
+
 .calendar-actions .btn{
   border-radius: 8px;
 }
 
-/* calendar table */
 .calendar-table{
   width:100%;
   border-collapse: collapse;
   background: #fff;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 2px 6px rgba(11,22,14,0.03);
+  table-layout: auto;                
+  min-width: var(--table-min-width);  
 }
 
-/* header cells */
 .calendar-table thead th{
   background: #f1fbf6;
-  padding: 12px 10px;
+  padding: 12px 14px;
   text-align: left;
   border-bottom: 1px solid var(--cell-border);
   font-weight:700;
   color: var(--accent-dark);
 }
 
-/* time column */
 .time-col{
   width: 120px;
   padding: 12px;
@@ -76,21 +114,26 @@ main.calendar-main{
   font-weight:700;
   color: var(--accent-dark);
   vertical-align: middle;
+  white-space: nowrap;
 }
 
-/* body cells */
+.calendar-table thead th:not(.time-col) {
+  min-width: var(--day-min-width);
+}
+
 .calendar-table tbody td{
   border-bottom: 1px solid var(--cell-border);
   border-right: 1px solid var(--cell-border);
   vertical-align: top;
   height: var(--slot-height);
-  padding: 6px;
+  padding: 8px 12px;
   position: relative;
   background: #fbfffB;
   min-width: 120px;
+  overflow: visible;
+  word-break: break-word;
 }
 
-/* last row cleanup */
 .calendar-table tbody tr:last-child td{
   border-bottom: none;
 }
@@ -101,7 +144,6 @@ main.calendar-main{
   overflow: visible;
 }
 
-/* session block appearance */
 .session-block{
   background: linear-gradient(180deg,var(--session-bg),var(--session-bg-2));
   color: #043018;
@@ -113,16 +155,17 @@ main.calendar-main{
   max-width: 100%;
   word-wrap: break-word;
 }
+
 .session-subject{
   font-weight:700;
   margin-bottom:4px;
 }
+
 .session-student{
   font-size:12px;
   opacity:0.9;
 }
 
-/* floating Add Schedule button (bottom-right of wrapper) */
 .add-schedule-btn{
   display:inline-block;
   padding:10px 16px;
@@ -138,11 +181,20 @@ main.calendar-main{
   border: none;
 }
 
-/* responsive adjustments */
+@media (max-width: 1600px){
+  :root { --table-min-width: 1100px; --day-min-width: 120px; }
+}
+
+@media (max-width: 1400px){
+  :root { --sidebar-space: 220px; --table-min-width: 1000px; --day-min-width: 110px; }
+  .time-col { width: 110px; }
+}
+
 @media (max-width: 1200px){
-  :root { --sidebar-space: 320px; }
+  :root { --sidebar-space: 320px; --table-min-width: 900px; --day-min-width: 110px; } 
   .time-col { width: 100px; }
 }
+
 @media (max-width: 940px){
   main.calendar-main{
     margin-left: 0;
@@ -161,4 +213,5 @@ main.calendar-main{
   }
   .time-col { display:none; }
   .calendar-table tbody td { padding-left: 6px; }
+  .calendar-table { min-width: 640px; } 
 }

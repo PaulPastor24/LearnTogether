@@ -100,16 +100,17 @@
   </aside>
 
   <div class="nav" role="navigation">
-    <div class="logo">
-      <div class="mark">LT</div>
-      <div style="font-weight:700">LearnTogether</div>
+    <div class="logo" style="display:flex; align-items:center;">
+        <div>
+            <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;">
+        </div>
+        <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
     </div>
     <div class="search">
       <input id="searchInput" placeholder="Search tutors, subjects or topics" />
     </div>
+
     <div class="nav-actions">
-      <button class="icon-btn">🔔</button>
-      <button class="icon-btn">💬</button>
       <div style="display:flex;align-items:center;gap:8px">
         <div style="text-align:right;margin-right:6px">
           <div style="font-weight:700"><?= htmlspecialchars($user['first_name']) ?></div>

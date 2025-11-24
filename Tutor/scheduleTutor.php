@@ -1,13 +1,15 @@
 <?php
 session_start();
 require '../db.php';
+
 if (!isset($_SESSION['user_id'])) {
     header("Location: /LearnTogether/login.php");
     exit;
 }
+
 $user_id = $_SESSION['user_id'];
 
-$stmt = $pdo->prepare("SELECT id AS tutor_id FROM tutors WHERE user_id = ?");
+;$stmt = $pdo->prepare("SELECT id AS tutor_id FROM tutors WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $tutor_row = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$tutor_row) {
@@ -16,43 +18,51 @@ if (!$tutor_row) {
 }
 $tutor_id = $tutor_row['tutor_id'];
 
+;$stmt = $pdo->prepare("SELECT first_name, last_name FROM users WHERE id = ?");
+$stmt->execute([$user_id]);
+$tutor = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$tutor_row) {
+    header("Location: ../roleSelector.php");
+    exit;
+}
+$tutor_id = $tutor_row['tutor_id'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id'])) {
-    $reservation_id = (int) $_POST['request_id'];
-    $session_date = $_POST['session_date']; // expected YYYY-MM-DD
-    $session_time = $_POST['session_time']; // expected HH:MM
-    $duration = isset($_POST['duration']) ? (int) $_POST['duration'] : 60;
+    $reservation_id = (int)$_POST['request_id'];
+    $session_date = $_POST['session_date'];
+    $session_time = $_POST['session_time'];
+    $duration = isset($_POST['duration']) ? (int)$_POST['duration'] : 60;
 
-    // find learner_id and subject from reservation (optional, helpful to store in schedules)
-    $r = $pdo->prepare("SELECT learner_id, subject FROM reservations WHERE id = ? AND tutor_id = ?");
-    $r->execute([$reservation_id, $tutor_id]);
-    $resRow = $r->fetch(PDO::FETCH_ASSOC);
+    $res_stmt = $pdo->prepare("SELECT learner_id, subject FROM reservations WHERE id = ? AND tutor_id = ?");
+    $res_stmt->execute([$reservation_id, $tutor_id]);
+    $res = $res_stmt->fetch(PDO::FETCH_ASSOC);
 
-    $learner_id = $resRow['learner_id'] ?? null;
-    $subject = $resRow['subject'] ?? null;
+    if ($res) {
+        $learner_id = $res['learner_id'];
+        $subject = $res['subject'];
 
-    // check if a schedule for this reservation already exists
-    $check = $pdo->prepare("SELECT id FROM schedules WHERE reservation_id = ? LIMIT 1");
-    $check->execute([$reservation_id]);
-    $existing = $check->fetch(PDO::FETCH_ASSOC);
+        $check = $pdo->prepare("SELECT id FROM schedules WHERE reservation_id = ? LIMIT 1");
+        $check->execute([$reservation_id]);
+        $existing = $check->fetch(PDO::FETCH_ASSOC);
 
-    if ($existing) {
-        // update existing schedule
-        $up = $pdo->prepare("UPDATE schedules SET date = ?, time = ?, duration = ?, subject = ?, learner_id = ? WHERE id = ? AND tutor_id = ?");
-        $up->execute([$session_date, $session_time, $duration, $subject, $learner_id, $existing['id'], $tutor_id]);
-    } else {
-        // insert new schedule row
-        $ins = $pdo->prepare("INSERT INTO schedules (tutor_id, reservation_id, learner_id, subject, date, time, duration) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $ins->execute([$tutor_id, $reservation_id, $learner_id, $subject, $session_date, $session_time, $duration]);
+        if ($existing) {
+            $update = $pdo->prepare("UPDATE schedules SET date = ?, time = ?, duration = ?, subject = ?, learner_id = ? WHERE id = ?");
+            $update->execute([$session_date, $session_time, $duration, $subject, $learner_id, $existing['id']]);
+        } else {
+            $insert = $pdo->prepare("INSERT INTO schedules (tutor_id, reservation_id, learner_id, subject, date, time, duration) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $insert->execute([$tutor_id, $reservation_id, $learner_id, $subject, $session_date, $session_time, $duration]);
+        }
+
+        $pdo->prepare("UPDATE reservations SET status = 'Scheduled' WHERE id = ?")->execute([$reservation_id]);
     }
 
-    // Redirect to the calendar so tutor immediately sees it.
     header("Location: calendar.php");
     exit;
 }
 
 $pending_stmt = $pdo->prepare("
-    SELECT r.id AS reservation_id, r.subject, r.date AS session_date, r.time AS session_time,
-           CONCAT(u.first_name, ' ', u.last_name) AS student_name
+    SELECT r.id AS reservation_id, r.subject, r.date, r.time,
+           CONCAT(u.first_name,' ',u.last_name) AS student_name
     FROM reservations r
     JOIN learners l ON r.learner_id = l.id
     JOIN users u ON l.user_id = u.id
@@ -61,11 +71,8 @@ $pending_stmt = $pdo->prepare("
 ");
 $pending_stmt->execute([$tutor_id]);
 $pending_requests = $pending_stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$stmt = $pdo->prepare("SELECT first_name, last_name FROM users WHERE id = ?");
-$stmt->execute([$user_id]);
-$tutor = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
