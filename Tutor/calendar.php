@@ -79,7 +79,7 @@ foreach ($confirmed_sessions as $s) {
 <body>
   <div class="app">
     <aside>
-      <div class="sidebar" style="width: 230px; height: 345px;">
+      <div class="sidebar" style="width: 230px; height: 400px;">
         <div class="profile">
           <div class="avatar"><?= isset($tutor['first_name'], $tutor['last_name']) ? strtoupper($tutor['first_name'][0]) : 'T' ?></div>
           <div>
@@ -92,6 +92,7 @@ foreach ($confirmed_sessions as $s) {
           <a href="subjects.php">📚 Subjects</a>
           <a class="active" href="calendar.php">📅 Schedule</a>
           <a href="requests.php">✉️ Requests</a>
+          <a href="settings.php">⚙️ Settings</a>
           <a href="../logout.php">🚪 Logout</a>
         </nav>
       </div>

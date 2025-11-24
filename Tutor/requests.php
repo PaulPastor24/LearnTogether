@@ -60,12 +60,13 @@ $stmt = $pdo->prepare("
         u.first_name AS learner_first_name,
         u.last_name AS learner_last_name
     FROM reservations r
-    JOIN learners l ON r.learner_id = l.id
-    JOIN users u ON l.user_id = u.id
-    WHERE r.tutor_id = ?
+    LEFT JOIN tutors t ON r.tutor_id = t.id
+    LEFT JOIN learners l ON r.learner_id = l.id
+    LEFT JOIN users u ON l.user_id = u.id
+    WHERE t.user_id = ?
     ORDER BY r.date DESC, r.time DESC
 ");
-$stmt->execute([$tutor_id]);
+$stmt->execute([$user_id]);
 $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $tutor_first = htmlspecialchars($tutor['first_name']);
@@ -83,114 +84,110 @@ $avatar_initial = strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]);
 </head>
 <body>
 
-    <aside>
-      <div class="sidebar" style="width: 230px; height: 345px;">
-        <div class="profile">
-          <div class="avatar">
-            <?= isset($tutor['first_name'], $tutor['last_name']) ? strtoupper($tutor['first_name'][0]) : 'T' ?>
-          </div>
-          <div>
-            <div style="font-weight:750"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
-            <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
-          </div>
-        </div>
-        <nav class="navlinks fw-bold" style="margin-top: 12px;">
-          <a href="tutorDashboard.php">🏠 Overview</a>
-          <a href="subjects.php">📚 Subjects</a>
-          <a href="calendar.php">📅 Schedule</a>
-          <a class="active" href="requests.php">✉️ Requests</a>
-          <a href="../logout.php">🚪 Logout</a>
-        </nav>
+<aside>
+  <div class="sidebar" style="width: 230px; height: 400px;">
+    <div class="profile">
+      <div class="avatar"><?= strtoupper($tutor['first_name'][0]) ?></div>
+      <div>
+        <div style="font-weight:750"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
+        <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
       </div>
-    </aside>
+    </div>
+    <nav class="navlinks fw-bold" style="margin-top: 12px;">
+      <a href="tutorDashboard.php">🏠 Overview</a>
+      <a href="subjects.php">📚 Subjects</a>
+      <a href="calendar.php">📅 Schedule</a>
+      <a class="active" href="requests.php">✉️ Requests</a>
+      <a href="settings.php">⚙️ Settings</a>
+      <a href="../logout.php">🚪 Logout</a>
+    </nav>
+  </div>
+</aside>
 
-    <div class="nav" style="height: 85px; width: calc(100% - 260px);">
-      <div class="logo">
-        <div class="mark" style="margin-left: 20px;">LT</div>
-        <div>LearnTogether</div>
+<div class="nav" style="height: 85px; width: calc(100% - 317px);">
+  <div class="logo">
+    <div class="mark" style="margin-left: 20px;">LT</div>
+    <div>LearnTogether</div>
+  </div>
+  <div class="search">
+    <input type="text" placeholder="Search students, subjects...">
+  </div>
+  <div class="nav-actions">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="profile-info">
+        <div><?= htmlspecialchars($tutor['first_name']) ?></div>
+        <div>Tutor</div>
       </div>
-      <div class="search">
-        <input type="text" placeholder="Search students, subjects...">
-      </div>
-      <div class="nav-actions">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div class="profile-info">
-            <div><?= htmlspecialchars($tutor['first_name'] ?? 'Tutor') ?></div>
-            <div>Tutor</div>
+      <div class="avatar"><?= $avatar_initial ?></div>
+    </div>
+  </div>
+</div>
+
+<main class="lt-main mb-4">
+  <div class="content-wrap">
+    <h1 class="page-title" style="font-weight: 500;">Session Requests</h1>
+
+    <div class="card content-card">
+      <div class="card-body p-0">
+        <?php if (empty($requests)): ?>
+          <div class="p-4 text-muted">No session requests yet.</div>
+        <?php else: ?>
+          <div class="table-responsive p-3">
+            <table class="table table-bordered table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Learner</th>
+                  <th>Subject</th>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th class="text-center">Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach ($requests as $req): 
+                  $status = $req['status'];
+                  $color = $status === 'Pending' ? '#f59e0b'
+                         : ($status === 'Confirmed' ? '#10b981'
+                         : ($status === 'Rejected' ? '#ef4444' : '#6b7280'));
+                ?>
+                <tr>
+                  <td><?= htmlspecialchars($req['learner_first_name'].' '.$req['learner_last_name'] ?? 'Unknown') ?></td>
+                  <td><?= htmlspecialchars($req['subject']) ?></td>
+                  <td><?= htmlspecialchars($req['session_date']) ?></td>
+                  <td><?= htmlspecialchars($req['session_time']) ?></td>
+                  <td class="text-center">
+                    <span class="fw-semibold" style="color:<?= $color ?>;display:inline-block;min-width:72px;">
+                      <?= htmlspecialchars($status) ?>
+                    </span>
+                  </td>
+                  <td>
+                    <?php if ($status === 'Pending'): ?>
+                      <a href="requests.php?approve=<?= $req['reservation_id'] ?>" class="btn btn-success btn-sm">Approve</a>
+                      <a href="requests.php?reject=<?= $req['reservation_id'] ?>" class="btn btn-danger btn-sm ms-1">Reject</a>
+                    <?php elseif ($status === 'Confirmed'): ?>
+                      <button onclick="window.open('../agoraconvo.php?reservation_id=<?= $req['reservation_id'] ?>', '_blank')" class="btn btn-primary btn-sm">View</button>
+                    <?php elseif ($status === 'Rejected'): ?>
+                      <a href="requests.php?delete=<?= $req['reservation_id'] ?>"
+                         onclick="return confirm('Delete this rejected request?');"
+                         class="btn btn-outline-danger btn-sm">
+                        Delete
+                      </a>
+                    <?php else: ?>
+                      <span class="text-muted">N/A</span>
+                    <?php endif; ?>
+                  </td>
+                </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
           </div>
-          <div class="avatar">
-            <?= isset($tutor['first_name'], $tutor['last_name']) ? strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]) : 'T' ?>
-          </div>
-        </div>
+        <?php endif; ?>
       </div>
     </div>
 
-  <main class="lt-main mb-4" style="margin-left: 115px; margin-top: -68px;">
-    <div class="content-wrap">
-      <h1 class="page-title" style="font-weight: 500px">Session Requests</h1>
-
-      <div class="card content-card">
-        <div class="card-body p-0">
-          <?php if (empty($requests)): ?>
-            <div class="p-4 text-muted">No session requests yet.</div>
-          <?php else: ?>
-            <div class="table-responsive p-3">
-              <table class="table table-bordered table-hover align-middle mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th>Learner</th>
-                    <th>Subject</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th class="text-center">Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php foreach ($requests as $req): ?>
-                    <?php
-                      $status = $req['status'];
-                      $color = $status === 'Pending' ? '#f59e0b'
-                             : ($status === 'Confirmed' ? '#10b981'
-                             : ($status === 'Rejected' ? '#ef4444' : '#6b7280'));
-                    ?>
-                    <tr>
-                      <td><?= htmlspecialchars($req['learner_first_name'].' '.$req['learner_last_name']) ?></td>
-                      <td><?= htmlspecialchars($req['subject']) ?></td>
-                      <td><?= htmlspecialchars($req['session_date']) ?></td>
-                      <td><?= htmlspecialchars($req['session_time']) ?></td>
-                      <td class="text-center">
-                        <span class="fw-semibold" style="color:<?= $color ?>;display:inline-block;min-width:72px;">
-                          <?= htmlspecialchars($status) ?>
-                        </span>
-                      </td>
-                      <td>
-                        <?php if ($status === 'Pending'): ?>
-                          <a href="requests.php?approve=<?= $req['reservation_id'] ?>" class="btn btn-success btn-sm">Approve</a>
-                          <a href="requests.php?reject=<?= $req['reservation_id'] ?>" class="btn btn-danger btn-sm ms-1">Reject</a>
-                        <?php elseif ($status === 'Confirmed'): ?>
-                          <button onclick="window.open('../agoraconvo.php?reservation_id=<?= $req['reservation_id'] ?>', '_blank')" class="btn btn-primary btn-sm">View</button>
-                        <?php elseif ($status === 'Rejected'): ?>
-                          <a href="requests.php?delete=<?= $req['reservation_id'] ?>"
-                             onclick="return confirm('Delete this rejected request?');"
-                             class="btn btn-outline-danger btn-sm">
-                            Delete
-                          </a>
-                        <?php else: ?>
-                          <span class="text-muted">N/A</span>
-                        <?php endif; ?>
-                      </td>
-                    </tr>
-                  <?php endforeach; ?>
-                </tbody>
-              </table>
-            </div>
-          <?php endif; ?>
-        </div>
-      </div>
-
-    </div>
-  </main>
+  </div>
+</main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

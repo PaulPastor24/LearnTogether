@@ -48,14 +48,15 @@ if ($learner_id) {
   <div class="app">
     <aside>
       <div class="sidebar">
-        <div class="profile-dropdown" id="profileDropdown" style="position:relative;cursor:pointer;">
+
+        <div class="profile-dropdown" id="profileDropdown" style="cursor:pointer;">
           <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
           <div>
             <div style="font-weight:700"><?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?></div>
-            <div>
-              <div style="font-size:13px;color:var(--muted)">Active <?= htmlspecialchars(ucfirst($user['role'])) ?></div>
-            </div>
+            <div style="font-size:13px;color:var(--muted)">Active <?= htmlspecialchars(ucfirst($user['role'])) ?></div>
           </div>
+        </div> <!-- ✅ FIXED: CLOSED THIS DIV -->
+
         <nav class="navlinks">
           <a href="learnerDashboard.php">🏠 Overview</a>
           <a class="active" href="subjects.php">📚 My Subjects</a>
@@ -64,6 +65,7 @@ if ($learner_id) {
           <a href="requests.php">✉️ Requests</a>
           <a href="../logout.php">🚪 Logout</a>
         </nav>
+
       </div>
     </aside>
 

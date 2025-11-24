@@ -98,7 +98,7 @@ $pendingCount = $pendingTopics;
 <body>
 <div class="app">
   <aside>
-    <div class="sidebar" style="width:230px;">
+    <div class="sidebar" style="width:230px; height: 400px;">
       <div class="profile">
         <div class="avatar"><?= strtoupper($tutor['first_name'][0]) ?></div>
         <div>
@@ -111,6 +111,7 @@ $pendingCount = $pendingTopics;
         <a href="subjects.php">📚 Subjects</a>
         <a href="calendar.php">📅 Schedule</a>
         <a href="requests.php">✉️ Requests</a>
+        <a href="settings.php">⚙️ Settings</a>
         <a href="../logout.php">🚪 Logout</a>
       </nav>
     </div>
@@ -122,7 +123,7 @@ $pendingCount = $pendingTopics;
     </div>
   </div>
   <main class="main-content">
-    <div class="main-container bg-white p-4 rounded shadow-sm" style="margin-left:-150px;margin-top:-20px;width:1400px;">
+    <div class="main-container bg-white p-4 rounded shadow-sm">
       <div class="mb-4 d-flex align-items-center justify-content-between">
         <div>
           <h1 class="fw-bold text-primary"><?= htmlspecialchars($reservations[0]['subject'] ?? 'No Subject') ?></h1>

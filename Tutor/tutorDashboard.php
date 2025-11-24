@@ -63,7 +63,7 @@ $learners = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <body>
 <div class="app">
   <aside>
-    <div class="sidebar" style="width: 230px; height: 345px;">
+    <div class="sidebar" style="width: 230px; height: 400px;">
       <div class="profile">
         <div class="avatar">
           <?= isset($tutor['first_name'], $tutor['last_name']) ? strtoupper($tutor['first_name'][0]) : 'T' ?>
@@ -79,6 +79,7 @@ $learners = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <a href="subjects.php">📚 Subjects</a>
         <a href="calendar.php">📅 Schedule</a>
         <a href="requests.php">✉️ Requests</a>
+        <a href="settings.php">⚙️ Settings</a>
         <a href="../logout.php">🚪 Logout</a>
       </nav>
     </div>
@@ -107,7 +108,7 @@ $learners = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
   </div>
 
-  <main style="padding: 40px 50px; margin-left: 300px; margin-top: -350px;">
+  <main >
     <h1>Welcome back, <?= htmlspecialchars($tutor['first_name']) ?> 👋</h1>
     <p>Connect, Learn, and grow </p>    
     <?php if (!empty($learners)): ?>

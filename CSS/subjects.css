@@ -1,20 +1,8 @@
-main {
-    margin-left: 400px;  
-    margin-top: -350px;
-    padding: 40px 50px;
-}
-
-main h1 {
-    text-align: start;
-    font-weight: 800;
-    margin-bottom: 40px;
-}
-
 .subjects-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 28px;
-    width: 100%;
+    width: 100px;
     margin-top: 10px;
 }
 

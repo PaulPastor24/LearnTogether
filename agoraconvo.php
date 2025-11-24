@@ -119,7 +119,7 @@ foreach ($contacts as $c) {
                 <div>Chat <?= $contactName ? "with " . htmlspecialchars($contactName) : "" ?></div>
                 <?php if ($chat_with && $reservation_id): ?>
                     <button class="video-btn btn btn-sm btn-primary"
-                        onclick="window.open('meetingPage.php?reservation_id=<?= $reservation_id ?>','_blank')">
+                        onclick="window.open('meetingPage2.php?reservation_id=<?= $reservation_id ?>','_blank')">
                         🎥 Video
                     </button>
                 <?php endif; ?>

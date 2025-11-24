@@ -72,7 +72,7 @@ $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <div class="app">
   <aside>
-    <div class="sidebar" style="width:230px;height:345px;">
+    <div class="sidebar" style="width:230px;height:400px;">
       <div class="profile">
         <div class="avatar">
           <?= strtoupper($tutor['first_name'][0]) ?>
@@ -88,6 +88,7 @@ $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <a class="active" href="subjects.php">📚 Subjects</a>
         <a href="calendar.php">📅 Schedule</a>
         <a href="requests.php">✉️ Requests</a>
+        <a href="settings.php">⚙️ Settings</a>
         <a href="../logout.php">🚪 Logout</a>
       </nav>
     </div>
@@ -114,7 +115,7 @@ $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
   </div>
 
-  <main class="p-3">
+  <main class="lt-main mb-4">
     <h1 class="mb-4">Manage Your Subjects</h1>
     <div class="subjects-grid">
       <?php foreach ($subjects as $sub): ?>

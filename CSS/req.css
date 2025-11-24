@@ -1,11 +1,14 @@
 :root {
-    --bg:#f6fbf6; 
-    --card:#ffffff; 
-    --muted:#6b7280; 
-    --accent:#0f766e; 
-    --accent-2:#065f46; 
-    --radius:14px; 
+    --bg:#f6fbf6;
+    --card:#ffffff;
+    --muted:#6b7280;
+    --accent:#0f766e;
+    --accent-2:#065f46;
+    --radius:14px;
     --shadow: 0 6px 18px rgba(11,22,14,0.06);
+    --sidebar-visual-width: 220px;
+    --sidebar-total-left: 22px;
+    --content-gap: 30px;
 }
 
 body {
@@ -13,46 +16,31 @@ body {
     margin: 0;
     background: linear-gradient(180deg,#f6fbf6 0%, #e9f8f2 100%);
     color: #0f172a;
-     height: 100vh;
-     align-items: center;
-     justify-content: center;
-}
-
-main h1 {
-    margin-bottom: 24px;
-    font-weight: 800;
-    font-size: 40px;
 }
 
 .app {
-    display: grid;
-    grid-template-columns: 260px 1fr;
+    display: block;
     min-height: 100vh;
 }
 
 aside {
     padding: 0;
-    position: sticky;
-    left: 0;
-    top: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    width: 200px;
+    display: block;
+    width: var(--sidebar-visual-width);
     background: transparent;
-    z-index: 10;
+    z-index: 50;
 }
 
 .sidebar {
     position: fixed;
-    top: 22px;
-    left: 22px;
-    width: 220px;
+    top: var(--sidebar-total-left);
+    left: var(--sidebar-total-left);
+    width: var(--sidebar-visual-width);
     padding: 18px;
     border-radius: 16px;
     background: linear-gradient(180deg,#ffffff, #f7fffb);
     box-shadow: var(--shadow);
+    z-index: 60;
 }
 
 .profile {
@@ -95,10 +83,7 @@ aside {
 }
 
 .nav {
-    position: sticky;
-    left: 300px;
-    right: 24px;
-    top: 18px;
+    margin: 12px 24px 0;
     height: 64px;
     display: flex;
     align-items: center;
@@ -107,7 +92,13 @@ aside {
     border-radius: 12px;
     background: linear-gradient(180deg,var(--card),#f8fffb);
     box-shadow: var(--shadow);
-    z-index: 10;
+    z-index: 40;
+    position: sticky;
+    top: 20px;
+    left: calc(var(--sidebar-visual-width) + var(--sidebar-total-left) + var(--content-gap));
+    width: calc(100% - (var(--sidebar-visual-width) + var(--sidebar-total-left) + (var(--content-gap) * 2)));
+    right: auto;
+    max-width: calc(100% - (var(--sidebar-visual-width) + var(--sidebar-total-left) + var(--content-gap)));
 }
 
 .logo {
@@ -132,6 +123,7 @@ aside {
 .search {
     flex: 1;
 }
+
 .search input {
     width: 98%;
     padding: 10px 12px;
@@ -154,15 +146,31 @@ aside {
     cursor: pointer;
 }
 
+/* ⚙️ MAIN CONTENT POSITIONING - ADJUST HERE ⚙️
+   Change padding values to reposition main content area on desktop:
+   - First value (20px): Top padding
+   - Second value (calc(var(--content-gap))): Right padding
+   - Third value (40px): Bottom padding
+   - Fourth value: Left padding (accounts for sidebar)
+*/
 main {
-    padding: 120px 40px 40px;
-    max-width: auto;
+    padding: 20px calc(var(--content-gap)) 40px calc(var(--sidebar-visual-width) + var(--sidebar-total-left) + var(--content-gap));
+    width: 100%;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 10;
+}
+
+.page-container {
+    width: 100%;
+    max-width: min(1100px, calc(100% - (var(--sidebar-visual-width) + var(--sidebar-total-left) + var(--content-gap) + 48px)));
     margin: 0 auto;
-    padding-left: 300px;
+    box-sizing: border-box;
+    padding: 0 12px;
 }
 
 h1 {
-    margin-bottom: 24px;
+    margin-bottom: 18px;
     color: var(--accent-2);
     font-weight: 800;
     font-size: 28px;
@@ -176,7 +184,7 @@ h1 {
 
 .subject-card {
     background: var(--card);
-    padding: 22px;
+    padding: 200px;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -246,7 +254,7 @@ h1 {
     border: 2px solid #444;
     position: relative;
     background-color: black;
- }
+}
 
 .video-label {
     position: absolute;
@@ -265,24 +273,161 @@ h1 {
     justify-content: center;
 }
 
-  
-
-@media (max-width: 940px) {
-  aside {
-    display: none;
-  }
-  .nav {
-    left: 18px;
-    right: 18px;
-  }
-  main {
-    margin: 100px auto 40px;
-    padding: 0 20px;
-  }
+@media (min-width: 1200px) {
+    .page-container {
+        max-width: min(1100px, calc(100% - (var(--sidebar-visual-width) + var(--sidebar-total-left) + var(--content-gap) + 120px)));
+    }
+    
+    .nav {
+        width: calc(100% - (var(--sidebar-visual-width) + var(--sidebar-total-left) + (var(--content-gap) * 2)));
+        left: calc(var(--sidebar-visual-width) + var(--sidebar-total-left) + var(--content-gap));
+    }
 }
 
-@media (min-width: 768px) {
-  main {
-    margin-left: 255px;
-  }
+/* Medium screens (940px and below) - Tablet */
+@media (max-width: 940px) {
+    .sidebar {
+        position: static;
+        width: 100%;
+        margin: 18px;
+    }
+    
+    .nav {
+        left: 0;
+        right: 0;
+        margin: 18px;
+        width: auto;
+        max-width: 100%;
+    }
+
+    main {
+        margin-left: 0; 
+        padding: 180px 20px 40px 20px;
+    }
+    
+    .page-container {
+        max-width: 100%;
+        padding: 0;
+    }
+    
+    .subjects-grid {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
+    }
+}
+
+@media (max-width: 640px) {
+    main {
+        padding: 160px 16px 30px 16px;
+    }
+    
+    .nav {
+        margin: 12px;
+        padding: 8px 12px;
+        height: auto;
+        flex-wrap: wrap;
+    }
+    
+    .logo {
+        font-size: 14px;
+    }
+    
+    .logo .mark {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .search {
+        order: 3;
+        width: 100%;
+        margin-top: 8px;
+    }
+    
+    .search input {
+        font-size: 14px;
+        padding: 8px 10px;
+    }
+    
+    .nav-actions {
+        gap: 8px;
+    }
+    
+    .icon-btn {
+        padding: 6px 8px;
+    }
+    
+    h1 {
+        font-size: 24px;
+        margin-bottom: 16px;
+    }
+    
+    .subjects-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .subject-card {
+        padding: 18px;
+    }
+    
+    .subject-header {
+        gap: 10px;
+    }
+    
+    .icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+    
+    .subject-title {
+        font-size: 16px;
+    }
+    
+    .subject-desc {
+        font-size: 13px;
+    }
+    
+    .topic {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+    
+    #videoContainer {
+        gap: 8px;
+    }
+    
+    .video-box {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 4/3;
+    }
+    
+    #callControls {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    main {
+        padding: 140px 12px 24px 12px;
+    }
+    
+    .sidebar {
+        margin: 12px;
+        padding: 14px;
+    }
+    
+    .nav {
+        margin: 10px;
+    }
+    
+    h1 {    
+        font-size: 22px;
+    }
+    
+    .subject-card {
+        padding: 16px;
+    }
 }
