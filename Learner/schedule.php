@@ -9,17 +9,38 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-$stmt = $pdo->prepare("SELECT first_name, last_name, role FROM users WHERE id = ?");
+$stmt = $pdo->prepare("SELECT first_name, last_name FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$stmt = $pdo->prepare("
-    SELECT subject, tutor_name, session_date, session_time_start, session_time_end
-    FROM requests
-    WHERE user_id = ? AND status = 'Confirmed'
-    ORDER BY session_date ASC
-");
+$stmt = $pdo->prepare("SELECT id FROM learners WHERE user_id = ?");
 $stmt->execute([$user_id]);
+$learner = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$learner) {
+    die("⚠️ Learner profile not found.");
+}
+
+$learner_id = $learner['id'];
+
+$stmt = $pdo->prepare("
+    SELECT 
+        s.subject,
+        s.day_of_week AS session_day,
+        s.start_time AS session_time,
+        s.duration,
+        CONCAT(u.first_name,' ',u.last_name) AS tutor_name
+    FROM schedules s
+    JOIN tutors t ON s.tutor_id = t.id
+    JOIN users u ON t.user_id = u.id
+    JOIN reservations r ON s.reservation_id = r.id
+    WHERE s.learner_id = ? 
+      AND r.status = 'Scheduled'
+    ORDER BY FIELD(s.day_of_week, 
+        'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'
+    ), s.start_time
+");
+$stmt->execute([$learner_id]);
 $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!doctype html>
@@ -30,6 +51,7 @@ $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <title>My Schedule — LearnTogether</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../CSS/style2.css">
+<link rel="stylesheet" href="../CSS/schedule2.css">
 </head>
 <body>
 <div class="app">
@@ -54,12 +76,10 @@ $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </aside>
 
     <div class="nav" role="navigation">
-            <div class="logo" style="display:flex; align-items:center;">
-                <div>
-                    <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;">
-                </div>
-                <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
-            </div>
+        <div class="logo" style="display:flex; align-items:center;">
+            <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;">
+            <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
+        </div>
         <div class="search">
             <input placeholder="Search tutors, subjects or topics" />
         </div>
@@ -78,49 +98,35 @@ $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <main>
     <h1>My Schedule</h1>
-    <div class="subjects-grid">
+
+    <div class="schedule-container">
         <?php if (count($sessions) > 0): ?>
-            <?php foreach ($sessions as $s): ?>
-                <div class="subject-card">
-                    <div class="subject-header">
-                        <div class="icon" style="background: linear-gradient(180deg,#4f46e5,#4338ca)">📅</div>
-                        <div class="subject-title"><?= htmlspecialchars($s['subject']) ?></div>
+            <?php foreach ($sessions as $s): 
+                $start = date("H:i", strtotime($s['session_time']));
+                $end = date("H:i", strtotime($s['session_time'] . " +{$s['duration']} minutes"));
+            ?>
+                <div class="schedule-item">
+                    <div class="schedule-day">
+                        <strong><?= htmlspecialchars($s['session_day']) ?></strong>
+                        <span><?= $start ?>–<?= $end ?></span>
                     </div>
-                    <div class="subject-desc">Session with Tutor: <?= htmlspecialchars($s['tutor_name']) ?></div>
-                    <div class="topics">
-                        <span class="topic">Date: <?= date("M d, Y", strtotime($s['session_date'])) ?></span>
-                        <span class="topic">Time: <?= htmlspecialchars($s['session_time_start']) ?> - <?= htmlspecialchars($s['session_time_end']) ?></span>
+
+                    <div class="schedule-info">
+                        <div class="schedule-title">
+                            <?= htmlspecialchars($s['subject']) ?> — <?= htmlspecialchars($s['tutor_name']) ?>
+                        </div>
+                        <div class="schedule-meta">
+                            Online • <?= $s['duration'] ?> min
+                        </div>
                     </div>
                 </div>
             <?php endforeach; ?>
+
         <?php else: ?>
-            <p style="color:#666;">You have no confirmed sessions yet.</p>
+            <p style="color:#666;">You have no scheduled sessions yet.</p>
         <?php endif; ?>
     </div>
 </main>
-
 </div>
-
-<script>
-document.querySelectorAll('.navlinks a').forEach(a => {
-    a.addEventListener('click', () => {
-        document.querySelectorAll('.navlinks a').forEach(x => x.classList.remove('active'));
-        a.classList.add('active');
-    });
-});
-
-const profile = document.getElementById('profileDropdown');
-const dropdown = document.getElementById('dropdownMenu');
-
-profile.addEventListener('click', () => {
-    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-});
-
-document.addEventListener('click', (e) => {
-    if (!profile.contains(e.target)) {
-        dropdown.style.display = 'none';
-    }
-});
-</script>
 </body>
 </html>

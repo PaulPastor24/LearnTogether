@@ -95,13 +95,33 @@ $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
   </aside>
 
   <div class="nav" style="height:85px;">
-    <div class="logo">
-      <div class="mark" style="margin-left:20px;">LT</div>
-      <div>LearnTogether</div>
+    <div class="logo" style="display:flex; align-items:center;">
+        <div>
+            <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;">
+        </div>
+        <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
     </div>
-    <div class="search">
-      <input type="text" placeholder="Search students, subjects..." />
+    <div class="search" style="position: relative; width: 300px;">
+      <input type="text" id="searchInput" placeholder="Search students, subjects..." style="width: 100%; padding-right: 90px;">
+      
+      <select id="searchFilter" style="
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+        border: none;
+        background: #f0f0f0;
+        padding: 0 10px;
+        font-size: 14px;
+        cursor: pointer;
+        ">
+        <option value="all">All</option>
+        <option value="name">Name</option>
+        <option value="subject">Subject</option>
+        <option value="tutor">Tutor</option>
+      </select>
     </div>
+
     <div class="nav-actions">
       <div style="display:flex;align-items:center;gap:8px;">
         <div class="profile-info">
@@ -260,5 +280,6 @@ function addEditTopic(id) {
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../JS/dashboardSearch.js"></script>
 </body>
 </html>

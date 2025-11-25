@@ -93,9 +93,9 @@ aside {
     background: linear-gradient(180deg,var(--card),#f8fffb);
     box-shadow: var(--shadow);
     z-index: 40;
-    position: sticky;
+    position: fixed;
     top: 20px;
-    left: calc(var(--sidebar-visual-width) + var(--sidebar-total-left) + var(--content-gap));
+    left: calc(var(--sidebar-visual-width) + var(--sidebar-total-left) + var(--content-gap)- 24px);
     width: calc(100% - (var(--sidebar-visual-width) + var(--sidebar-total-left) + (var(--content-gap) * 2)));
     right: auto;
     max-width: calc(100% - (var(--sidebar-visual-width) + var(--sidebar-total-left) + var(--content-gap)));
@@ -154,7 +154,8 @@ aside {
    - Fourth value: Left padding (accounts for sidebar)
 */
 main {
-    padding: 20px calc(var(--content-gap)) 40px calc(var(--sidebar-visual-width) + var(--sidebar-total-left) + var(--content-gap));
+    padding-top: 10px;
+    padding: 140px calc(var(--content-gap)) 40px calc(var(--sidebar-visual-width) + var(--sidebar-total-left) + var(--content-gap));
     width: 100%;
     box-sizing: border-box;
     position: relative;
@@ -336,6 +337,7 @@ h1 {
         width: 32px;
         height: 32px;
     }
+    
     
     .search {
         order: 3;

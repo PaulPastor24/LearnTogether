@@ -3,13 +3,11 @@
     --accent-dark: #0b5e56;
 }
 
-/* Background & Scroll Fix */
 body {
     background-color: #f6fbf6;
     overflow-x: hidden;
 }
 
-/* Sidebar */
 .sidebar {
     width: 250px;
     height: 100vh;
@@ -19,7 +17,6 @@ body {
     box-shadow: 0 6px 18px rgba(0,0,0,0.08);
 }
 
-/* Card style */
 .card-custom {
     border-radius: 14px;
     box-shadow: 0 6px 18px rgba(0,0,0,0.06);
@@ -29,7 +26,6 @@ body {
     flex-direction: column;
 }
 
-/* Accent Buttons */
 .btn-accent {
     background-color: var(--accent);
     color: white;
@@ -39,10 +35,9 @@ body {
     color: white;
 }
 
-/* 🔥 Fix card gap completely */
 .row {
-    margin: 0 !important;          /* Removes extra spacing */
-    gap: 10px !important;          /* Controls spacing manually */
+    margin: 0 !important; 
+    gap: 10px !important; 
 }
 
 .row > [class*='col-'] {
@@ -50,16 +45,14 @@ body {
     padding-right: 0 !important;
 }
 
-/* Make cards full width */
 .narrow-card {
     width: 100%;
     margin: 0;
 }
 
-/* Space adjustments for the main container */
 main {
     margin-left: 0;
-    padding-top: 40px;
+    padding-top: -20px;
 }
 @media (min-width: 768px) {
     main {

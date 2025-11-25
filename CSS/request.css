@@ -1,0 +1,14 @@
+html, body {
+    height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(180deg,#f6fbf6 0%, #e9f8f2 100%);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.lt-main, main {
+    min-height: calc(100vh - 120px);
+}

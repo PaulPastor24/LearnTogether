@@ -21,20 +21,16 @@ $tutor_id = $tutor_row['tutor_id'];
 $stmt = $pdo->prepare("SELECT first_name, last_name FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $tutor = $stmt->fetch(PDO::FETCH_ASSOC);
-if (!$tutor_row) {
-    header("Location: ../roleSelector.php");
-    exit;
-}
-$tutor_id = $tutor_row['tutor_id'];
 
 $sess_stmt = $pdo->prepare("
-    SELECT s.id, s.subject, s.date AS session_date, s.time AS session_time,
+    SELECT s.id, s.subject, s.day_of_week AS session_day, s.start_time, s.end_time,
            CONCAT(u.first_name,' ',u.last_name) AS student_name
     FROM schedules s
+    JOIN reservations r ON s.reservation_id = r.id
     JOIN learners l ON s.learner_id = l.id
     JOIN users u ON l.user_id = u.id
-    WHERE s.tutor_id = ?
-    ORDER BY s.date ASC, s.time ASC
+    WHERE s.tutor_id = ? AND r.status != 'Cancelled'
+    ORDER BY FIELD(s.day_of_week, 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'), s.start_time ASC
 ");
 $sess_stmt->execute([$tutor_id]);
 $confirmed_sessions = $sess_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -51,21 +47,23 @@ $grid = [];
 for ($i = 0; $i < count($times); $i++) $grid[$i] = array_fill(0, 7, []);
 
 foreach ($confirmed_sessions as $s) {
-    $ts = strtotime($s['session_date'] . ' ' . $s['session_time']);
-    if ($ts === false) continue;
-    $dayIndex = (int)date('N',$ts)-1;
-    $hour = (int)date('H',$ts);
-    $slotIndex = $hour - 8;
-    if ($slotIndex < 0 || $slotIndex >= count($times)) continue;
-    $grid[$slotIndex][$dayIndex][] = [
-        'subject'=>$s['subject'],
-        'student'=>$s['student_name'],
-        'time'=>date('H:i',$ts),
-        'id'=>$s['id']
-    ];
+    $dayIndex = array_search($s['session_day'], $weekdays);
+    if ($dayIndex === false) continue;
+    $startHour = (int)explode(':', $s['start_time'])[0];
+    $endHour = (int)explode(':', $s['end_time'])[0];
+    for ($h = $startHour; $h < $endHour; $h++) {
+        $slotIndex = $h - 8;
+        if ($slotIndex < 0 || $slotIndex >= count($times)) continue;
+        $grid[$slotIndex][$dayIndex][] = [
+            'subject'=>$s['subject'],
+            'student'=>$s['student_name'],
+            'start_time'=>$s['start_time'],
+            'end_time'=>$s['end_time'],
+            'id'=>$s['id']
+        ];
+    }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -97,31 +95,24 @@ foreach ($confirmed_sessions as $s) {
         </nav>
       </div>
     </aside>
-
     <div class="nav" style="height: 85px;">
-      <div class="logo">
-        <div class="mark" style="margin-left: 20px;">LT</div>
-        <div>LearnTogether</div>
+      <div class="logo" style="display:flex; align-items:center;">
+        <div><img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;"></div>
+        <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
       </div>
-      <div class="search">
-        <input type="text" placeholder="Search students, subjects...">
-      </div>
+      <div class="search"><input type="text" placeholder="Search students, subjects..."></div>
       <div class="nav-actions">
         <div style="display:flex;align-items:center;gap:8px;">
           <div class="profile-info">
             <div><?= htmlspecialchars($tutor['first_name'] ?? 'Tutor') ?></div>
             <div>Tutor</div>
           </div>
-          <div class="avatar">
-            <?= isset($tutor['first_name'], $tutor['last_name']) ? strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]) : 'T' ?>
-          </div>
+          <div class="avatar"><?= isset($tutor['first_name'], $tutor['last_name']) ? strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]) : 'T' ?></div>
         </div>
       </div>
     </div>
-
     <main class="calendar-main">
       <h1 style="margin-bottom: 24px; font-weight: 800; font-size: 40px;">Schedule</h1>
-
       <div class="calendar-wrapper">
         <div class="calendar-header">
           <div class="calendar-title">Weekly Schedule</div>
@@ -129,7 +120,6 @@ foreach ($confirmed_sessions as $s) {
             <a href="scheduleTutor.php" class="btn btn-sm btn-outline-secondary">Manage Pending</a>
           </div>
         </div>
-
         <table class="calendar-table">
           <thead>
             <tr>
@@ -147,7 +137,7 @@ foreach ($confirmed_sessions as $s) {
                   <td class="slot-cell">
                     <?php if (!empty($grid[$rowIndex][$w])): ?>
                       <?php foreach ($grid[$rowIndex][$w] as $sess): ?>
-                        <div class="session-block" title="<?= htmlspecialchars($sess['subject'].' — '.$sess['student'].' @ '.$sess['time']) ?>">
+                        <div class="session-block" title="<?= htmlspecialchars($sess['subject'].' — '.$sess['student'].' @ '.$sess['start_time'].'-'.$sess['end_time']) ?>">
                           <div class="session-subject"><?= htmlspecialchars($sess['subject']) ?></div>
                           <div class="session-student"><?= htmlspecialchars($sess['student']) ?></div>
                         </div>
@@ -159,12 +149,10 @@ foreach ($confirmed_sessions as $s) {
             <?php endforeach; ?>
           </tbody>
         </table>
-
       </div>
-              <a class="add-schedule-btn" href="scheduleTutor.php">Add Schedule</a>
+      <a class="add-schedule-btn" href="scheduleTutor.php">Add Schedule</a>
     </main>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

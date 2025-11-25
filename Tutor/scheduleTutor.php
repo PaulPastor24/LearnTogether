@@ -9,51 +9,88 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-;$stmt = $pdo->prepare("SELECT id AS tutor_id FROM tutors WHERE user_id = ?");
+$stmt = $pdo->prepare("SELECT id AS tutor_id FROM tutors WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $tutor_row = $stmt->fetch(PDO::FETCH_ASSOC);
+
 if (!$tutor_row) {
     header("Location: ../roleSelector.php");
     exit;
 }
+
 $tutor_id = $tutor_row['tutor_id'];
 
-;$stmt = $pdo->prepare("SELECT first_name, last_name FROM users WHERE id = ?");
+$stmt = $pdo->prepare("SELECT first_name, last_name FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $tutor = $stmt->fetch(PDO::FETCH_ASSOC);
-if (!$tutor_row) {
-    header("Location: ../roleSelector.php");
-    exit;
-}
-$tutor_id = $tutor_row['tutor_id'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id'])) {
-    $reservation_id = (int)$_POST['request_id'];
-    $session_date = $_POST['session_date'];
-    $session_time = $_POST['session_time'];
-    $duration = isset($_POST['duration']) ? (int)$_POST['duration'] : 60;
 
-    $res_stmt = $pdo->prepare("SELECT learner_id, subject FROM reservations WHERE id = ? AND tutor_id = ?");
+    $reservation_id = (int)$_POST['request_id'];
+    $session_day    = $_POST['session_day'];
+    $start_time     = $_POST['start_time'];
+    $end_time       = $_POST['end_time'];
+    $duration       = (strtotime($end_time) - strtotime($start_time)) / 60;
+
+    $res_stmt = $pdo->prepare("
+        SELECT learner_id, subject 
+        FROM reservations 
+        WHERE id = ? AND tutor_id = ?
+    ");
     $res_stmt->execute([$reservation_id, $tutor_id]);
     $res = $res_stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($res) {
         $learner_id = $res['learner_id'];
-        $subject = $res['subject'];
+        $subject    = $res['subject'];
 
-        $check = $pdo->prepare("SELECT id FROM schedules WHERE reservation_id = ? LIMIT 1");
+        $check = $pdo->prepare("
+            SELECT id 
+            FROM schedules 
+            WHERE reservation_id = ? 
+            LIMIT 1
+        ");
         $check->execute([$reservation_id]);
         $existing = $check->fetch(PDO::FETCH_ASSOC);
 
         if ($existing) {
-            $update = $pdo->prepare("UPDATE schedules SET date = ?, time = ?, duration = ?, subject = ?, learner_id = ? WHERE id = ?");
-            $update->execute([$session_date, $session_time, $duration, $subject, $learner_id, $existing['id']]);
+            $update = $pdo->prepare("
+                UPDATE schedules 
+                SET day_of_week = ?, start_time = ?, end_time = ?, duration = ?, subject = ?, learner_id = ?
+                WHERE id = ?
+            ");
+            $update->execute([
+                $session_day,
+                $start_time,
+                $end_time,
+                $duration,
+                $subject,
+                $learner_id,
+                $existing['id']
+            ]);
         } else {
-            $insert = $pdo->prepare("INSERT INTO schedules (tutor_id, reservation_id, learner_id, subject, date, time, duration) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $insert->execute([$tutor_id, $reservation_id, $learner_id, $subject, $session_date, $session_time, $duration]);
+            $insert = $pdo->prepare("
+                INSERT INTO schedules 
+                (tutor_id, reservation_id, learner_id, subject, day_of_week, start_time, end_time, duration)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            $insert->execute([
+                $tutor_id,
+                $reservation_id,
+                $learner_id,
+                $subject,
+                $session_day,
+                $start_time,
+                $end_time,
+                $duration
+            ]);
         }
 
-        $pdo->prepare("UPDATE reservations SET status = 'Scheduled' WHERE id = ?")->execute([$reservation_id]);
+        $pdo->prepare("
+            UPDATE reservations 
+            SET status = 'Scheduled'
+            WHERE id = ?
+        ")->execute([$reservation_id]);
     }
 
     header("Location: calendar.php");
@@ -61,18 +98,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_id'])) {
 }
 
 $pending_stmt = $pdo->prepare("
-    SELECT r.id AS reservation_id, r.subject, r.date, r.time,
-           CONCAT(u.first_name,' ',u.last_name) AS student_name
+    SELECT r.id AS reservation_id,
+           r.subject,
+           r.date,
+           CONCAT(u.first_name, ' ', u.last_name) AS student_name
     FROM reservations r
     JOIN learners l ON r.learner_id = l.id
     JOIN users u ON l.user_id = u.id
-    WHERE r.tutor_id = ? AND r.status = 'Confirmed'
+    WHERE r.tutor_id = ? 
+      AND r.status = 'Confirmed'
     ORDER BY r.id ASC
 ");
+
 $pending_stmt->execute([$tutor_id]);
 $pending_requests = $pending_stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -88,9 +128,7 @@ $pending_requests = $pending_stmt->fetchAll(PDO::FETCH_ASSOC);
     <aside>
       <div class="sidebar" style="width: 230px; height: 400px;">
         <div class="profile">
-          <div class="avatar">
-            <?= isset($tutor['first_name'], $tutor['last_name']) ? strtoupper($tutor['first_name'][0]) : 'T' ?>
-          </div>
+          <div class="avatar"><?= isset($tutor['first_name'], $tutor['last_name']) ? strtoupper($tutor['first_name'][0]) : 'T' ?></div>
           <div>
             <div style="font-weight:750"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
             <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
@@ -108,12 +146,18 @@ $pending_requests = $pending_stmt->fetchAll(PDO::FETCH_ASSOC);
     </aside>
 
     <div class="nav" style="height: 85px;">
-      <div class="logo">
-        <div class="mark" style="margin-left: 20px;">LT</div>
-        <div>LearnTogether</div>
+      <div class="logo" style="display:flex; align-items:center;">
+        <div><img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;"></div>
+        <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
       </div>
-      <div class="search">
-        <input type="text" placeholder="Search students, subjects...">
+      <div class="search" style="position: relative; width: 300px;">
+        <input type="text" id="searchInput" placeholder="Search students, subjects..." style="width: 100%; padding-right: 90px;">
+        <select id="searchFilter" style="position: absolute; right: 0; top: 0; height: 100%; border: none; background: #f0f0f0; padding: 0 10px; font-size: 14px; cursor: pointer;">
+          <option value="all">All</option>
+          <option value="name">Name</option>
+          <option value="subject">Subject</option>
+          <option value="tutor">Tutor</option>
+        </select>
       </div>
       <div class="nav-actions">
         <div style="display:flex;align-items:center;gap:8px;">
@@ -121,59 +165,61 @@ $pending_requests = $pending_stmt->fetchAll(PDO::FETCH_ASSOC);
             <div><?= htmlspecialchars($tutor['first_name'] ?? 'Tutor') ?></div>
             <div>Tutor</div>
           </div>
-          <div class="avatar">
-            <?= isset($tutor['first_name'], $tutor['last_name']) ? strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]) : 'T' ?>
-          </div>
+          <div class="avatar"><?= isset($tutor['first_name'], $tutor['last_name']) ? strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]) : 'T' ?></div>
         </div>
       </div>
     </div>
 
     <main class="p-4" style="margin-left: 400px; margin-top: -10px;">
-        <div class="manage-header d-flex align-items-center mb-3">
-          <a href="calendar.php" class="back-to-calendar" aria-label="Back to calendar">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M15 18L9 12L15 6" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
-          <h1 class="manage-title mb-0" style="margin-left:12px; font-weight:800; font-size:32px;">Manage Schedule</h1>
-        </div>
+      <div class="manage-header d-flex align-items-center mb-3">
+        <a href="calendar.php" class="back-to-calendar" aria-label="Back to calendar">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M15 18L9 12L15 6" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <h1 class="manage-title mb-0" style="margin-left:12px; font-weight:800; font-size:32px;">Manage Schedule</h1>
+      </div>
 
-        <h2 class="h5 mb-3">Pending Requests (Approved by Tutor - Awaiting Scheduling)</h2>
+      <h2 class="h5 mb-3">Pending Requests (Approved by Tutor - Awaiting Scheduling)</h2>
 
-        <?php if (count($pending_requests) > 0): ?>
-          <div class="container mt-2">
-            <div class="row schedule-cards">
-              <?php foreach ($pending_requests as $req): ?>
-                <div class="col">
-                  <div class="card custom-card">
-                    <div class="card-header text-center">
-                      Set Schedule
-                    </div>
-                    <div class="card-body">
-                      <h5 class="card-title"><?= htmlspecialchars($req['subject']) ?></h5>
-                      <p class="card-text">From: <?= htmlspecialchars($req['student_name']) ?></p>
-                      <form method="POST">
-                        <input type="hidden" name="request_id" value="<?= $req['reservation_id'] ?>">
-                        <label>Date</label>
-                        <input type="date" name="session_date" class="form-control mb-2" required>
-                        <label>Time</label>
-                        <input type="time" name="session_time" class="form-control mb-3" required>
-                        <input type="hidden" name="duration" value="60">
-                        <button type="submit" class="custom-btn btn btn-success">Set Schedule</button>
-                      </form>
-                    </div>
+      <?php if (count($pending_requests) > 0): ?>
+        <div class="container mt-2">
+          <div class="row schedule-cards">
+            <?php foreach ($pending_requests as $req): ?>
+              <div class="col">
+                <div class="card custom-card">
+                  <div class="card-header text-center">Set Schedule</div>
+                  <div class="card-body">
+                    <h5 class="card-title"><?= htmlspecialchars($req['subject']) ?></h5>
+                    <p class="card-text">From: <?= htmlspecialchars($req['student_name']) ?></p>
+                    <form method="POST">
+                      <input type="hidden" name="request_id" value="<?= $req['reservation_id'] ?>">
+                      <label>Day of Week</label>
+                      <select name="session_day" class="form-control mb-2" required>
+                        <?php foreach (['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] as $day): ?>
+                          <option value="<?= $day ?>"><?= $day ?></option>
+                        <?php endforeach; ?>
+                      </select>
+                      <label>Time</label>
+                      <div class="d-flex mb-3 gap-2">
+                        <input type="time" name="start_time" class="form-control" required>
+                        <span style="align-self:center;">to</span>
+                        <input type="time" name="end_time" class="form-control" required>
+                      </div>
+                      <button type="submit" class="custom-btn btn btn-success">Set Schedule</button>
+                    </form>
                   </div>
                 </div>
-              <?php endforeach; ?>
-            </div>
+              </div>
+            <?php endforeach; ?>
           </div>
-        <?php else: ?>
-          <p style="color:#666;">No pending requests to schedule.</p>
-        <?php endif; ?>
-
+        </div>
+      <?php else: ?>
+        <p style="color:#666;">No pending requests to schedule.</p>
+      <?php endif; ?>
     </main>
-    </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

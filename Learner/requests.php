@@ -147,6 +147,11 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                        style="display:inline-block;padding:6px 10px;background:#ef4444;color:#fff;border-radius:6px;text-decoration:none;">
                                         Delete
                                     </a>
+                                <?php elseif ($req['status'] === 'Scheduled'): ?>
+                                    <button onclick="window.open('../agoraconvo.php?user=<?= $req['tutor_user_id'] ?>&reservation_id=<?= $req['reservation_id'] ?>', '_blank')"
+                                            style="padding:5px 10px;background:#4f46e5;color:white;border:none;border-radius:5px;">
+                                        View
+                                    </button> 
                                 <?php else: ?>
                                     <span style="color:#999;">N/A</span>
                                 <?php endif; ?>

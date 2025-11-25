@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password'])) {
                             <label class="form-label">Email</label>
                             <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($tutor['email']) ?>" required>
                         </div>
-                        <button type="submit" class="btn-accent btn mt-2 w-100">Save Changes</button>
+                        <button type="submit" class="btn-success btn mt-2 w-100">Save Changes</button>
                     </form>
                 </div>
             </div>
@@ -130,13 +130,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password'])) {
                             <label class="form-label">Confirm Password</label>
                             <input type="password" name="confirm_password" class="form-control" required>
                         </div>
-                        <button type="submit" class="btn-accent btn mt-2 w-100">Update Password</button>
+                        <button type="submit" class="btn-success btn mt-2 w-100">Update Password</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </main>
-
+  <script src="../JS/dashboardSearch.js"></script>
 </body>
 </html>

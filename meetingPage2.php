@@ -81,6 +81,19 @@ function setupControls() {
     document.getElementById("leaveBtn").onclick = leaveCall;
 }
 
+function updateLayout() {
+    const container = document.getElementById("videoContainer");
+    const remoteCount = Object.keys(remoteUsers).length;
+
+    if (remoteCount === 0) {
+        // Only you in the room
+        container.classList.add("alone");
+    } else {
+        // Remote user present → move local to bottom right
+        container.classList.remove("alone");
+    }
+}
+
 function addVideoBox(track, name, uid, isLocal = false) {
     const container = document.getElementById("videoContainer");
     if (!container) return;
@@ -167,17 +180,25 @@ async function startMeeting() {
 
         client.on("user-published", async (user, mediaType) => {
             await client.subscribe(user, mediaType);
-            if (mediaType === "video") addVideoBox(user.videoTrack, `User ${user.uid}`, user.uid);
+
+            if (mediaType === "video") {
+                addVideoBox(user.videoTrack, `User ${user.uid}`, user.uid);
+                updateLayout();
+            }
             if (mediaType === "audio") user.audioTrack.play();
         });
 
-        client.on("user-left", user => removeVideoBox(user.uid));
+        client.on("user-left", user => {
+            removeVideoBox(user.uid);
+            updateLayout();
+        });
 
         const uid = await client.join(AGORA_APP_ID, data.channelName, data.token, data.uid);
         [localTracks.audioTrack, localTracks.videoTrack] =
             await AgoraRTC.createMicrophoneAndCameraTracks();
 
         addVideoBox(localTracks.videoTrack, "You", uid, true);
+        updateLayout();
         await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
 
         setupControls();

@@ -1,4 +1,9 @@
-/* 📌 Calendar Table: Full Width & Responsive */
+main {
+    max-width: 1100px;
+    margin: 20px auto;
+    padding: 0 20px;
+} 
+
 .schedule-table-container {
   width: 100%;
   overflow-x: auto;
@@ -8,12 +13,11 @@
   padding: 20px;
 }
 
-/* 📌 Table Style */
 .schedule-table {
   width: 100%;
   border-collapse: collapse;
   text-align: center;
-  min-width: 800px; /* Ensures structure & scroll on small screens */
+  min-width: 800px;
 }
 
 .schedule-table th {
@@ -30,14 +34,12 @@
   font-size: 14px;
 }
 
-/* 📌 Responsive Heading & Layout */
 .lt-main h1 {
   font-size: 2rem;
   font-weight: 800;
   margin-bottom: 1.5rem;
 }
 
-/* 📌 Adjust Table Text on Tablets */
 @media (max-width: 1024px) {
   .schedule-table th,
   .schedule-table td {
@@ -46,7 +48,6 @@
   }
 }
 
-/* 📌 Mobile: Scroll-able Table */
 @media (max-width: 768px) {
   .lt-main h1 {
     font-size: 1.6rem;
@@ -56,7 +57,6 @@
   }
 }
 
-/* 📌 Extra Small Phones */
 @media (max-width: 500px) {
   .lt-main h1 {
     font-size: 1.4rem;
