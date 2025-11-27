@@ -57,9 +57,9 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body>
 <div class="app">
-    <aside>
+    <aside id="sidebar">
         <div class="sidebar">
-            <div class="profile-dropdown">
+            <div class="profile-dropdown" id="profileDropdown" style="position:relative;cursor:pointer;">
                 <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
                 <div>
                     <div style="font-weight:700"><?= htmlspecialchars($user['first_name'].' '.$user['last_name']) ?></div>
@@ -77,13 +77,20 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </aside>
 
+    <div class="overlay" id="overlay"></div>
+
     <div class="nav" role="navigation">
-            <div class="logo" style="display:flex; align-items:center;">
-                <div>
-                    <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;">
-                </div>
-                <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
+        <div class="hamburger" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="logo" style="display:flex; align-items:center;">
+            <div>
+                <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;">
             </div>
+            <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
+        </div>
         <div class="search">
             <input placeholder="Search tutors, subjects or topics" />
         </div>
@@ -163,5 +170,33 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php endif; ?>
     </main>
 </div>
+
+<script>
+const hamburger = document.getElementById('hamburger');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('overlay');
+const profile = document.getElementById('profileDropdown');
+const dropdown = document.getElementById('dropdownMenu');
+
+hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('open');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('show');
+});
+
+overlay.addEventListener('click', () => {
+    hamburger.classList.remove('open');
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+});
+
+profile.addEventListener('click', () => {
+    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+});
+
+document.addEventListener('click', (e) => {
+    if (!profile.contains(e.target)) dropdown.style.display = 'none';
+});
+</script>
 </body>
 </html>

@@ -146,13 +146,6 @@ aside {
     cursor: pointer;
 }
 
-/* ⚙️ MAIN CONTENT POSITIONING - ADJUST HERE ⚙️
-   Change padding values to reposition main content area on desktop:
-   - First value (20px): Top padding
-   - Second value (calc(var(--content-gap))): Right padding
-   - Third value (40px): Bottom padding
-   - Fourth value: Left padding (accounts for sidebar)
-*/
 main {
     padding-top: 10px;
     padding: 140px calc(var(--content-gap)) 40px calc(var(--sidebar-visual-width) + var(--sidebar-total-left) + var(--content-gap));
@@ -285,7 +278,6 @@ h1 {
     }
 }
 
-/* Medium screens (940px and below) - Tablet */
 @media (max-width: 940px) {
     .sidebar {
         position: static;
