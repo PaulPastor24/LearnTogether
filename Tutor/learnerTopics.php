@@ -46,7 +46,7 @@ if (!$learner) {
 $stmt = $pdo->prepare("
     SELECT r.id AS reservation_id, r.subject, r.status
     FROM reservations r
-    WHERE r.learner_id = ? AND r.tutor_id = ? AND r.status = 'Confirmed'
+    WHERE r.learner_id = ? AND r.tutor_id = ? AND r.status = 'Scheduled'
 ");
 $stmt->execute([$learner_id, $tutor_id]);
 $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -92,7 +92,8 @@ $pendingCount = $pendingTopics;
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Topics for <?= htmlspecialchars($learner['first_name'].' '.$learner['last_name']) ?></title>
-<link rel="stylesheet" href="../CSS/req.css">
+    <link rel="stylesheet" href="../CSS/style2.css">
+    <link rel="stylesheet" href="../CSS/req.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -118,15 +119,15 @@ $pendingCount = $pendingTopics;
   </aside>
   <div class="nav" style="height:85px;">
     <div class="logo">
-      <div class="mark" style="margin-left:20px;">LT</div>
+      <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px; margin-left:20px;">
       <div>LearnTogether</div>
     </div>
   </div>
-  <main class="main-content">
+  <main class="main-content" style="margin-top: 120px;">
     <div class="main-container bg-white p-4 rounded shadow-sm">
       <div class="mb-4 d-flex align-items-center justify-content-between">
         <div>
-          <h1 class="fw-bold text-primary"><?= htmlspecialchars($reservations[0]['subject'] ?? 'No Subject') ?></h1>
+          <h1 class="fw-bold text-success"><?= htmlspecialchars($reservations[0]['subject'] ?? 'No Subject') ?></h1>
           <h4 class="text-muted"><?= htmlspecialchars($learner['first_name'].' '.$learner['last_name']) ?></h4>
         </div>
         <div class="d-flex gap-3">
@@ -146,10 +147,10 @@ $pendingCount = $pendingTopics;
       </div>
       <?php foreach ($reservations as $res): ?>
         <div class="d-flex justify-content-end mb-4 gap-2">
-          <a href="../agoraconvo.php?reservation_id=<?= $res['reservation_id'] ?>" target="_blank"
+          <a href="../agoraconvo.php?reservation_id=<?= $res['reservation_id'] ?>"
              class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center"
              style="width:50px;height:50px;font-size:20px;">💬</a>
-          <a href="../meetingPage.php?reservation_id=<?= $res['reservation_id'] ?>" target="_blank"
+          <a href="../meetingPage.php?reservation_id=<?= $res['reservation_id'] ?>"
              class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center"
              style="width:50px;height:50px;font-size:20px;">🎥</a>
         </div>

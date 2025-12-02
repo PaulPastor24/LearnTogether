@@ -52,117 +52,195 @@ $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../CSS/style2.css">
 <link rel="stylesheet" href="../CSS/schedule2.css">
-
+<link rel="stylesheet" href="../CSS/search.css">
 </head>
 <body>
-<div class="app">
-    <aside id="sidebar">
-        <div class="sidebar">
-            <div class="profile-dropdown" id="profileDropdown" style="position:relative;cursor:pointer;">
-                <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
-                <div>
-                    <div style="font-weight:700"><?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?></div>
-                    <div style="font-size:13px;color:var(--muted)">Active Learner</div>
-                </div>
-            </div>
-            <nav class="navlinks">
-                <a href="learnerDashboard.php">🏠 Overview</a>
-                <a href="subjects.php">📚 My Subjects</a>
-                <a href="searchTutors.php">🔎 Find Tutors</a>
-                <a class="active" href="schedule.php">📅 My Schedule</a>
-                <a href="requests.php">✉️ Requests</a>
-                <a href="../logout.php">🚪 Logout</a>
-            </nav>
-        </div>
-    </aside>
-
-    <div class="overlay" id="overlay"></div>
-
-    <div class="nav" role="navigation">
-        <div class="hamburger" id="hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-        <div class="logo" style="display:flex; align-items:center;">
-            <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;">
-            <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
-        </div>
-        <div class="search">
-            <input placeholder="Search tutors, subjects or topics" />
-        </div>
-        <div class="nav-actions">
-            <div style="display:flex;align-items:center;gap:8px">
-                <div style="text-align:right;margin-right:6px">
-                    <div style="font-weight:700"><?= htmlspecialchars($user['first_name']) ?></div>
-                    <div style="font-size:12px;color:var(--muted)">Learner</div>
-                </div>
-                <div class="avatar" style="width:40px;height:40px;border-radius:10px">
-                    <?= strtoupper(substr($user['first_name'], 0, 1) . substr($user['last_name'], 0, 1)) ?>
-                </div>
-            </div>
-        </div>
-    </div>
-
-<main>
-    <h1>My Schedule</h1>
-
-    <div class="schedule-container">
-        <?php if (count($sessions) > 0): ?>
-            <?php foreach ($sessions as $s): 
-                $start = date("H:i", strtotime($s['session_time']));
-                $end = date("H:i", strtotime($s['session_time'] . " +{$s['duration']} minutes"));
-            ?>
-                <div class="schedule-item">
-                    <div class="schedule-day">
-                        <strong><?= htmlspecialchars($s['session_day']) ?></strong>
-                        <span><?= $start ?>–<?= $end ?></span>
-                    </div>
-
-                    <div class="schedule-info">
-                        <div class="schedule-title">
-                            <?= htmlspecialchars($s['subject']) ?> — <?= htmlspecialchars($s['tutor_name']) ?>
-                        </div>
-                        <div class="schedule-meta">
-                            Online • <?= $s['duration'] ?> min
-                        </div>
+    <div class="app">
+        <aside id="sidebar">
+            <div class="sidebar">
+                <div class="profile-dropdown" id="profileDropdown" style="position:relative;cursor:pointer;">
+                    <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
+                    <div>
+                        <div style="font-weight:700"><?= htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) ?></div>
+                        <div style="font-size:13px;color:var(--muted)">Active Learner</div>
                     </div>
                 </div>
-            <?php endforeach; ?>
+                <nav class="navlinks">
+                    <a href="learnerDashboard.php">🏠 Overview</a>
+                    <a href="subjects.php">📚 My Subjects</a>
+                    <a href="searchTutors.php">🔎 Find Tutors</a>
+                    <a class="active" href="schedule.php">📅 My Schedule</a>
+                    <a href="requests.php">✉️ Requests</a>
+                    <a href="setting.php">⚙️ Settings</a>
+                    <a href="../logout.php">🚪 Logout</a>
+                </nav>
+            </div>
+        </aside>
 
-        <?php else: ?>
-            <p style="color:#666;">You have no scheduled sessions yet.</p>
-        <?php endif; ?>
+        <div class="overlay" id="overlay"></div>
+
+        <div class="nav" role="navigation">
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="logo" style="display:flex; align-items:center;">
+                <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;">
+                <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
+            </div>
+            <div class="search">
+                <input id="searchInput" placeholder="Search subjects, tutors, or days" />
+                <select id="searchFilter">
+                    <option value="all">All</option>
+                    <option value="subject">Subject</option>
+                    <option value="tutor">Tutor</option>
+                    <option value="day">Day</option>
+                </select>
+                <button id="clearSearch" title="Clear search">✕</button>
+            </div>
+            <div class="nav-actions">
+                <div style="display:flex;align-items:center;gap:8px">
+                    <div style="text-align:right;margin-right:6px">
+                        <div style="font-weight:700"><?= htmlspecialchars($user['first_name']) ?></div>
+                        <div style="font-size:12px;color:var(--muted)">Learner</div>
+                    </div>
+                    <div class="avatar" style="width:40px;height:40px;border-radius:10px">
+                        <?= strtoupper(substr($user['first_name'], 0, 1) . substr($user['last_name'], 0, 1)) ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <main>
+        <h1>My Schedule</h1>
+
+        <div class="schedule-container">
+            <?php if (count($sessions) > 0): ?>
+                <?php foreach ($sessions as $s): 
+                    $start = date("H:i", strtotime($s['session_time']));
+                    $end = date("H:i", strtotime($s['session_time'] . " +{$s['duration']} minutes"));
+                ?>
+                    <div class="schedule-item">
+                        <div class="schedule-day">
+                            <strong><?= htmlspecialchars($s['session_day']) ?></strong>
+                            <span><?= $start ?>–<?= $end ?></span>
+                        </div>
+
+                        <div class="schedule-info">
+                            <div class="schedule-title">
+                                <?= htmlspecialchars($s['subject']) ?> — <?= htmlspecialchars($s['tutor_name']) ?>
+                            </div>
+                            <div class="schedule-meta">
+                                Online • <?= $s['duration'] ?> min
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+
+            <?php else: ?>
+                <p style="color:#666;">You have no scheduled sessions yet.</p>
+            <?php endif; ?>
+        </div>
+        <p id="noResults">No sessions found matching your search.</p>
+    </main>
     </div>
-</main>
-</div>
+    <!-- <script>
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.onkeydown = function(e) {
+        if (e.keyCode == 123 || 
+            (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
+            (e.ctrlKey && e.key.toUpperCase() == 'U')) {
+            return false;
+        }
+    };
+    </script> -->
+    
+    <script>
+    const hamburger = document.getElementById('hamburger');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const profile = document.getElementById('profileDropdown');
+    const dropdown = document.getElementById('dropdownMenu');
 
-<script>
-const hamburger = document.getElementById('hamburger');
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('overlay');
-const profile = document.getElementById('profileDropdown');
-const dropdown = document.getElementById('dropdownMenu');
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('open');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('show');
+    });
 
-hamburger.addEventListener('click', () => {
-    hamburger.classList.toggle('open');
-    sidebar.classList.toggle('open');
-    overlay.classList.toggle('show');
-});
+    overlay.addEventListener('click', () => {
+        hamburger.classList.remove('open');
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
+    });
 
-overlay.addEventListener('click', () => {
-    hamburger.classList.remove('open');
-    sidebar.classList.remove('open');
-    overlay.classList.remove('show');
-});
+    profile.addEventListener('click', () => {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    });
 
-profile.addEventListener('click', () => {
-    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-});
+    document.addEventListener('click', (e) => {
+        if (!profile.contains(e.target)) dropdown.style.display = 'none';
+    });
 
-document.addEventListener('click', (e) => {
-    if (!profile.contains(e.target)) dropdown.style.display = 'none';
-});
-</script>
+    // Debounce function for performance
+    function debounce(func, delay) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+      };
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('searchInput');
+      const searchFilter = document.getElementById('searchFilter');
+      const clearSearch = document.getElementById('clearSearch');
+      const noResults = document.getElementById('noResults');
+      if (!searchInput) return;
+
+      const sessions = document.querySelectorAll('.schedule-item');
+
+      const filterSessions = () => {
+        const query = searchInput.value.toLowerCase();
+        const filter = searchFilter.value;
+        let hasVisible = false;
+
+        sessions.forEach(session => {
+          const titleText = session.querySelector('.schedule-title')?.textContent.toLowerCase() || '';
+          const dayText = session.querySelector('.schedule-day strong')?.textContent.toLowerCase() || '';
+          const timeText = session.querySelector('.schedule-day span')?.textContent.toLowerCase() || '';
+          const subject = titleText.split(' — ')[0]; // Extract subject
+          const tutor = titleText.split(' — ')[1]; // Extract tutor
+
+          let show = false;
+          if (filter === 'all') {
+            show = titleText.includes(query) || dayText.includes(query) || timeText.includes(query);
+          } else if (filter === 'subject') {
+            show = subject && subject.includes(query);
+          } else if (filter === 'tutor') {
+            show = tutor && tutor.includes(query);
+          } else if (filter === 'day') {
+            show = dayText.includes(query);
+          }
+
+          session.style.display = show ? '' : 'none';
+          if (show) hasVisible = true;
+        });
+
+        noResults.style.display = hasVisible ? 'none' : 'block';
+      };
+
+      const debouncedFilter = debounce(filterSessions, 300);
+      searchInput.addEventListener('input', debouncedFilter);
+      searchFilter.addEventListener('change', filterSessions);
+
+      clearSearch.addEventListener('click', () => {
+        searchInput.value = '';
+        searchFilter.value = 'all';
+        filterSessions();
+      });
+    });
+    </script>
 </body>
 </html>

@@ -26,13 +26,10 @@ const RESERVATION_ID = "<?= $reservationId ?>";
 </script>
 </head>
 <body>
+
 <div id="videoContainer"></div>
 
-<div class="controls">
-    <button id="toggleMic">🎤 Mute</button>
-    <button id="toggleCam">📷 Camera Off</button>
-    <button id="leaveBtn">Leave</button>
-</div>
+<div class="controls" id="callControls"></div>
 
 <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
 <script>
@@ -41,34 +38,137 @@ let localTracks = { audioTrack: null, videoTrack: null };
 let remoteUsers = {};
 let micEnabled = true;
 let camEnabled = true;
+let screenTrack = null;
+let isScreenSharing = false;
 
 async function leaveCall() {
     for (let t of Object.values(localTracks)) if (t) { t.stop(); t.close(); }
+    if (screenTrack) { await screenTrack.close(); screenTrack = null; }
     remoteUsers = {};
     if (client) await client.leave();
     window.location.href = document.referrer || '/LearnTogether/';
 }
 
 function setupControls() {
+    const controls = document.getElementById("callControls");
+    controls.innerHTML = `
+        <button id="toggleMic" class="control-btn active">🎤</button>
+        <button id="toggleCam" class="control-btn active">📷</button>
+        <button id="shareScreenBtn" class="control-btn">🖥️</button>
+        <button id="leaveBtn" class="control-btn end-call">❌</button>
+    `;
+
     const micBtn = document.getElementById("toggleMic");
     const camBtn = document.getElementById("toggleCam");
+    const shareBtn = document.getElementById("shareScreenBtn");
 
     micBtn.onclick = async () => {
         micEnabled = !micEnabled;
         await localTracks.audioTrack.setEnabled(micEnabled);
-        micBtn.innerText = micEnabled ? "🎤 Mute" : "🎤 Unmute";
-        micBtn.style.backgroundColor = micEnabled ? "#28a745" : "#f44336";
+        micBtn.className = micEnabled ? "control-btn active" : "control-btn inactive";
+        micBtn.innerText = micEnabled ? "🎤" : "🔇";
     };
 
     camBtn.onclick = async () => {
         camEnabled = !camEnabled;
         await localTracks.videoTrack.setEnabled(camEnabled);
-        camBtn.innerText = camEnabled ? "📷 Camera Off" : "📷 Camera On";
-        camBtn.style.backgroundColor = camEnabled ? "#28a745" : "#f44336";
+        camBtn.className = camEnabled ? "control-btn active" : "control-btn inactive";
+        camBtn.innerText = camEnabled ? "📷" : "📹";
     };
+
+    shareBtn.onclick = toggleScreenShare;
 
     document.getElementById("leaveBtn").onclick = leaveCall;
 }
+
+function updateLayout() {
+    const container = document.getElementById("videoContainer");
+    const remoteCount = Object.keys(remoteUsers).length;
+
+    if (remoteCount === 0) {
+        // Only you in the room
+        container.classList.add("alone");
+    } else {
+        // Remote user present → move local to bottom right
+        container.classList.remove("alone");
+    }
+}
+
+function addVideoBox(track, name, uid, isLocal = false) {
+    const container = document.getElementById("videoContainer");
+    if (!container) return;
+
+    const box = document.createElement("div");
+    box.id = `user-${uid}`;
+    box.className = isLocal ? "video-box local" : "video-box remote";
+
+    const label = document.createElement("div");
+    label.style.position = "absolute";
+    label.style.bottom = "5px";
+    label.style.left = "5px";
+    label.style.color = "white";
+    label.style.backgroundColor = "rgba(0,0,0,0.5)";
+    label.style.padding = "2px 5px";
+    label.style.borderRadius = "4px";
+    label.innerText = name;
+
+    box.appendChild(label);
+    container.appendChild(box);
+    track.play(box);
+    remoteUsers[uid] = box;
+}
+
+function removeVideoBox(uid) {
+    const box = document.getElementById(`user-${uid}`);
+    if (box) box.remove();
+    delete remoteUsers[uid];
+}
+
+async function toggleScreenShare() {
+    if (!client) return;
+    const shareBtn = document.getElementById("shareScreenBtn");
+
+    try {
+        if (!isScreenSharing) {
+            // Create screen track
+            screenTrack = await AgoraRTC.createScreenVideoTrack({}, "auto");
+
+            // Local preview
+            const container = document.createElement("div");
+            container.id = `screen-preview`;
+            container.className = "video-box local";
+            document.getElementById("videoContainer").appendChild(container);
+
+            // Create a video element for local preview
+            const videoEl = document.createElement("video");
+            videoEl.autoplay = true;
+            videoEl.muted = true;
+            videoEl.srcObject = screenTrack.mediaStreamTrack ? new MediaStream([screenTrack.mediaStreamTrack]) : null;
+            videoEl.style.width = "100%";
+            videoEl.style.height = "100%";
+            container.appendChild(videoEl);
+
+            await client.publish([screenTrack]);
+            shareBtn.innerText = "🖥️"; // icon stays the same
+            isScreenSharing = true;
+        } else {
+            await client.unpublish([screenTrack]);
+            screenTrack.close();
+            screenTrack = null;
+
+            // Remove local preview
+            const container = document.getElementById("screen-preview");
+            if (container) container.remove();
+
+            shareBtn.innerText = "🖥️";
+            isScreenSharing = false;
+        }
+    } catch (err) {
+        console.error("Screen share error:", err);
+        // Do not show any alert for permission denied
+    }
+}
+
 
 async function startMeeting() {
     try {
@@ -80,31 +180,25 @@ async function startMeeting() {
 
         client.on("user-published", async (user, mediaType) => {
             await client.subscribe(user, mediaType);
-            subscribeToUser(user);
+
+            if (mediaType === "video") {
+                addVideoBox(user.videoTrack, `User ${user.uid}`, user.uid);
+                updateLayout();
+            }
+            if (mediaType === "audio") user.audioTrack.play();
         });
 
         client.on("user-left", user => {
-            delete remoteUsers[user.uid];
-            const div = document.getElementById(`user-${user.uid}`);
-            if (div) div.remove();
+            removeVideoBox(user.uid);
+            updateLayout();
         });
 
-        const uid = await client.join(
-            AGORA_APP_ID,
-            data.channelName,
-            data.token,
-            data.uid
-        );
-
+        const uid = await client.join(AGORA_APP_ID, data.channelName, data.token, data.uid);
         [localTracks.audioTrack, localTracks.videoTrack] =
             await AgoraRTC.createMicrophoneAndCameraTracks();
 
-        const localDiv = document.createElement("div");
-        localDiv.className = "video-box";
-        localDiv.id = `user-${uid}`;
-        document.getElementById("videoContainer").appendChild(localDiv);
-        localTracks.videoTrack.play(localDiv);
-
+        addVideoBox(localTracks.videoTrack, "You", uid, true);
+        updateLayout();
         await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
 
         setupControls();
@@ -114,23 +208,7 @@ async function startMeeting() {
     }
 }
 
-function subscribeToUser(user) {
-    if (!remoteUsers[user.uid]) remoteUsers[user.uid] = user;
-
-    let div = document.getElementById(`user-${user.uid}`);
-    if (!div) {
-        div = document.createElement("div");
-        div.className = "video-box";
-        div.id = `user-${user.uid}`;
-        document.getElementById("videoContainer").appendChild(div);
-    }
-
-    if (user.videoTrack) user.videoTrack.play(div);
-    if (user.audioTrack) user.audioTrack.play();
-}
-
 startMeeting();
 </script>
-
 </body>
 </html>

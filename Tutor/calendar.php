@@ -96,12 +96,13 @@ foreach ($confirmed_sessions as $s) {
       </div>
     </aside>
     <div class="nav" style="height: 85px;">
+      <button class="menu-toggle">&#9776;</button>
       <div class="logo" style="display:flex; align-items:center;">
-        <div><img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;"></div>
+        <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px; margin-left:20px;">
         <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
       </div>
-      <div class="search"><input type="text" placeholder="Search students, subjects..."></div>
-      <div class="nav-actions">
+      
+      <div class="nav-actions" style="display: flex; align-items: center; gap: 12px; margin-left: auto;"> 
         <div style="display:flex;align-items:center;gap:8px;">
           <div class="profile-info">
             <div><?= htmlspecialchars($tutor['first_name'] ?? 'Tutor') ?></div>
@@ -111,7 +112,7 @@ foreach ($confirmed_sessions as $s) {
         </div>
       </div>
     </div>
-    <main class="calendar-main">
+    <main class="calendar-main" style="margin-top: 120px;">
       <h1 style="margin-bottom: 24px; font-weight: 800; font-size: 40px;">Schedule</h1>
       <div class="calendar-wrapper">
         <div class="calendar-header">
@@ -154,5 +155,10 @@ foreach ($confirmed_sessions as $s) {
     </main>
   </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.querySelector('.menu-toggle').addEventListener('click', function() {
+    document.querySelector('aside').classList.toggle('show');
+  });
+</script>
 </body>
 </html>

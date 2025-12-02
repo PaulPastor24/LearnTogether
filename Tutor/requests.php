@@ -105,33 +105,15 @@ $avatar_initial = strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]);
   </aside>
 
   <div class="nav" style="height: 85px; width: calc(100% - 317px);">
+    <button class="menu-toggle">&#9776;</button> <!-- Added hamburger menu button -->
     <div class="logo" style="display:flex; align-items:center;">
         <div>
-            <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;">
+            <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px; margin-left:20px;">
         </div>
         <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
     </div>
-    <div class="search" style="position: relative; width: 300px;">
-      <input type="text" id="searchInput" placeholder="Search students, subjects..." style="width: 100%; padding-right: 90px;">
-      
-      <select id="searchFilter" style="
-        position: absolute;
-        right: 0;
-        top: 0;
-        height: 100%;
-        border: none;
-        background: #f0f0f0;
-        padding: 0 10px;
-        font-size: 14px;
-        cursor: pointer;
-        ">
-        <option value="all">All</option>
-        <option value="name">Name</option>
-        <option value="subject">Subject</option>
-        <option value="tutor">Tutor</option>
-      </select>
-    </div>
-    <div class="nav-actions">
+    
+    <div class="nav-actions" style="display: flex; align-items: center; gap: 12px; margin-left: auto;"> 
       <div style="display:flex;align-items:center;gap:8px;">
         <div class="profile-info">
           <div><?= htmlspecialchars($tutor['first_name']) ?></div>
@@ -144,7 +126,7 @@ $avatar_initial = strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]);
 
   <main class="lt-main mb-4">
     <div class="content-wrap">
-      <h1 class="page-title" style="font-weight: 500;">Session Requests</h1>
+      <h1 class="page-title" style="font-weight:800">Session Requests</h1>
 
       <div class="card content-card">
         <div class="card-body p-0">
@@ -209,6 +191,12 @@ $avatar_initial = strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]);
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../JS/dashboardSearch.js"></script>
+  <script src="../JS/dashboardSearch.js"></script>
+  <script>
+    // Hamburger menu toggle functionality
+    document.querySelector('.menu-toggle').addEventListener('click', function() {
+      document.querySelector('aside').classList.toggle('show');
+    });
+  </script>
 </body>
 </html>

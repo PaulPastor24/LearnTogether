@@ -9,7 +9,7 @@
   --radius:12px;
   --sidebar-space: 300px;
 
-  --table-min-width: 1100px;
+  --table-min-width: 100%;
   --day-min-width: 140px;
 
   --page-padding: 24px;
@@ -19,54 +19,33 @@ html, body {
   overflow-x: hidden;
 }
 
-main.calendar-main {
-  overflow-x: hidden;
+main.calendar-main{ 
+  overflow-x: auto;
   position: relative;
   z-index: 5;
-  margin-top: 70px;
-}
-
-.calendar-wrapper {
-  overflow-x: auto;  
-  overflow-y: visible; 
-  -webkit-overflow-scrolling: touch;
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-  box-sizing: border-box;
-  z-index: 1;
-}
-
-.nav, .sidebar, .logo, .profile-dropdown {
-  position: center;  
-  z-index: 10;
-}
-
-.add-schedule-btn {
-  z-index: 12;
-}
-.calendar-wrapper::-webkit-scrollbar {
-  height: 12px;
-}
-
-main.calendar-main{
   margin-left: var(--sidebar-space);
-  margin-top: -10px;
+  margin-top: 80px;
   padding: var(--page-padding);
+  width: calc(100% - var(--sidebar-space));
   box-sizing: border-box;
-  min-height: calc(100vh - 220px);
   background: linear-gradient(180deg,#f6fbf6 0%, #ecfdf3 100%);
 }
 
-.calendar-wrapper{
+.calendar-wrapper {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   background: #fff;
   border-radius: 12px;
   padding: 18px;
   box-shadow: 0 6px 18px rgba(11,22,14,0.03);
-  position: relative;
-  overflow: auto;    
-  width: calc(100% - 0px);
-  max-width: calc(100% - var(--page-padding) * 2);
+}
+
+.calendar-wrapper::-webkit-scrollbar {
+  height: 15px;
 }
 
 .calendar-header{
@@ -94,8 +73,8 @@ main.calendar-main{
   border-radius: 8px;
   overflow: visible;
   box-shadow: 0 2px 6px rgba(11,22,14,0.03);
-  table-layout: auto;                
-  min-width: var(--table-min-width);  
+  table-layout: auto;
+  min-width: max(700px, 100%);
 }
 
 .calendar-table thead th{
@@ -114,7 +93,6 @@ main.calendar-main{
   border-right: 1px solid var(--cell-border);
   font-weight:700;
   color: var(--accent-dark);
-  vertical-align: middle;
   white-space: nowrap;
 }
 
@@ -167,39 +145,44 @@ main.calendar-main{
   opacity:0.9;
 }
 
-.add-schedule-btn{
-  display:inline-block;
-  padding:10px 16px;
-  border-radius: 999px;
-  background: linear-gradient(180deg,#38a169,#2f855a);
-  color: #fff;
-  text-decoration: none;
-  box-shadow: 0 6px 18px rgba(11,22,14,0.08);
-  position: absolute;
+.add-schedule-btn {
+  position: fixed;
+  bottom: 20px;
   right: 20px;
-  bottom: 18px;
-  font-weight:600;
-  border: none;
+  z-index: 1000;
+  background-color: var(--accent);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.3s ease;
+}
+.add-schedule-btn:hover {
+  background-color: var(--accent-dark);
+  color: white;
 }
 
 @media (max-width: 1600px){
-  :root { --table-min-width: 1100px; --day-min-width: 120px; }
+  :root { --day-min-width: 120px; }
 }
 
 @media (max-width: 1400px){
-  :root { --sidebar-space: 220px; --table-min-width: 1000px; --day-min-width: 110px; }
+  :root { --sidebar-space: 220px; --day-min-width: 110px; }
   .time-col { width: 110px; }
 }
 
 @media (max-width: 1200px){
-  :root { --sidebar-space: 320px; --table-min-width: 900px; --day-min-width: 110px; } 
+  :root { --sidebar-space: 180px; --day-min-width: 110px; } 
   .time-col { width: 100px; }
 }
 
-@media (max-width: 940px){
+@media (max-width: 1024px){
   main.calendar-main{
     margin-left: 0;
     padding: 16px;
+    width: 100%;
   }
   .calendar-wrapper {
     padding-bottom: 80px;
@@ -208,70 +191,70 @@ main.calendar-main{
     right: 16px;
     bottom: 12px;
   }
-  .calendar-table thead th {
-    font-size: 13px;
-    padding: 10px 8px;
-  }
-
-  .time-col {
-    display:none; 
-  }
-
-  .calendar-table tbody td {
-    padding-left: 6px; 
-  }
-
   .calendar-table {
     width: 100%;
-    min-width: 1100px;
-    max-width: 100%;
+    min-width: max(800px, 100%);
     table-layout: fixed;
-  } 
-}
-
-/* ------------------------------ */
-/*   FIX TO OVERRIDE req.css      */
-/* ------------------------------ */
-
-main.calendar-main {
-  padding: 0 !important;
-  margin: 0 !important;
-  margin-left: calc(var(--sidebar-visual-width) + var(--sidebar-total-left) + var(--content-gap)) !important;
-  margin-top: 120px !important;
-  width: calc(100% - (var(--sidebar-visual-width) + var(--sidebar-total-left) + var(--content-gap))) !important;
-  box-sizing: border-box !important;
-  display: block;
-}
-
-.calendar-main .calendar-wrapper {
-  margin-top: 20px;
-}
-
-.calendar-main .page-container {
-  max-width: 100% !important;
-  width: 100% !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-@media (max-width: 940px){
-  main.calendar-main {
-    margin-left: 0 !important;
-    margin-top: 180px !important;
-    padding: 16px !important;
   }
+  .time-col { display:none; }
+}
+
+@media (max-width: 768px){
+  main.calendar-main {
+    margin-top: 160px;
+    padding: 14px;
+  }
+  :root { --day-min-width: 100px; }
+  .calendar-table { font-size: 12px; }
+  .calendar-table thead th { padding: 8px 6px; }
+  .calendar-table tbody td { padding: 6px 8px; height: 50px; }
+  .slot-cell { min-height: 50px; }
+  .session-block { padding: 6px 8px; font-size: 12px; }
+  .session-subject { font-size: 12px; }
+  .session-student { font-size: 11px; }
+  .add-schedule-btn { padding: 10px 16px; font-size: 14px; }
+  .time-col { display: none; }
 }
 
 @media (max-width: 640px){
   main.calendar-main {
-    margin-top: 160px !important;
-    padding: 14px !important;
+    margin-top: 160px;
+    padding: 14px;
   }
+  .calendar-table { font-size: 12px; }
+  .calendar-table thead th { padding: 8px 6px; }
+  .calendar-table tbody td { padding: 6px 8px; height: 50px; }
+  .slot-cell { min-height: 50px; }
+  .session-block { padding: 6px 8px; font-size: 12px; }
+  .session-subject { font-size: 12px; }
+  .session-student { font-size: 11px; }
+  .add-schedule-btn { padding: 10px 16px; font-size: 14px; }
 }
 
 @media (max-width: 480px){
   main.calendar-main {
-    margin-top: 140px !important;
-    padding: 12px !important;
+    margin-top: 140px;
+    padding: 12px;
   }
+  .calendar-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .calendar-title { font-size: 18px; }
+  .calendar-actions .btn { font-size: 12px; padding: 6px 12px; }
+  .calendar-table { font-size: 11px; }
+  .calendar-table thead th { padding: 6px 4px; }
+  .calendar-table tbody td { padding: 4px 6px; height: 40px; }
+  .slot-cell { min-height: 40px; }
+  .session-block { padding: 4px 6px; font-size: 11px; margin-bottom: 4px; }
+  .session-subject { font-size: 11px; }
+  .session-student { font-size: 10px; }
+  .add-schedule-btn { padding: 8px 12px; font-size: 12px; }
+}
+
+@media (max-width: 400px) {
+  .calendar-table { min-width: 800px; }
+  .calendar-wrapper { padding: 12px; }
+  .add-schedule-btn { bottom: 10px; right: 10px; padding: 6px 10px; font-size: 11px; }
 }

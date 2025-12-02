@@ -16,6 +16,7 @@ $tutor = $tutorStmt->fetch(PDO::FETCH_ASSOC);
 if ($tutor) {
     $userRole = 'tutor';
     $profile_id = $tutor['id'];
+    $dashboard = "Tutor/tutorDashboard.php";
 } else {
     $learnerStmt = $pdo->prepare("SELECT id FROM learners WHERE user_id = ?");
     $learnerStmt->execute([$user_id]);
@@ -23,6 +24,7 @@ if ($tutor) {
     if (!$learner) die("User role not found");
     $userRole = 'learner';
     $profile_id = $learner['id'];
+    $dashboard = "Learner/learnerDashboard.php";
 }
 
 if ($userRole === 'learner') {
@@ -34,7 +36,7 @@ if ($userRole === 'learner') {
         FROM reservations r
         INNER JOIN tutors t ON r.tutor_id = t.id
         INNER JOIN users u ON t.user_id = u.id
-        WHERE r.learner_id = ? AND r.status = 'Confirmed'
+        WHERE r.learner_id = ? AND r.status = 'Scheduled'
         GROUP BY u.id
         ORDER BY r.created_at DESC
     ");
@@ -48,12 +50,13 @@ if ($userRole === 'learner') {
         FROM reservations r
         INNER JOIN learners l ON r.learner_id = l.id
         INNER JOIN users u ON l.user_id = u.id
-        WHERE r.tutor_id = ? AND r.status = 'Confirmed'
+        WHERE r.tutor_id = ? AND r.status = 'Scheduled'
         GROUP BY u.id
         ORDER BY r.created_at DESC
     ");
     $stmt->execute([$profile_id]);
 }
+
 $contacts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $chat_with = isset($_GET['user']) ? (int)$_GET['user'] : null;
@@ -64,9 +67,9 @@ if ($chat_with && !$reservation_id) {
         SELECT r.id 
         FROM reservations r
         INNER JOIN learners l ON r.learner_id = l.id
-        INNER JOIN tutors t ON r.tutor_id = t.id
+        INNERJOIN tutors t ON r.tutor_id = t.id
         WHERE (l.user_id = :learner_user AND t.user_id = :tutor_user)
-          AND r.status = 'Confirmed'
+          AND r.status = 'Scheduled'
         ORDER BY r.created_at DESC
         LIMIT 1
     ");
@@ -99,7 +102,6 @@ foreach ($contacts as $c) {
 <title>Chat</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="CSS/chat.css">
-
 </head>
 <body class="vh-100 d-flex flex-column">
 
@@ -114,21 +116,31 @@ foreach ($contacts as $c) {
                 </a>
             <?php endforeach; ?>
         </div>
+
         <div class="col-12 col-md-9 chat-area d-flex flex-column position-relative h-100 p-0">
+            
             <div class="chat-header d-flex justify-content-between align-items-center p-3 border-bottom">
                 <div>Chat <?= $contactName ? "with " . htmlspecialchars($contactName) : "" ?></div>
-                <?php if ($chat_with && $reservation_id): ?>
-                    <button class="video-btn btn btn-sm btn-primary"
-                        onclick="window.open('meetingPage2.php?reservation_id=<?= $reservation_id ?>','_blank')">
-                        🎥 Video
-                    </button>
-                <?php endif; ?>
+
+                <div class="d-flex gap-2">
+                    <a href="<?= $dashboard ?>" class="btn btn-secondary btn-sm">⬅ Back</a>
+
+                    <?php if ($chat_with && $reservation_id): ?>
+                        <button class="video-btn btn btn-sm btn-primary"
+                            onclick="window.open('meetingPage2.php?reservation_id=<?= $reservation_id ?>')">
+                            🎥 Video
+                        </button>
+                    <?php endif; ?>
+                </div>
             </div>
+
             <div class="messages flex-grow-1 overflow-auto p-3" id="messages"></div>
+
             <div class="input-area d-flex p-3 border-top bg-white gap-2">
                 <input id="msgBox" type="text" class="form-control" placeholder="Type a message...">
                 <button class="btn btn-primary" onclick="sendMessage()">Send</button>
             </div>
+
         </div>
     </div>
 </div>

@@ -119,8 +119,9 @@ $pending_requests = $pending_stmt->fetchAll(PDO::FETCH_ASSOC);
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Schedule Management — LearnTogether</title>
-  <link rel="stylesheet" href="../CSS/req.css">
-  <link rel="stylesheet" href="../CSS/schedule.css">
+    <link rel="stylesheet" href="../CSS/style2.css">
+    <link rel="stylesheet" href="../CSS/req.css">
+  <link rel="stylesheet" href="../CSS/schedule2.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -147,19 +148,11 @@ $pending_requests = $pending_stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="nav" style="height: 85px;">
       <div class="logo" style="display:flex; align-items:center;">
-        <div><img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;"></div>
+        <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px; margin-left:20px;">
         <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
       </div>
-      <div class="search" style="position: relative; width: 300px;">
-        <input type="text" id="searchInput" placeholder="Search students, subjects..." style="width: 100%; padding-right: 90px;">
-        <select id="searchFilter" style="position: absolute; right: 0; top: 0; height: 100%; border: none; background: #f0f0f0; padding: 0 10px; font-size: 14px; cursor: pointer;">
-          <option value="all">All</option>
-          <option value="name">Name</option>
-          <option value="subject">Subject</option>
-          <option value="tutor">Tutor</option>
-        </select>
-      </div>
-      <div class="nav-actions">
+      
+      <div class="nav-actions" style="display: flex; align-items: center; gap: 12px; margin-left: auto;"> 
         <div style="display:flex;align-items:center;gap:8px;">
           <div class="profile-info">
             <div><?= htmlspecialchars($tutor['first_name'] ?? 'Tutor') ?></div>
@@ -170,7 +163,7 @@ $pending_requests = $pending_stmt->fetchAll(PDO::FETCH_ASSOC);
       </div>
     </div>
 
-    <main class="p-4" style="margin-left: 400px; margin-top: -10px;">
+    <main class="lt-main mb-4">
       <div class="manage-header d-flex align-items-center mb-3">
         <a href="calendar.php" class="back-to-calendar" aria-label="Back to calendar">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

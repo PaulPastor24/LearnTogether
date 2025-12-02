@@ -13,7 +13,6 @@ $stmt = $pdo->prepare("SELECT first_name, last_name, email, password FROM users 
 $stmt->execute([$user_id]);
 $tutor = $stmt->fetch(PDO::FETCH_ASSOC);
 
-/* UPDATE ACCOUNT INFO */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_account'])) {
     $first = trim($_POST['first_name']);
     $last = trim($_POST['last_name']);
@@ -24,7 +23,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_account'])) {
     $success_message = "Account information updated successfully!";
 }
 
-/* UPDATE PASSWORD */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password'])) {
     $current = $_POST['current_password'];
     $new = $_POST['new_password'];
@@ -50,8 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password'])) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Settings • Tutor Dashboard</title>
-<link rel="stylesheet" href="../CSS/setting.css"> <!-- FIX HERE -->
-<link rel="stylesheet" href="../CSS/req.css">
+    <link rel="stylesheet" href="../CSS/req.css">
+    <link rel="stylesheet" href="../CSS/setting.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -76,8 +74,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password'])) {
     </div>
 </aside>
 
-<main class="container-fluid">
-    <h1 class="mb-4 text-center">Settings</h1>
+<button class="menu-toggle" style="position: fixed; top: 10px; left: 10px; z-index: 1000;">&#9776;</button>
+
+<main class="lt-main mb-4" style="margin-top: 30px; margin-left: 30px;">
+    <h1 class="mb-4 text-center" style="font-weight:800">Settings</h1>
 
     <?php if (isset($success_message)): ?>
         <div class="alert alert-success text-center"><?= $success_message ?></div>
@@ -138,5 +138,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password'])) {
     </div>
 </main>
   <script src="../JS/dashboardSearch.js"></script>
+  <script>
+    document.querySelector('.menu-toggle').addEventListener('click', function() {
+      document.querySelector('aside').classList.toggle('show');
+    });
+  </script>
 </body>
 </html>

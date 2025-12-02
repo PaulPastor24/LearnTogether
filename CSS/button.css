@@ -1,0 +1,68 @@
+.learners-grid {
+    display: grid;
+    grid-template-columns: 3fr;
+    gap: 20px;
+}
+
+.learner-card {
+    border-radius: 14px;
+    padding: 22px 26px;
+    display: flex;
+    flex-direction: row;
+    align-items: center; 
+    gap: 18px;
+    background-color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    min-height: 100px; 
+    max-width: 650px;
+    position: relative; 
+}
+
+.learner-avatar {
+    width: 50px;
+    height: 50px;
+    background: #0f5f2f;
+    border-radius: 8px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 20px;
+}
+
+.learner-info {
+    flex: 1;
+    text-align: left;
+}
+
+.learner-name {
+    font-weight: 800;
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.learner-subject {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 8px;
+}
+
+.view-btn {
+    position: absolute;
+    top: 22px;     
+    right: 26px;    
+    transform: none; 
+}
+
+main {
+    margin-left: 250px; 
+    padding: 140px 50px 40px 50px;
+}
+
+@media (max-width: 992px) {
+    main {
+        margin-left: 0; 
+        padding: 120px 20px 20px 20px; 
+    }
+}

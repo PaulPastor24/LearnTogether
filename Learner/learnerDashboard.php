@@ -14,7 +14,8 @@
   $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
   if (!$user) {
-      echo "User not found.";
+      error_log("User not found for ID: $user_id");
+      header("Location: /LearnTogether/error.php");
       exit;
   }
 
@@ -143,9 +144,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../CSS/style2.css">
   <link rel="stylesheet" href="../CSS/schedule.css">
-
+  <link rel="stylesheet" href="../CSS/search.css">
 </head>
-<body>
+<body style="overflow-x: hidden;">
   <div class="app">
     <aside id="sidebar">
           <div class="sidebar">
@@ -162,6 +163,7 @@
                   <a href="searchTutors.php">🔎 Find Tutors</a>
                   <a href="schedule.php">📅 My Schedule</a>
                   <a href="requests.php">✉️ Requests</a>
+                  <a href="setting.php">⚙️ Settings</a>
                   <a href="../logout.php">🚪 Logout</a>
               </nav>
           </div>
@@ -182,7 +184,14 @@
               <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
           </div>
           <div class="search">
-              <input placeholder="Search tutors, subjects or topics" />
+              <input id="searchInput" placeholder="Search subjects, tutor, or days" />
+              <select id="searchFilter">
+                  <option value="all">All</option>
+                  <option value="subject">Subject</option>
+                  <option value="tutor">Tutors</option>
+                  <option value="day">Day</option>
+              </select>
+              <button id="clearSearch" title="Clear search">✕</button>
           </div>
           <div class="nav-actions">
               <div style="display:flex;align-items:center;gap:8px">
@@ -197,7 +206,7 @@
           </div>
       </div>
 
-    <main class="hero">
+    <main class="hero" style="overflow-y: hidden;">
       <div class="hero-header">
         <h1>Welcome Back, <?= htmlspecialchars($user['first_name']) ?></h1>
         <p>View your upcoming sessions below.</p>
@@ -228,13 +237,24 @@
               </div>
             <?php endforeach; ?>
           </div>
+          <p id="noResults">No sessions found matching your search.</p>
         <?php else: ?>
           <p style="color:#666;margin:6px 0 0;">You have no scheduled sessions yet.</p>
         <?php endif; ?>
       </section>
     </main>
   </div>
-
+  
+  <!-- <script>
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.onkeydown = function(e) {
+        if (e.keyCode == 123 || 
+            (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
+            (e.ctrlKey && e.key.toUpperCase() == 'U')) {
+            return false;
+        }
+    };
+  </script> -->
   <script>
     const hamburger = document.getElementById('hamburger');
     const sidebar = document.getElementById('sidebar');
@@ -250,6 +270,66 @@
         hamburger.classList.remove('open');
         sidebar.classList.remove('open');
         overlay.classList.remove('show');
+    });
+
+    // Debounce function for performance
+    function debounce(func, delay) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+      };
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('searchInput');
+      const searchFilter = document.getElementById('searchFilter');
+      const clearSearch = document.getElementById('clearSearch');
+      const noResults = document.getElementById('noResults');
+      if (!searchInput) return;
+
+      const sessions = document.querySelectorAll('.session-item');
+
+      const filterSessions = () => {
+        const query = searchInput.value.toLowerCase();
+        const filter = searchFilter.value;
+        let hasVisible = false;
+
+        sessions.forEach(session => {
+          const metaText = session.querySelector('.meta div:first-child')?.textContent.toLowerCase() || '';
+          const dayText = session.querySelector('.date strong')?.textContent.toLowerCase() || '';
+          const timeText = session.querySelector('.date span')?.textContent.toLowerCase() || '';
+          const durationText = session.querySelector('.meta div:last-child')?.textContent.toLowerCase() || '';
+          const subject = metaText.split(' — ')[0]; // Extract subject
+          const partner = metaText.split(' — ')[1]; // Extract partner
+
+          let show = false;
+          if (filter === 'all') {
+            show = metaText.includes(query) || dayText.includes(query) || timeText.includes(query) || durationText.includes(query);
+          } else if (filter === 'subject') {
+            show = subject && subject.includes(query);
+          } else if (filter === 'partner') {
+            show = partner && partner.includes(query);
+          } else if (filter === 'day') {
+            show = dayText.includes(query);
+          }
+
+          session.style.display = show ? '' : 'none';
+          if (show) hasVisible = true;
+        });
+
+        noResults.style.display = hasVisible ? 'none' : 'block';
+      };
+
+      const debouncedFilter = debounce(filterSessions, 300);
+      searchInput.addEventListener('input', debouncedFilter);
+      searchFilter.addEventListener('change', filterSessions);
+
+      clearSearch.addEventListener('click', () => {
+        searchInput.value = '';
+        searchFilter.value = 'all';
+        filterSessions();
+      });
     });
   </script>
 </body>

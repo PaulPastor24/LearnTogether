@@ -55,7 +55,7 @@ function setupControls() {
         <button id="toggleMic" class="control-btn active">🎤</button>
         <button id="toggleCam" class="control-btn active">📷</button>
         <button id="shareScreenBtn" class="control-btn">🖥️</button>
-        <button id="leaveBtn" class="control-btn end-call">❌</button>
+        <button id="leaveBtn" class="control-btn end-call">📞</button>
     `;
 
     const micBtn = document.getElementById("toggleMic");
@@ -86,10 +86,8 @@ function updateLayout() {
     const remoteCount = Object.keys(remoteUsers).length;
 
     if (remoteCount === 0) {
-        // Only you in the room
         container.classList.add("alone");
     } else {
-        // Remote user present → move local to bottom right
         container.classList.remove("alone");
     }
 }
@@ -130,16 +128,13 @@ async function toggleScreenShare() {
 
     try {
         if (!isScreenSharing) {
-            // Create screen track
             screenTrack = await AgoraRTC.createScreenVideoTrack({}, "auto");
 
-            // Local preview
             const container = document.createElement("div");
             container.id = `screen-preview`;
             container.className = "video-box local";
             document.getElementById("videoContainer").appendChild(container);
 
-            // Create a video element for local preview
             const videoEl = document.createElement("video");
             videoEl.autoplay = true;
             videoEl.muted = true;
@@ -149,14 +144,13 @@ async function toggleScreenShare() {
             container.appendChild(videoEl);
 
             await client.publish([screenTrack]);
-            shareBtn.innerText = "🖥️"; // icon stays the same
+            shareBtn.innerText = "🖥️"; 
             isScreenSharing = true;
         } else {
             await client.unpublish([screenTrack]);
             screenTrack.close();
             screenTrack = null;
 
-            // Remove local preview
             const container = document.getElementById("screen-preview");
             if (container) container.remove();
 
@@ -165,7 +159,6 @@ async function toggleScreenShare() {
         }
     } catch (err) {
         console.error("Screen share error:", err);
-        // Do not show any alert for permission denied
     }
 }
 

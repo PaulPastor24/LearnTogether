@@ -54,149 +54,161 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <title>My Requests — LearnTogether</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../CSS/style2.css">
+<link rel="stylesheet" href="../CSS/search.css">
 </head>
 <body>
-<div class="app">
-    <aside id="sidebar">
-        <div class="sidebar">
-            <div class="profile-dropdown" id="profileDropdown" style="position:relative;cursor:pointer;">
-                <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
+    <div class="app">
+        <aside id="sidebar">
+            <div class="sidebar">
+                <div class="profile-dropdown" id="profileDropdown" style="position:relative;cursor:pointer;">
+                    <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
+                    <div>
+                        <div style="font-weight:700"><?= htmlspecialchars($user['first_name'].' '.$user['last_name']) ?></div>
+                        <div style="font-size:13px;color:var(--muted)">Active Learner</div>
+                    </div>
+                </div>
+                <nav class="navlinks">
+                    <a href="learnerDashboard.php">🏠 Overview</a>
+                    <a href="subjects.php">📚 My Subjects</a>
+                    <a href="searchTutors.php">🔎 Find Tutors</a>
+                    <a href="schedule.php">📅 My Schedule</a>
+                    <a class="active" href="requests.php">✉️ Requests</a>
+                    <a href="setting.php">⚙️ Settings</a>
+                    <a href="../logout.php">🚪 Logout</a>
+                </nav>
+            </div>
+        </aside>
+
+        <div class="overlay" id="overlay"></div>
+
+        <div class="nav" role="navigation">
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="logo" style="display:flex; align-items:center;">
                 <div>
-                    <div style="font-weight:700"><?= htmlspecialchars($user['first_name'].' '.$user['last_name']) ?></div>
-                    <div style="font-size:13px;color:var(--muted)">Active Learner</div>
+                    <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;">
+                </div>
+                <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
+            </div>
+            <div class="search">
+                <input placeholder="Search tutors, subjects or topics" />
+            </div>
+            <div class="nav-actions">
+                <div style="display:flex;align-items:center;gap:8px">
+                    <div style="text-align:right;margin-right:6px">
+                        <div style="font-weight:700"><?= htmlspecialchars($user['first_name']) ?></div>
+                        <div style="font-size:12px;color:var(--muted)">Learner</div>
+                    </div>
+                    <div class="avatar" style="width:40px;height:40px;border-radius:10px">
+                        <?= strtoupper(substr($user['first_name'], 0, 1) . substr($user['last_name'], 0, 1)) ?>
+                    </div>
                 </div>
             </div>
-            <nav class="navlinks">
-                <a href="learnerDashboard.php">🏠 Overview</a>
-                <a href="subjects.php">📚 My Subjects</a>
-                <a href="searchTutors.php">🔎 Find Tutors</a>
-                <a href="schedule.php">📅 My Schedule</a>
-                <a class="active" href="requests.php">✉️ Requests</a>
-                <a href="../logout.php">🚪 Logout</a>
-            </nav>
         </div>
-    </aside>
 
-    <div class="overlay" id="overlay"></div>
+        <main>
+            <h1>My Requests to Tutors</h1>
 
-    <div class="nav" role="navigation">
-        <div class="hamburger" id="hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-        <div class="logo" style="display:flex; align-items:center;">
-            <div>
-                <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;">
-            </div>
-            <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
-        </div>
-        <div class="search">
-            <input placeholder="Search tutors, subjects or topics" />
-        </div>
-        <div class="nav-actions">
-            <div style="display:flex;align-items:center;gap:8px">
-                <div style="text-align:right;margin-right:6px">
-                    <div style="font-weight:700"><?= htmlspecialchars($user['first_name']) ?></div>
-                    <div style="font-size:12px;color:var(--muted)">Learner</div>
-                </div>
-                <div class="avatar" style="width:40px;height:40px;border-radius:10px">
-                    <?= strtoupper(substr($user['first_name'], 0, 1) . substr($user['last_name'], 0, 1)) ?>
-                </div>
-            </div>
-        </div>
+            <?php if (empty($requests)): ?>
+                <p style="color:#666;">You haven't sent any session requests yet.</p>
+            <?php else: ?>
+                <table style="width:100%;border-collapse:collapse;margin-top:20px;">
+                    <thead>
+                        <tr style="background:#f4f4f4;text-align:left;">
+                            <th style="padding:10px;">Tutor</th>
+                            <th style="padding:10px;">Subject</th>
+                            <th style="padding:10px;">Date</th>
+                            <th style="padding:10px;">Time</th>
+                            <th style="padding:10px;">Status</th>
+                            <th style="padding:10px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($requests as $req): ?>
+                            <tr style="border-bottom:1px solid #eee;">
+                                <td style="padding:10px;"><?= htmlspecialchars($req['tutor_first_name'].' '.$req['tutor_last_name']) ?></td>
+                                <td style="padding:10px;"><?= htmlspecialchars($req['subject']) ?></td>
+                                <td style="padding:10px;"><?= htmlspecialchars($req['session_date']) ?></td>
+                                <td style="padding:10px;"><?= htmlspecialchars($req['session_time']) ?></td>
+                                <td style="padding:10px;">
+                                    <?php
+                                    $statusColor = match($req['status']) {
+                                        'Pending' => '#f59e0b',
+                                        'Confirmed' => '#10b981',
+                                        'Rejected' => '#ef4444',
+                                        default => '#6b7280'
+                                    };
+                                    ?>
+                                    <span style="color:<?= $statusColor ?>;font-weight:600;"><?= htmlspecialchars($req['status']) ?></span>
+                                </td>
+                                <td style="padding:10px;">
+                                    <?php if ($req['status'] === 'Confirmed'): ?>
+                                        <button onclick="window.open('../agoraconvo.php?user=<?= $req['tutor_user_id'] ?>&reservation_id=<?= $req['reservation_id'] ?>', '_blank')"
+                                                style="padding:5px 10px;background:#4f46e5;color:white;border:none;border-radius:5px;">
+                                            View
+                                        </button>
+                                    <?php elseif ($req['status'] === 'Rejected'): ?>
+                                        <a href="requests.php?delete=<?= $req['reservation_id'] ?>"
+                                        onclick="return confirm('Delete this rejected request?');"
+                                        style="display:inline-block;padding:6px 10px;background:#ef4444;color:#fff;border-radius:6px;text-decoration:none;">
+                                            Delete
+                                        </a>
+                                    <?php elseif ($req['status'] === 'Scheduled'): ?>
+                                        <button onclick="window.open('../agoraconvo.php?user=<?= $req['tutor_user_id'] ?>&reservation_id=<?= $req['reservation_id'] ?>', '_blank')"
+                                                style="padding:5px 10px;background:#4f46e5;color:white;border:none;border-radius:5px;">
+                                            View
+                                        </button> 
+                                    <?php else: ?>
+                                        <span style="color:#999;">N/A</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+        </main>
     </div>
 
-    <main>
-        <h1>My Requests to Tutors</h1>
+    <!-- <script>
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.onkeydown = function(e) {
+        if (e.keyCode == 123 || 
+            (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
+            (e.ctrlKey && e.key.toUpperCase() == 'U')) {
+            return false;
+        }
+    };
+    </script> -->
+    <script>
+    const hamburger = document.getElementById('hamburger');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const profile = document.getElementById('profileDropdown');
+    const dropdown = document.getElementById('dropdownMenu');
 
-        <?php if (empty($requests)): ?>
-            <p style="color:#666;">You haven't sent any session requests yet.</p>
-        <?php else: ?>
-            <table style="width:100%;border-collapse:collapse;margin-top:20px;">
-                <thead>
-                    <tr style="background:#f4f4f4;text-align:left;">
-                        <th style="padding:10px;">Tutor</th>
-                        <th style="padding:10px;">Subject</th>
-                        <th style="padding:10px;">Date</th>
-                        <th style="padding:10px;">Time</th>
-                        <th style="padding:10px;">Status</th>
-                        <th style="padding:10px;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($requests as $req): ?>
-                        <tr style="border-bottom:1px solid #eee;">
-                            <td style="padding:10px;"><?= htmlspecialchars($req['tutor_first_name'].' '.$req['tutor_last_name']) ?></td>
-                            <td style="padding:10px;"><?= htmlspecialchars($req['subject']) ?></td>
-                            <td style="padding:10px;"><?= htmlspecialchars($req['session_date']) ?></td>
-                            <td style="padding:10px;"><?= htmlspecialchars($req['session_time']) ?></td>
-                            <td style="padding:10px;">
-                                <?php
-                                $statusColor = match($req['status']) {
-                                    'Pending' => '#f59e0b',
-                                    'Confirmed' => '#10b981',
-                                    'Rejected' => '#ef4444',
-                                    default => '#6b7280'
-                                };
-                                ?>
-                                <span style="color:<?= $statusColor ?>;font-weight:600;"><?= htmlspecialchars($req['status']) ?></span>
-                            </td>
-                            <td style="padding:10px;">
-                                <?php if ($req['status'] === 'Confirmed'): ?>
-                                    <button onclick="window.open('../agoraconvo.php?user=<?= $req['tutor_user_id'] ?>&reservation_id=<?= $req['reservation_id'] ?>', '_blank')"
-                                            style="padding:5px 10px;background:#4f46e5;color:white;border:none;border-radius:5px;">
-                                        View
-                                    </button>
-                                <?php elseif ($req['status'] === 'Rejected'): ?>
-                                    <a href="requests.php?delete=<?= $req['reservation_id'] ?>"
-                                       onclick="return confirm('Delete this rejected request?');"
-                                       style="display:inline-block;padding:6px 10px;background:#ef4444;color:#fff;border-radius:6px;text-decoration:none;">
-                                        Delete
-                                    </a>
-                                <?php elseif ($req['status'] === 'Scheduled'): ?>
-                                    <button onclick="window.open('../agoraconvo.php?user=<?= $req['tutor_user_id'] ?>&reservation_id=<?= $req['reservation_id'] ?>', '_blank')"
-                                            style="padding:5px 10px;background:#4f46e5;color:white;border:none;border-radius:5px;">
-                                        View
-                                    </button> 
-                                <?php else: ?>
-                                    <span style="color:#999;">N/A</span>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php endif; ?>
-    </main>
-</div>
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('open');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('show');
+    });
 
-<script>
-const hamburger = document.getElementById('hamburger');
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('overlay');
-const profile = document.getElementById('profileDropdown');
-const dropdown = document.getElementById('dropdownMenu');
+    overlay.addEventListener('click', () => {
+        hamburger.classList.remove('open');
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
+    });
 
-hamburger.addEventListener('click', () => {
-    hamburger.classList.toggle('open');
-    sidebar.classList.toggle('open');
-    overlay.classList.toggle('show');
-});
+    profile.addEventListener('click', () => {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    });
 
-overlay.addEventListener('click', () => {
-    hamburger.classList.remove('open');
-    sidebar.classList.remove('open');
-    overlay.classList.remove('show');
-});
-
-profile.addEventListener('click', () => {
-    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-});
-
-document.addEventListener('click', (e) => {
-    if (!profile.contains(e.target)) dropdown.style.display = 'none';
-});
-</script>
+    document.addEventListener('click', (e) => {
+        if (!profile.contains(e.target)) dropdown.style.display = 'none';
+    });
+    </script>
 </body>
 </html>

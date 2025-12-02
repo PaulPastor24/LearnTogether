@@ -25,7 +25,7 @@
           FROM reservations r
           JOIN tutors t ON r.tutor_id = t.id
           JOIN users u ON t.user_id = u.id
-          WHERE r.learner_id = ? AND r.status = 'Confirmed'
+          WHERE r.learner_id = ? AND r.status = 'Scheduled'
           ORDER BY r.created_at DESC
       ");
       $res_stmt->execute([$learner_id]);
@@ -40,14 +40,7 @@
   <title>My Subjects — LearnTogether</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../CSS/style2.css">
-  <style>
-    .subject-card {
-      width: 250px; /* Adjusted to make cards smaller */
-    }
-    .subject-actions {
-      text-align: left; /* Move button to the left */
-    }
-  </style>
+  <link rel="stylesheet" href="../CSS/search.css">
 </head>
 <body>
   <div class="app">
@@ -68,6 +61,7 @@
           <a href="searchTutors.php">🔎 Find Tutors</a>
           <a href="schedule.php">📅 My Schedule</a>
           <a href="requests.php">✉️ Requests</a>
+          <a href="setting.php">⚙️ Settings</a>
           <a href="../logout.php">🚪 Logout</a>
         </nav>
 
@@ -90,6 +84,12 @@
       </div>
       <div class="search">
         <input id="searchInput" placeholder="Search my subjects..." />
+        <select id="searchFilter">
+          <option value="all">All</option>
+          <option value="subject">Subject</option>
+          <option value="tutor">Tutor</option>
+        </select>
+        <button id="clearSearch" title="Clear search">✕</button>
       </div>
 
       <div class="nav-actions">
@@ -119,7 +119,7 @@
                 Reserved with Tutor: <?= htmlspecialchars($res['tutor_first'] . ' ' . $res['tutor_last']) ?>
               </div>
               <div class="subject-actions" style="margin-top: 10px;">
-                <a href="learnerTopics.php?reservation_id=<?= $res['id'] ?>" class="btn" style="display: inline-block; padding: 8px 16px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px;">View</a>
+                <a href="learnerTopics.php?reservation_id=<?= $res['id'] ?>" class="view-btn" style="display: inline-block; padding: 8px 16px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px;">View</a>
               </div>
             </div>
           <?php endforeach; ?>
@@ -127,9 +127,20 @@
           <p style="color:gray;">You have no reservations yet.</p>
         <?php endif; ?>
       </div>
+      <p id="noResults">No subjects found matching your search.</p>
     </main>
   </div>
 
+  <!-- <script>
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.onkeydown = function(e) {
+        if (e.keyCode == 123 || 
+            (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
+            (e.ctrlKey && e.key.toUpperCase() == 'U')) {
+            return false;
+        }
+    };
+  </script> -->
   <script>
     const hamburger = document.getElementById('hamburger');
     const sidebar = document.getElementById('sidebar');
@@ -157,14 +168,57 @@
         if (!profile.contains(e.target)) dropdown.style.display = 'none';
     });
 
-    const searchInput = document.getElementById("searchInput");
-    const cards = document.querySelectorAll(".subject-card");
+    // Debounce function for performance
+    function debounce(func, delay) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+      };
+    }
 
-    searchInput.addEventListener("input", () => {
-      const term = searchInput.value.toLowerCase();
-      cards.forEach(card => {
-        const title = card.querySelector(".subject-title").textContent.toLowerCase();
-        card.style.display = title.includes(term) ? "block" : "none";
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('searchInput');
+      const searchFilter = document.getElementById('searchFilter');
+      const clearSearch = document.getElementById('clearSearch');
+      const noResults = document.getElementById('noResults');
+      if (!searchInput) return;
+
+      const cards = document.querySelectorAll('.subject-card');
+
+      const filterSubjects = () => {
+        const query = searchInput.value.toLowerCase();
+        const filter = searchFilter.value;
+        let hasVisible = false;
+
+        cards.forEach(card => {
+          const subject = card.querySelector('.subject-title')?.textContent.toLowerCase() || '';
+          const tutor = card.querySelector('.subject-desc')?.textContent.toLowerCase() || '';
+
+          let show = false;
+          if (filter === 'all') {
+            show = subject.includes(query) || tutor.includes(query);
+          } else if (filter === 'subject') {
+            show = subject.includes(query);
+          } else if (filter === 'tutor') {
+            show = tutor.includes(query);
+          }
+
+          card.style.display = show ? '' : 'none';
+          if (show) hasVisible = true;
+        });
+
+        noResults.style.display = hasVisible ? 'none' : 'block';
+      };
+
+      const debouncedFilter = debounce(filterSubjects, 300);
+      searchInput.addEventListener('input', debouncedFilter);
+      searchFilter.addEventListener('change', filterSubjects);
+
+      clearSearch.addEventListener('click', () => {
+        searchInput.value = '';
+        searchFilter.value = 'all';
+        filterSubjects();
       });
     });
   </script>
