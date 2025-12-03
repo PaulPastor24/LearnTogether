@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
 <body style="overflow-x: hidden;">
     <div class="app">
         <aside id="sidebar">
-            <div class="sidebar" style="width: 255px;">
+            <div class="sidebar">
                 <div class="profile-dropdown">
                     <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
                     <div>
@@ -127,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                         <a href="searchTutors.php">🔎 Find Tutors</a>
                         <a href="schedule.php">📅 My Schedule</a>
                         <a href="requests.php">✉️ Requests</a>
-                        <a class="active" href="settings.php">⚙️ Settings</a>
+                        <a class="active" href="setting.php">⚙️ Settings</a>
                         <a href="../logout.php">🚪 Logout</a>
                     <?php endif; ?>
                 </nav>

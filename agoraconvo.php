@@ -62,6 +62,33 @@ $contacts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $chat_with = isset($_GET['user']) ? (int)$_GET['user'] : null;
 $reservation_id = isset($_GET['reservation_id']) ? (int)$_GET['reservation_id'] : null;
 
+// If reservation_id is provided, get the other user from that reservation
+if ($reservation_id && !$chat_with) {
+    $resStmt = $pdo->prepare("
+        SELECT 
+            CASE 
+                WHEN l.user_id = ? THEN t.user_id
+                ELSE l.user_id
+            END AS other_user_id,
+            CONCAT(u.first_name, ' ', u.last_name) AS name
+        FROM reservations r
+        JOIN learners l ON r.learner_id = l.id
+        JOIN tutors t ON r.tutor_id = t.id
+        JOIN users u ON (
+            (l.user_id = ? AND u.id = t.user_id) OR
+            (t.user_id = ? AND u.id = l.user_id)
+        )
+        WHERE r.id = ?
+        LIMIT 1
+    ");
+    $resStmt->execute([$user_id, $user_id, $user_id, $reservation_id]);
+    $resData = $resStmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($resData) {
+        $chat_with = $resData['other_user_id'];
+    }
+}
+
 if ($chat_with && !$reservation_id) {
     $resStmt = $pdo->prepare("
         SELECT r.id 
@@ -94,6 +121,19 @@ foreach ($contacts as $c) {
         break;
     }
 }
+// If chat_with is set but contactName is empty, get the name from the reservation query
+if ($chat_with && !$contactName && $reservation_id) {
+    $nameStmt = $pdo->prepare("
+        SELECT CONCAT(u.first_name, ' ', u.last_name) AS name
+        FROM users u
+        WHERE u.id = ?
+    ");
+    $nameStmt->execute([$chat_with]);
+    $nameResult = $nameStmt->fetch(PDO::FETCH_ASSOC);
+    if ($nameResult) {
+        $contactName = $nameResult['name'];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -108,7 +148,18 @@ foreach ($contacts as $c) {
 <div class="container-fluid h-100">
     <div class="row h-100 g-0">
         <div class="col-12 col-md-3 sidebar p-0 h-100 overflow-auto">
-            <div class="sidebar-header p-3 fw-bold">Contacts</div>
+            <div class="sidebar-header p-3 fw-bold">
+                <?= $userRole === 'learner' ? 'Your Tutor' : 'Your Learner' ?>
+            </div>
+            <?php if ($contactName): ?>
+                <div class="d-block text-decoration-none p-3 active">
+                    <?= htmlspecialchars($contactName) ?>
+                </div>
+            <?php else: ?>
+                <div class="p-3 text-muted">No active conversations</div>
+            <?php endif; ?>
+            
+            <div class="sidebar-header p-3 fw-bold mt-3">All Contacts</div>
             <?php foreach ($contacts as $c): ?>
                 <a href="agoraconvo.php?user=<?= $c['user_id'] ?>&reservation_id=<?= $c['reservation_id'] ?>" 
                    class="d-block text-decoration-none p-3 <?= ($chat_with == $c['user_id']) ? 'active' : '' ?>">
@@ -123,11 +174,11 @@ foreach ($contacts as $c) {
                 <div>Chat <?= $contactName ? "with " . htmlspecialchars($contactName) : "" ?></div>
 
                 <div class="d-flex gap-2">
-                    <a href="<?= $dashboard ?>" class="btn btn-secondary btn-sm">⬅ Back</a>
+                    <button class="btn btn-secondary btn-sm" onclick="history.back()">⬅ Back</button>
 
                     <?php if ($chat_with && $reservation_id): ?>
                         <button class="video-btn btn btn-sm btn-primary"
-                            onclick="window.open('meetingPage2.php?reservation_id=<?= $reservation_id ?>')">
+                            onclick="window.open('meetingPage.php?reservation_id=<?= $reservation_id ?>')">
                             🎥 Video
                         </button>
                     <?php endif; ?>
@@ -153,7 +204,7 @@ function loadMessages() {
     if (!chatWith) return;
     fetch(`messages.php?receiver_id=${chatWith}`)
         .then(res => res.json())
-        .then(data => {
+        .then (data => {
             const container = document.getElementById('messages');
             container.innerHTML = '';
             data.forEach(msg => {

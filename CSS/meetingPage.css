@@ -17,8 +17,21 @@ body {
     width: 100vw;
     height: 100vh;
     position: relative;
-    background: black;
+    background: #000000;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#videoContainer.screen-sharing-active {
+    background: #000000;
+    display: flex;
+    flex-direction: row;
+}
+
+.video-box {
+    background-color: #000000;
 }
 
 .video-box.remote {
@@ -28,13 +41,14 @@ body {
     width: 100%;
     height: 100%;
     z-index: 1;
+    background-color: #000000;
 }
 
 .video-box.remote video {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    background-color: black;
+    background-color: #000000;
 }
 
 .video-box.local {
@@ -47,17 +61,18 @@ body {
     max-height: 30vh;
     border-radius: 12px;
     overflow: hidden;
-    border: 2px solid white;
+    border: 3px solid white;
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     z-index: 10;
     transition: all 0.3s ease;
+    background-color: #000000;
 }
 
 .video-box.local video {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    background-color: black;
+    background-color: #000000;
 }
 
 .alone .video-box.local {
@@ -96,10 +111,98 @@ body {
     background-color: rgba(255,255,255,0.2);
 }
 
+.control-btn.active {
+    background-color: #0f766e;
+    box-shadow: 0 0 10px rgba(15, 118, 110, 0.6);
+}
+
+.control-btn.inactive {
+    background-color: rgba(100, 100, 100, 0.6);
+}
+
 .end-call {
     background-color: #ffffff;
 }
 
 .end-call:hover {
     background-color: #e53935;
+}
+
+.screen-share-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 60%;
+    height: 100%;
+    z-index: 5;
+    background-color: #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-left: 20px;
+}
+
+.screen-share-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background-color: #000000;
+    display: block;
+}
+
+
+
+#videoContainer.screen-sharing-active .video-box.local.pip-mode {
+    position: absolute !important;
+    top: 50% !important;
+    right: 120px !important;
+    transform: translateY(-50%) !important;
+    width: 20% !important;
+    height: auto !important;
+    max-height: 35vh !important;
+    z-index: 20 !important;
+    border: 3px solid white !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+    margin-left: 0 !important;
+    bottom: auto !important;
+    left: auto !important;
+    aspect-ratio: 16/9;
+    min-height: 150px;
+}
+
+#videoContainer.screen-sharing-active .video-box.local.pip-mode video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    background-color: #000000 !important;
+}
+
+#videoContainer.screen-sharing-active .video-box.remote.remote-pip-mode {
+    position: absolute !important;
+    right: 80px !important;
+    width: 20% !important;
+    height: auto !important;
+    max-height: 35vh !important;
+    z-index: 19 !important;
+    border: 3px solid white !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
+    margin-left: 0 !important;
+    left: auto !important;
+    bottom: auto !important;
+    top: auto !important;
+    transform: none !important;
+    aspect-ratio: 16/9;
+    min-height: 150px;
+}
+
+#videoContainer.screen-sharing-active .video-box.remote.remote-pip-mode video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    background-color: #000000 !important;
 }

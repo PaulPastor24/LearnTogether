@@ -72,8 +72,8 @@ $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <body>
   <div class="app">
     <aside id="sidebar">
-      <div class="sidebar">
-        <div class="profile">
+      <div class="sidebar" style="width: 230px; height: 420px;">
+        <div class="profile" id="sidebarProfile" style="cursor: pointer; position: relative; border-radius: 8px; padding: 10px; transition: all 0.3s ease;" title="View Profile">
           <div class="avatar">
             <?= strtoupper($tutor['first_name'][0]) ?>
           </div>
@@ -81,6 +81,7 @@ $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div style="font-weight:750"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
             <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
           </div>
+          <div class="view-profile-tooltip" style="position: absolute; bottom: -35px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 10;">👤 View Profile</div>
         </div>
 
         <nav class="navlinks fw-bold" style="margin-top:12px;">
@@ -285,7 +286,6 @@ $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
         overlay.classList.remove('show');
     });
 
-    // Show hamburger on screens 940px and smaller
     function checkScreenSize() {
         if (window.innerWidth <= 940) {
             hamburger.style.display = 'block';
@@ -294,7 +294,24 @@ $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
     }
     window.addEventListener('resize', checkScreenSize);
-    checkScreenSize(); // Initial check
+    checkScreenSize();
+
+    const sidebarProfile = document.getElementById('sidebarProfile');
+    const tooltip = document.querySelector('.view-profile-tooltip');
+
+    if (sidebarProfile) {
+      sidebarProfile.addEventListener('mouseenter', function() {
+        tooltip.style.opacity = '1';
+      });
+
+      sidebarProfile.addEventListener('mouseleave', function() {
+        tooltip.style.opacity = '0';
+      });
+
+      sidebarProfile.addEventListener('click', function() {
+        window.location.href = 'viewProfile.php';
+      });
+    }
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

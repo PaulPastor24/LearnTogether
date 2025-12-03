@@ -15,13 +15,23 @@
       <h1 class="error-code">404</h1>
       <h2 class="error-message">Page Not Found</h2>
       <p class="error-description">
-        The page you’re looking for doesn’t exist or may have been moved.
+        The page you're looking for doesn't exist or may have been moved.
       </p>
 
-      <a href="/LearnTogether/landingpage.php" class="home-btn">Go Back Home</a>
+      <button onclick="goBack()" class="home-btn">Go Back</button>
 
     </div>
   </div>
+
+  <script>
+    function goBack() {
+      if (document.referrer) {
+        window.location.href = document.referrer;
+      } else {
+        window.location.href = '/LearnTogether/landingpage.php';
+      }
+    }
+  </script>
 
 </body>
 </html>

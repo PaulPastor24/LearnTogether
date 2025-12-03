@@ -36,7 +36,7 @@
           <p>
             A collaborative learning hub designed to connect students with one another for academic support, skill-building, and knowledge sharing.
           </p>
-          <a href="login.php" class="btn btn-success mt-3 px-4">Learn More</a>
+          <a href="#about" class="btn btn-success mt-3 px-4">Learn More</a>
         </div>
 
         <div class="col-md-6 text-center mt-4 mt-md-0">
@@ -82,7 +82,7 @@
             </div>
           </div>
 
-          <a href="#" class="btn btn-success mt-4 px-4">Join the Community</a>
+          <a href="login.php" class="btn btn-success mt-4 px-4">Join the Community</a>
         </div>
 
         <div class="col-md-6 text-center">

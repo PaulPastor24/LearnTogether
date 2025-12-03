@@ -272,7 +272,6 @@
         overlay.classList.remove('show');
     });
 
-    // Debounce function for performance
     function debounce(func, delay) {
       let timeout;
       return function(...args) {
@@ -300,8 +299,8 @@
           const dayText = session.querySelector('.date strong')?.textContent.toLowerCase() || '';
           const timeText = session.querySelector('.date span')?.textContent.toLowerCase() || '';
           const durationText = session.querySelector('.meta div:last-child')?.textContent.toLowerCase() || '';
-          const subject = metaText.split(' — ')[0]; // Extract subject
-          const partner = metaText.split(' — ')[1]; // Extract partner
+          const subject = metaText.split(' — ')[0];
+          const partner = metaText.split(' — ')[1];
 
           let show = false;
           if (filter === 'all') {

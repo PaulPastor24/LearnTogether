@@ -14,37 +14,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_account'])) {
     $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
     $phone = preg_replace('/\D/', '', $_POST['phone']);
     
-    if (strpos($phone, '63') !== 0) {
-        $phone = '63' . ltrim($phone, '0');
-    }
-
-    $otp = rand(100000, 999999);
-
-    $stmt = $pdo->prepare("INSERT INTO users (first_name, last_name, email, password, phone, verified, otp_code) VALUES (?, ?, ?, ?, ?, 0, ?)");
-    $stmt->execute([$first, $last, $email, $password, $phone, $otp]);
-
-    $message = "Your LearnTogether verification code is $otp";
-    $data = [
-        'api_token' => $apiToken,
-        'message' => $message,
-        'phone_number' => $phone
-    ];
-
-    $ch = curl_init($apiUrl);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-    $response = curl_exec($ch);
-    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    if ($status === 200 || $status === 201) {
-        $_SESSION['user_email'] = $email;
-        $_SESSION['step'] = 'verify';
-        header("Location: signup.php");
-        exit;
+    if (!preg_match('/@g\.batstate-u\.edu\.ph$/', $email)) {
+        $error = "Please use your GSuite account (@g.batstate-u.edu.ph) to sign up.";
     } else {
-        $error = "OTP failed to send. Try again later.";
+        if (strpos($phone, '63') !== 0) {
+            $phone = '63' . ltrim($phone, '0');
+        }
+
+        $otp = rand(100000, 999999);
+
+        $stmt = $pdo->prepare("INSERT INTO users (first_name, last_name, email, password, phone, verified, otp_code) VALUES (?, ?, ?, ?, ?, 0, ?)");
+        $stmt->execute([$first, $last, $email, $password, $phone, $otp]);
+
+        $message = "Your LearnTogether verification code is $otp";
+        $data = [
+            'api_token' => $apiToken,
+            'message' => $message,
+            'phone_number' => $phone
+        ];
+
+        $ch = curl_init($apiUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+        $response = curl_exec($ch);
+        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($status === 200 || $status === 201) {
+            $_SESSION['user_email'] = $email;
+            $_SESSION['step'] = 'verify';
+            header("Location: signup.php");
+            exit;
+        } else {
+            $error = "OTP failed to send. Try again later.";
+        }
     }
 }
 
@@ -115,7 +119,7 @@ $step = $_SESSION['step'] ?? 'create';
         <input type="text" name="last_name" class="form-control" placeholder="Last Name" required>
       </div>
       <div class="col-md-12">
-        <input type="email" name="email" class="form-control" placeholder="Email Address" required>
+        <input type="email" name="email" class="form-control" placeholder="GSuite Email (@g.batstate-u.edu.ph)" required pattern=".*@g\.batstate-u\.edu\.ph$" title="Please use your GSuite account (@g.batstate-u.edu.ph)">
       </div>
       <div class="col-md-12">
         <input type="password" name="password" class="form-control" placeholder="Password" required>
@@ -183,17 +187,26 @@ $step = $_SESSION['step'] ?? 'create';
 <script>
 $(document).ready(function() {
   $('#signupForm').on('submit', function(e) {
+    let email = $('input[name="email"]').val();
     let phone = $('input[name="phone"]').val();
     let password = $('input[name="password"]').val();
+
+    if (!/@g\.batstate-u\.edu\.ph$/.test(email)) {
+      alert("Please use your GSuite account (@g.batstate-u.edu.ph) to sign up.");
+      e.preventDefault();
+      return;
+    }
 
     if (!/^(09|\+639)\d{9}$/.test(phone)) {
       alert("Please enter a valid phone number (e.g. 09123456789 or +639123456789)");
       e.preventDefault();
+      return;
     }
 
     if (password.length < 6) {
       alert("Password must be at least 6 characters.");
       e.preventDefault();
+      return;
     }
   });
 

@@ -135,8 +135,8 @@ aside {
 }
 
 .lt-main {
-    margin-top: 100px; /* Adjusted to position below nav */
-    margin-left: calc(var(--sidebar-visual-width) + var(--sidebar-total-left) + var(--content-gap) + -10px);
+    margin-top: 120px; /* Adjusted to position below nav */
+    margin-left: 260px;
     padding:40px;
 }
 
@@ -264,6 +264,20 @@ h1 {
 
 .sidebar.show {
     transform: translateX(0);
+}
+
+@media (min-width: 1600px) {
+    .lt-main {
+        margin-left: 260px;
+        margin-top: 120px;
+    }
+}
+
+@media (min-width: 1400px) and (max-width: 1599px) {
+    .lt-main {
+        margin-left: 260px;
+        margin-top: 120px;
+    }
 }
 
 @media (min-width: 1200px) {
@@ -443,8 +457,9 @@ h1 {
         display: block;
     }
     .lt-main {
-        margin-left: 0 !important;
-        margin-top: -30px !important;
+        margin-left: 0;
+        margin-top: 100px;
+        width: 100%;
     }
     .nav {
         height: auto !important;

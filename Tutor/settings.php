@@ -13,6 +13,14 @@ $stmt = $pdo->prepare("SELECT first_name, last_name, email, password FROM users 
 $stmt->execute([$user_id]);
 $tutor = $stmt->fetch(PDO::FETCH_ASSOC);
 
+// Get tutor-specific info
+$stmt = $pdo->prepare("SELECT id, description, phone FROM tutors WHERE user_id = ?");
+$stmt->execute([$user_id]);
+$tutorInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+$tutor_id = $tutorInfo['id'] ?? null;
+$description = $tutorInfo['description'] ?? '';
+$phone = $tutorInfo['phone'] ?? '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_account'])) {
     $first = trim($_POST['first_name']);
     $last = trim($_POST['last_name']);
@@ -21,6 +29,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_account'])) {
     $stmt = $pdo->prepare("UPDATE users SET first_name = ?, last_name = ?, email = ? WHERE id = ?");
     $stmt->execute([$first, $last, $email, $user_id]);
     $success_message = "Account information updated successfully!";
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_tutor_info'])) {
+    $desc = trim($_POST['description']);
+    $phone_num = trim($_POST['phone']);
+
+    $stmt = $pdo->prepare("UPDATE tutors SET description = ?, phone = ? WHERE id = ?");
+    $stmt->execute([$desc, $phone_num, $tutor_id]);
+    
+    $description = $desc;
+    $phone = $phone_num;
+    $success_message = "Profile information updated successfully!";
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password'])) {
@@ -55,13 +75,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password'])) {
 <body>
 
 <aside>
-    <div class="sidebar" style="width: 230px; height: 400px;">
-        <div class="profile">
+    <div class="sidebar" style="width: 230px; height: 420px;">
+        <div class="profile" id="sidebarProfile" style="cursor: pointer; position: relative; border-radius: 8px; padding: 10px; transition: all 0.3s ease;" title="View Profile">
             <div class="avatar"><?= strtoupper($tutor['first_name'][0] ?? 'T') ?></div>
             <div>
                 <div style="font-weight:750"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
                 <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
             </div>
+            <div class="view-profile-tooltip" style="position: absolute; bottom: -35px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 10;">👤 View Profile</div>
         </div>
         <nav class="navlinks fw-bold" style="margin-top: 12px;">
             <a href="tutorDashboard.php">🏠 Overview</a>
@@ -115,6 +136,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password'])) {
         <div class="col-12 col-md-6">
             <div class="card card-custom p-3 narrow-card">
                 <div class="card-body">
+                    <h2 class="card-title h5 mb-3">Profile Information</h2>
+                    <form method="POST">
+                        <input type="hidden" name="update_tutor_info" value="1">
+                        <div class="mb-2">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" name="phone" class="form-control" value="<?= htmlspecialchars($phone) ?>" placeholder="Enter your phone number">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Description / Bio</label>
+                            <textarea name="description" class="form-control" rows="4" placeholder="Write a brief bio about yourself as a tutor"><?= htmlspecialchars($description) ?></textarea>
+                        </div>
+                        <button type="submit" class="btn-success btn mt-2 w-100">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <div class="card card-custom p-3 narrow-card">
+                <div class="card-body">
                     <h2 class="card-title h5 mb-3">Password</h2>
                     <form method="POST">
                         <input type="hidden" name="update_password" value="1">
@@ -142,6 +183,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password'])) {
     document.querySelector('.menu-toggle').addEventListener('click', function() {
       document.querySelector('aside').classList.toggle('show');
     });
+
+    // Make profile clickable and show tooltip
+    const sidebarProfile = document.getElementById('sidebarProfile');
+    const tooltip = document.querySelector('.view-profile-tooltip');
+
+    if (sidebarProfile) {
+      sidebarProfile.addEventListener('mouseenter', function() {
+        tooltip.style.opacity = '1';
+      });
+
+      sidebarProfile.addEventListener('mouseleave', function() {
+        tooltip.style.opacity = '0';
+      });
+
+      sidebarProfile.addEventListener('click', function() {
+        window.location.href = 'viewProfile.php';
+      });
+    }
   </script>
 </body>
 </html>

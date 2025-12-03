@@ -43,6 +43,41 @@ if (!$learner) {
     exit;
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_status') {
+    $topic_title = $_POST['topic'] ?? '';
+    $subject = $_POST['subject'] ?? '';
+    $new_status = $_POST['status'] ?? 'Pending';
+    
+    if (!in_array($new_status, ['Pending', 'Done'])) {
+        $new_status = 'Pending';
+    }
+    
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS topic_status (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            tutor_id INT NOT NULL,
+            learner_id INT NOT NULL,
+            subject VARCHAR(255) NOT NULL,
+            topic VARCHAR(255) NOT NULL,
+            status ENUM('Pending', 'Done') DEFAULT 'Pending',
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY unique_topic (tutor_id, learner_id, subject, topic)
+        )");
+    } catch (Exception $e) {
+    }
+    
+    $stmt = $pdo->prepare("
+        INSERT INTO topic_status (tutor_id, learner_id, subject, topic, status)
+        VALUES (?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE status = VALUES(status)
+    ");
+    $stmt->execute([$tutor_id, $learner_id, $subject, $topic_title, $new_status]);
+    
+    header('Content-Type: application/json');
+    echo json_encode(['success' => true, 'status' => $new_status]);
+    exit;
+}
+
 $stmt = $pdo->prepare("
     SELECT r.id AS reservation_id, r.subject, r.status
     FROM reservations r
@@ -65,10 +100,18 @@ foreach ($reservations as $res) {
         $topics = array_map('trim', explode(',', $row['topics']));
         foreach ($topics as $t) {
             if ($t !== '') {
+                $stmt_status = $pdo->prepare("
+                    SELECT status FROM topic_status 
+                    WHERE tutor_id = ? AND learner_id = ? AND subject = ? AND topic = ?
+                ");
+                $stmt_status->execute([$tutor_id, $learner_id, $subject, $t]);
+                $status_row = $stmt_status->fetch(PDO::FETCH_ASSOC);
+                $status = $status_row ? $status_row['status'] : 'Pending';
+                
                 $allTopics[] = [
                     'subject' => $subject,
                     'title' => $t,
-                    'status' => 'Pending'
+                    'status' => $status
                 ];
             }
         }
@@ -168,13 +211,17 @@ $pendingCount = $pendingTopics;
               $badgeClass = $status === 'Done' ? 'bg-success' : 'bg-warning';
               $topicId = urlencode($topic['title']);
             ?>
-              <a href="lessonDetails.php?learner_id=<?= $learner_id ?>&subject=<?= urlencode($topic['subject']) ?>&topic=<?= $topicId ?>" class="lesson-card d-flex justify-content-between align-items-center p-3 mb-2 border rounded bg-light text-decoration-none text-dark">
-                <div>
+              <div class="lesson-card d-flex justify-content-between align-items-center p-3 mb-2 border rounded bg-light text-decoration-none text-dark">
+                <div class="flex-grow-1">
                   <div class="fw-bold">Topic <?= $num++ ?></div>
                   <div><?= htmlspecialchars($topic['title']) ?></div>
                 </div>
-                <div class="status-badge <?= $badgeClass ?> px-3 py-1 rounded text-white fw-bold"><?= htmlspecialchars($status) ?></div>
-              </a>
+                <div class="status-badge <?= $badgeClass ?> px-3 py-1 rounded text-white fw-bold" 
+                     style="cursor: pointer; margin-left: auto;" 
+                     onclick="toggleStatus(event, '<?= htmlspecialchars($topic['subject']) ?>', '<?= htmlspecialchars($topic['title']) ?>', this)">
+                  <?= htmlspecialchars($status) ?>
+                </div>
+              </div>
             <?php endforeach; ?>
           <?php endforeach; ?>
         <?php else: ?>
@@ -185,5 +232,57 @@ $pendingCount = $pendingTopics;
     </div>
   </main>
 </div>
+
+<script>
+function toggleStatus(event, subject, topic, element) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const currentStatus = element.textContent.trim();
+    const newStatus = currentStatus === 'Done' ? 'Pending' : 'Done';
+    
+    // Show loading state
+    element.textContent = 'Updating...';
+    element.style.opacity = '0.5';
+    
+    // Send AJAX request
+    fetch(window.location.href, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `action=update_status&subject=${encodeURIComponent(subject)}&topic=${encodeURIComponent(topic)}&status=${encodeURIComponent(newStatus)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            element.textContent = newStatus;
+            element.style.opacity = '1';
+            
+            element.classList.remove('bg-success', 'bg-warning');
+            if (newStatus === 'Done') {
+                element.classList.add('bg-success');
+            } else {
+                element.classList.add('bg-warning');
+            }
+            
+            setTimeout(() => {
+                location.reload();
+            }, 500);
+        } else {
+            element.textContent = currentStatus;
+            element.style.opacity = '1';
+            alert('Failed to update status');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        element.textContent = currentStatus;
+        element.style.opacity = '1';
+        alert('Error updating status');
+    });
+}
+</script>
+
 </body>
 </html>
