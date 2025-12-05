@@ -109,51 +109,88 @@ function updateLayout() {
         container.classList.add("alone");
     } else {
         container.classList.remove("alone");
+        
+        // Normal layout (not screen sharing): local video in PiP (bottom-right), remote in full screen
+        if (!isScreenSharing) {
+            const localBox = document.querySelector(".video-box.local");
+            if (localBox) {
+                localBox.style.display = "block";
+                localBox.style.position = "absolute";
+                localBox.style.bottom = "20px";
+                localBox.style.right = "20px";
+                localBox.style.transform = "none";
+                localBox.style.width = "18%";
+                localBox.style.height = "auto";
+                localBox.style.maxHeight = "28vh";
+                localBox.style.border = "3px solid white";
+                localBox.style.borderRadius = "12px";
+                localBox.style.zIndex = "20";
+                localBox.style.overflow = "hidden";
+                localBox.style.aspectRatio = "16/9";
+                localBox.style.minHeight = "120px";
+                localBox.classList.add("pip-mode");
+            }
+            
+            Object.values(remoteUsers).forEach(box => {
+                if (!box.classList.contains('local')) {
+                    box.style.position = "";
+                    box.style.top = "";
+                    box.style.bottom = "";
+                    box.style.right = "";
+                    box.style.width = "";
+                    box.style.height = "";
+                    box.style.zIndex = "";
+                    box.style.border = "";
+                    box.style.borderRadius = "";
+                    box.style.overflow = "";
+                    box.style.aspectRatio = "";
+                    box.style.minHeight = "";
+                    box.style.display = "block";
+                    box.classList.remove("remote-pip-mode");
+                }
+            });
+        }
     }
-}
-
-function applyViewerScreenShareLayout() {
-    // When viewing someone's screen share, show both local and remote cameras centered on the right
+}function applyViewerScreenShareLayout() {
     const container = document.getElementById("videoContainer");
     container.classList.add("screen-sharing-active");
     
-    // Position local camera on the right (centered vertically)
     const localBox = document.querySelector(".video-box.local");
     if (localBox) {
         localBox.style.display = "block";
         localBox.style.position = "absolute";
-        localBox.style.top = "50%";
+        localBox.style.top = "10px";
         localBox.style.right = "20px";
-        localBox.style.transform = "translateY(-50%)";
-        localBox.style.width = "20%";
+        localBox.style.transform = "none";
+        localBox.style.width = "18%";
         localBox.style.height = "auto";
-        localBox.style.maxHeight = "35vh";
+        localBox.style.maxHeight = "28vh";
         localBox.style.border = "3px solid white";
         localBox.style.borderRadius = "12px";
         localBox.style.zIndex = "20";
         localBox.style.overflow = "hidden";
         localBox.style.aspectRatio = "16/9";
-        localBox.style.minHeight = "150px";
+        localBox.style.minHeight = "120px";
     }
     
-    // Stack remote cameras around center on the right
     let cameraIndex = 0;
     Object.values(remoteUsers).forEach(box => {
         if (!box.classList.contains('local')) {
             box.style.display = "block";
             box.style.position = "absolute";
-            box.style.top = `calc(50% + ${(cameraIndex + 1) * 170}px - 50%)`;
+            box.style.top = "auto";
+            box.style.bottom = (20 + cameraIndex * 160) + "px";
             box.style.right = "20px";
             box.style.transform = "none";
-            box.style.width = "20%";
+            box.style.width = "18%";
             box.style.height = "auto";
-            box.style.maxHeight = "35vh";
+            box.style.maxHeight = "28vh";
             box.style.border = "3px solid white";
             box.style.borderRadius = "12px";
             box.style.zIndex = "19";
             box.style.overflow = "hidden";
             box.style.aspectRatio = "16/9";
-            box.style.minHeight = "150px";
+            box.style.minHeight = "120px";
             cameraIndex++;
         }
     });
@@ -166,10 +203,10 @@ function applyScreenSharingLayout(screenOwnerUid = null, isRemoteScreen = false)
     container.classList.add("screen-sharing-active");
     
     if (isRemoteScreen) {
-        // Remote user is sharing their screen
+
         const screenBox = document.getElementById(`user-${screenOwnerUid}`);
         if (screenBox) {
-            // Screen on the left side
+
             screenBox.style.position = "absolute";
             screenBox.style.top = "0";
             screenBox.style.left = "0";
@@ -182,76 +219,80 @@ function applyScreenSharingLayout(screenOwnerUid = null, isRemoteScreen = false)
             screenBox.classList.add("screen-share-box");
         }
         
-        // Local video on the right
+
         if (localBox) {
             localBox.classList.add("pip-mode");
             localBox.style.display = "block";
             localBox.style.position = "absolute";
-            localBox.style.top = "calc(50% - 35px - 200px)";
+            localBox.style.top = "10px";
             localBox.style.bottom = "auto";
-            localBox.style.right = "100px";
+            localBox.style.right = "20px";
             localBox.style.transform = "none";
-            localBox.style.width = "23%";
+            localBox.style.width = "18%";
             localBox.style.height = "auto";
-            localBox.style.maxHeight = "40vh";
+            localBox.style.maxHeight = "28vh";
             localBox.style.marginLeft = "0";
             localBox.style.border = "3px solid white";
             localBox.style.borderRadius = "12px";
             localBox.style.zIndex = "20";
             localBox.style.overflow = "hidden";
             localBox.style.aspectRatio = "16/9";
-            localBox.style.minHeight = "200px";
+            localBox.style.minHeight = "120px";
         }
         
-        // Other remote videos below local video
+
+        let remoteCount = 0;
         Object.entries(remoteUsers).forEach(([uid, box]) => {
             if (uid != screenOwnerUid && !box.classList.contains('local')) {
                 box.style.display = "block !important";
                 box.classList.add("remote-pip-mode");
                 box.style.position = "absolute";
-                box.style.bottom = "auto";
-                box.style.top = "calc(50% + 35px)";
-                box.style.right = "100px";
+                box.style.bottom = (20 + remoteCount * 160) + "px";
+                box.style.top = "auto";
+                box.style.right = "20px";
                 box.style.transform = "none";
-                box.style.width = "23%";
+                box.style.width = "18%";
                 box.style.height = "auto";
-                box.style.maxHeight = "40vh";
+                box.style.maxHeight = "28vh";
                 box.style.marginLeft = "0";
                 box.style.border = "3px solid white";
                 box.style.borderRadius = "12px";
                 box.style.zIndex = "19";
                 box.style.overflow = "hidden";
                 box.style.aspectRatio = "16/9";
-                box.style.minHeight = "200px";
+                box.style.minHeight = "120px";
+                remoteCount++;
             }
         });
     } else {
-        // Local user is sharing their screen (screen is in the container element)
-        // Hide local camera video since we're sharing screen
+
+
         if (localBox) {
             localBox.style.display = "none";
         }
         
-        // Position remote videos on the right
+
+        let remoteCount = 0;
         Object.values(remoteUsers).forEach(box => {
             if (!box.classList.contains('local')) {
                 box.style.display = "block !important";
                 box.classList.add("remote-pip-mode");
                 box.style.position = "absolute";
-                box.style.bottom = "auto";
-                box.style.top = "calc(50% + 35px)";
-                box.style.right = "100px";
+                box.style.bottom = (20 + remoteCount * 160) + "px";
+                box.style.top = "auto";
+                box.style.right = "20px";
                 box.style.transform = "none";
-                box.style.width = "23%";
+                box.style.width = "18%";
                 box.style.height = "auto";
-                box.style.maxHeight = "40vh";
+                box.style.maxHeight = "28vh";
                 box.style.marginLeft = "0";
                 box.style.border = "3px solid white";
                 box.style.borderRadius = "12px";
                 box.style.zIndex = "19";
                 box.style.overflow = "hidden";
                 box.style.aspectRatio = "16/9";
-                box.style.minHeight = "200px";
+                box.style.minHeight = "120px";
+                remoteCount++;
             }
         });
     }
@@ -263,7 +304,7 @@ function resetLayout() {
     
     container.classList.remove("screen-sharing-active");
     
-    // Reset local video
+
     if (localBox) {
         localBox.classList.remove("pip-mode");
         localBox.style.display = "";
@@ -284,7 +325,7 @@ function resetLayout() {
         localBox.style.minHeight = "";
     }
     
-    // Reset remote videos
+
     Object.values(remoteUsers).forEach(box => {
         if (!box.classList.contains('local')) {
             box.classList.remove("remote-pip-mode");
@@ -352,10 +393,10 @@ async function toggleScreenShare() {
 
     try {
         if (!isScreenSharing) {
-            // Start screen sharing
+
             console.log("Starting screen share...");
             
-            // Create screen track with proper configuration
+
             console.log("Creating screen track...");
             screenTrack = await AgoraRTC.createScreenVideoTrack({
                 encoderConfig: "1080p_1",
@@ -365,14 +406,13 @@ async function toggleScreenShare() {
             console.log("Screen track object:", screenTrack);
             console.log("Screen track type:", typeof screenTrack);
 
-            // Create screen share container (like Google Meet)
             const screenBox = document.createElement("div");
             screenBox.id = "screen-share";
             screenBox.className = "screen-share-container";
             container.appendChild(screenBox);
             console.log("Screen share container created");
 
-            // Play screen track
+
             try {
                 console.log("Playing screen track...");
                 await screenTrack.play(screenBox);
@@ -381,30 +421,24 @@ async function toggleScreenShare() {
                 console.error("Error playing screen track:", e);
             }
 
-            // Publish screen track to remote users (don't unpublish camera, publish both)
-            console.log("Publishing screen track alongside camera...");
+
+            console.log("Publishing screen track...");
             try {
-                await client.publish([screenTrack, localTracks.videoTrack]);
-                console.log("✓ Screen and camera tracks published");
+                await client.unpublish([localTracks.videoTrack]);
+                console.log("✓ Camera unpublished");
+                await client.publish(screenTrack);
+                console.log("✓ Screen track published");
             } catch (e) {
-                // If we can't publish both, unpublish camera first then publish screen only
-                if (e.code === "CAN_NOT_PUBLISH_MULTIPLE_VIDEO_TRACKS") {
-                    console.log("Can't publish both tracks, switching to screen only...");
-                    await client.unpublish([localTracks.videoTrack]);
-                    await client.publish(screenTrack);
-                    console.log("✓ Screen track published (camera unpublished)");
-                } else {
-                    throw e;
-                }
+                console.error("Error publishing screen track:", e);
+                throw e;
             }
             
-            // Show local camera in PiP mode on the right (centered vertically)
             const localBox = document.querySelector(".video-box.local");
             if (localBox) {
-                // Clear the box and replay the camera
+
                 localBox.innerHTML = '';
                 
-                // Replay the local camera track
+
                 try {
                     await localTracks.videoTrack.play(localBox);
                     console.log("✓ Local camera playing in PiP mode");
@@ -414,39 +448,40 @@ async function toggleScreenShare() {
                 
                 localBox.style.display = "block";
                 localBox.style.position = "absolute";
-                localBox.style.top = "50%";
-                localBox.style.right = "60px";
-                localBox.style.transform = "translateY(-50%)";
-                localBox.style.width = "20%";
+                localBox.style.top = "10px";
+                localBox.style.right = "20px";
+                localBox.style.transform = "none";
+                localBox.style.width = "18%";
                 localBox.style.height = "auto";
-                localBox.style.maxHeight = "35vh";
+                localBox.style.maxHeight = "28vh";
                 localBox.style.border = "3px solid white";
                 localBox.style.borderRadius = "12px";
                 localBox.style.zIndex = "20";
                 localBox.style.overflow = "hidden";
                 localBox.style.aspectRatio = "16/9";
-                localBox.style.minHeight = "150px";
+                localBox.style.minHeight = "120px";
                 localBox.classList.add("pip-mode");
             }
             
-            // Show remote videos stacked around center on the right
+
             let remoteIndex = 0;
             Object.values(remoteUsers).forEach((box) => {
                 if (!box.classList.contains('local')) {
                     box.style.display = "block";
                     box.style.position = "absolute";
-                    box.style.top = `calc(50% + ${(remoteIndex + 1) * 170}px - 50%)`;
+                    box.style.top = "auto";
+                    box.style.bottom = (20 + remoteIndex * 160) + "px";
                     box.style.right = "20px";
                     box.style.transform = "none";
-                    box.style.width = "20%";
+                    box.style.width = "18%";
                     box.style.height = "auto";
-                    box.style.maxHeight = "35vh";
+                    box.style.maxHeight = "28vh";
                     box.style.border = "3px solid white";
                     box.style.borderRadius = "12px";
                     box.style.zIndex = "19";
                     box.style.overflow = "hidden";
                     box.style.aspectRatio = "16/9";
-                    box.style.minHeight = "150px";
+                    box.style.minHeight = "120px";
                     box.classList.add("remote-pip-mode");
                     remoteIndex++;
                 }
@@ -459,7 +494,7 @@ async function toggleScreenShare() {
             
             console.log("✅ Screen sharing started");
         } else {
-            // Stop screen sharing
+
             console.log("Stopping screen share...");
             
             if (screenTrack) {
@@ -480,10 +515,10 @@ async function toggleScreenShare() {
                 console.log("✓ Screen box removed");
             }
 
-            // Camera is still published, no need to republish
+
             console.log("✓ Camera video still active");
             
-            // Restore normal layout
+
             Object.values(remoteUsers).forEach(box => {
                 if (!box.classList.contains('local')) {
                     box.classList.remove("remote-pip-mode");
@@ -509,14 +544,15 @@ async function toggleScreenShare() {
             const localBox = document.querySelector(".video-box.local");
             if (localBox) {
                 localBox.classList.remove("pip-mode");
+                localBox.style.display = "";
+                localBox.style.position = "";
                 localBox.style.width = "";
                 localBox.style.height = "";
                 localBox.style.bottom = "";
                 localBox.style.right = "";
-                localBox.style.position = "";
+                localBox.style.top = "";
                 localBox.style.borderRadius = "";
                 localBox.style.border = "";
-                localBox.style.top = "";
                 localBox.style.transform = "";
                 localBox.style.maxHeight = "";
                 localBox.style.marginTop = "";
@@ -528,6 +564,15 @@ async function toggleScreenShare() {
             }
             
             container.classList.remove("screen-sharing-active");
+            
+            console.log("Republishing camera track...");
+            try {
+                await client.publish([localTracks.videoTrack]);
+                console.log("✓ Camera track republished");
+            } catch (e) {
+                console.error("Error republishing camera track:", e);
+            }
+            
             shareBtn.classList.remove("active");
             shareBtn.innerText = "🖥️";
             isScreenSharing = false;
@@ -540,7 +585,7 @@ async function toggleScreenShare() {
         console.error("Error stack:", err.stack);
         alert("Screen sharing failed: " + err.message + "\n\nCheck browser console for details.");
         
-        // Reset state on error
+
         if (screenTrack) {
             try {
                 screenTrack.stop();
@@ -553,7 +598,7 @@ async function toggleScreenShare() {
         isScreenSharing = false;
         shareBtn.classList.remove("active");
         
-        // Remove the screen box if it exists
+
         const screenBox = document.getElementById("screen-share");
         if (screenBox) screenBox.remove();
     }
@@ -562,13 +607,13 @@ async function toggleScreenShare() {
 
 async function startMeeting() {
     try {
-        // Check if browser supports getUserMedia
+
         const constraints = { audio: true, video: true };
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             throw new Error("Your browser does not support camera/microphone access (getUserMedia not available)");
         }
 
-        // Check HTTPS or localhost
+
         if (location.protocol !== "https:" && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
             console.warn("⚠️ Warning: Camera/microphone access requires HTTPS (or localhost for development)");
         }
@@ -583,18 +628,18 @@ async function startMeeting() {
             await client.subscribe(user, mediaType);
 
             if (mediaType === "video") {
-                // Check if this is a screen track
+
                 const isScreenTrack = user.videoTrack && (
                     user.videoTrack.source === 'screen' || 
                     user.videoTrack.trackMediaStreamTrack?.getSettings?.()?.displaySurface === 'monitor'
                 );
                 
                 if (isScreenTrack) {
-                    // Remote user is sharing their screen
+
                     console.log("Remote screen track received from user", user.uid);
                     remoteScreenSharerUid = user.uid;
                     
-                    // Create screen share container for the viewer
+
                     const container = document.getElementById("videoContainer");
                     const screenBox = document.createElement("div");
                     screenBox.id = "screen-share-remote";
@@ -609,7 +654,7 @@ async function startMeeting() {
                     
                     container.appendChild(screenBox);
                     
-                    // Play screen track
+
                     try {
                         await user.videoTrack.play(screenBox);
                         console.log("Remote screen track playing");
@@ -617,18 +662,17 @@ async function startMeeting() {
                         console.error("Error playing remote screen track:", e);
                     }
                     
-                    // Apply viewer layout: show all cameras on the right
                     applyViewerScreenShareLayout();
                 } else {
-                    // Regular camera video - could be from presenter or other remote user
+
                     addVideoBox(user.videoTrack, `User ${user.uid}`, user.uid);
                     
-                    // If this user is the one screen sharing, track their video for camera display
+
                     if (user.uid === remoteScreenSharerUid) {
                         remotePresenterVideoUid = user.uid;
                     }
                     
-                    // If remote user is screen sharing, apply pip layout to this camera
+
                     if (remoteScreenSharerUid) {
                         applyViewerScreenShareLayout();
                     }
@@ -642,14 +686,13 @@ async function startMeeting() {
         client.on("user-left", user => {
             removeVideoBox(user.uid);
             
-            // If the screen sharer left, clean up
-            if (user.uid === remoteScreenSharerUid) {
+            if (event.uid === remoteScreenSharerUid) {
                 remoteScreenSharerUid = null;
                 remotePresenterVideoUid = null;
                 const screenBox = document.getElementById("screen-share-remote");
                 if (screenBox) screenBox.remove();
                 
-                // Reset layout
+
                 const container = document.getElementById("videoContainer");
                 container.classList.remove("screen-sharing-active");
                 updateLayout();
@@ -662,6 +705,7 @@ async function startMeeting() {
         [localTracks.audioTrack, localTracks.videoTrack] =
             await AgoraRTC.createMicrophoneAndCameraTracks();
 
+        // Add local video FIRST to ensure it appears at grid-row 1 (top)
         addVideoBox(localTracks.videoTrack, "You", uid, true);
         updateLayout();
         await client.publish([localTracks.audioTrack, localTracks.videoTrack]);
@@ -670,7 +714,7 @@ async function startMeeting() {
     } catch (err) {
         console.error("Full error:", err);
         
-        // Provide specific error messages
+
         let userMessage = "Failed to start call: " + err.message;
         
         if (err.message.includes("NOT_SUPPORTED")) {

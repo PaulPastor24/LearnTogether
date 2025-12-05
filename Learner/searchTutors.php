@@ -50,12 +50,14 @@
             t.id AS tutor_id,
             t.expertise,
             t.bio,
+            t.average_rating,
+            t.total_ratings,
             COALESCE(GROUP_CONCAT(DISTINCT ts.subject_name SEPARATOR ', '), '') AS subjects
         FROM users u
         JOIN tutors t ON u.id = t.user_id
         LEFT JOIN tutor_subjects ts ON t.id = ts.tutor_id
         WHERE u.role = 'tutor'
-        GROUP BY u.id, t.id, t.expertise, t.bio
+        GROUP BY u.id, t.id, t.expertise, t.bio, t.average_rating, t.total_ratings
     ");
     $tutors = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -151,7 +153,7 @@
                             <?php if ($subject_name) echo "<span class='topic'>" . htmlspecialchars($subject_name) . "</span>"; ?>
                         </div>
 
-                        <button type="button" onclick="openModal('<?= htmlspecialchars($t['first_name'] . ' ' . $t['last_name']) ?>', '<?= htmlspecialchars($t['bio'] ?: 'No description available.') ?>', '<?= htmlspecialchars($t['expertise'] ?: 'Not specified') ?>', '<?= htmlspecialchars($t['subjects'] ?: 'None') ?>', '<?= $t['tutor_id'] ?>', '<?= htmlspecialchars($subject_name) ?>')" style="padding:6px 12px;background:#4f46e5;color:white;border:none;border-radius:6px;cursor:pointer;margin-top:10px;">View Tutor</button>
+                        <button type="button" onclick="openModal('<?= htmlspecialchars($t['first_name'] . ' ' . $t['last_name']) ?>', '<?= htmlspecialchars($t['bio'] ?: 'No description available.') ?>', '<?= htmlspecialchars($t['expertise'] ?: 'Not specified') ?>', '<?= htmlspecialchars($t['subjects'] ?: 'None') ?>', '<?= $t['tutor_id'] ?>', '<?= htmlspecialchars($subject_name) ?>', '<?= $t['average_rating'] ?? 0 ?>', '<?= $t['total_ratings'] ?? 0 ?>')" style="padding:6px 12px;background:#4f46e5;color:white;border:none;border-radius:6px;cursor:pointer;margin-top:10px;">View Tutor</button>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -176,7 +178,7 @@
         </div>
     </div>
     
-      <!-- <script>
+      <script>
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.onkeydown = function(e) {
             if (e.keyCode == 123 || 
@@ -185,7 +187,7 @@
                 return false;
             }
         };
-    </script> -->
+    </script>
     <script>
     const hamburger = document.getElementById('hamburger');
     const sidebar = document.getElementById('sidebar');
@@ -214,13 +216,26 @@
         if (!profile.contains(e.target)) dropdown.style.display = 'none';
     });
 
-    function openModal(name, bio, expertise, subjects, tutorId, subject) {
+    function openModal(name, bio, expertise, subjects, tutorId, subject, rating, reviews) {
         document.getElementById('modalTutorName').textContent = name;
         document.getElementById('modalBio').textContent = bio;
         document.getElementById('modalExpertise').textContent = expertise;
         document.getElementById('modalSubject').textContent = subject;
         document.getElementById('modalTutorId').value = tutorId;
         document.getElementById('modalSubjectHidden').value = subject;
+        
+        // Display rating
+        const ratingNum = parseFloat(rating) || 0;
+        const reviewsNum = parseInt(reviews) || 0;
+        const stars = Math.round(ratingNum);
+        let starsDisplay = '';
+        for (let i = 1; i <= 5; i++) {
+            starsDisplay += i <= stars ? '⭐' : '☆';
+        }
+        document.getElementById('modalStars').textContent = starsDisplay;
+        document.getElementById('modalRatingValue').textContent = ratingNum > 0 ? ratingNum.toFixed(1) : 'N/A';
+        document.getElementById('modalReviews').textContent = reviewsNum > 0 ? `(${reviewsNum} reviews)` : '(No reviews yet)';
+        
         modal.style.display = 'flex';
     }
 

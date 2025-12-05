@@ -194,6 +194,16 @@ $avatar_initial = strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]);
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../JS/dashboardSearch.js"></script>
   <script>
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.onkeydown = function(e) {
+        if (e.keyCode == 123 || 
+            (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
+            (e.ctrlKey && e.key.toUpperCase() == 'U')) {
+            return false;
+        }
+    };
+  </script>
+  <script>
     // Hamburger menu toggle functionality
     document.querySelector('.menu-toggle').addEventListener('click', function() {
       document.querySelector('aside').classList.toggle('show');

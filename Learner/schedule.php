@@ -145,7 +145,7 @@ $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <p id="noResults">No sessions found matching your search.</p>
     </main>
     </div>
-    <!-- <script>
+    <script>
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.onkeydown = function(e) {
         if (e.keyCode == 123 || 
@@ -154,7 +154,7 @@ $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return false;
         }
     };
-    </script> -->
+    </script>
     
     <script>
     const hamburger = document.getElementById('hamburger');

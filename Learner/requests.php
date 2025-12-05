@@ -173,7 +173,7 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </main>
     </div>
 
-    <!-- <script>
+    <script>
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.onkeydown = function(e) {
         if (e.keyCode == 123 || 
@@ -182,7 +182,7 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return false;
         }
     };
-    </script> -->
+    </script>
     <script>
     const hamburger = document.getElementById('hamburger');
     const sidebar = document.getElementById('sidebar');

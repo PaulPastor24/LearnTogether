@@ -245,7 +245,7 @@
     </main>
   </div>
   
-  <!-- <script>
+  <script>
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.onkeydown = function(e) {
         if (e.keyCode == 123 || 
@@ -254,7 +254,7 @@
             return false;
         }
     };
-  </script> -->
+  </script>
   <script>
     const hamburger = document.getElementById('hamburger');
     const sidebar = document.getElementById('sidebar');
