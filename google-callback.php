@@ -11,7 +11,7 @@ if (!isset($_GET['code'])) {
 $token = $client->fetchAccessTokenWithAuthCode($_GET['code']);
 $client->setAccessToken($token);
 
-$oauth = new Google_Service_Oauth2($client);
+$oauth = new Google_Service_OAuth2($client);
 $googleUser = $oauth->userinfo->get();
 
 $email = $googleUser->email;

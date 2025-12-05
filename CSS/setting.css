@@ -31,8 +31,14 @@
     margin: 0;
 }
 
-@media (min-width: 768px) {
-    main {
-        margin-left: 250px;
-    }
+.form-label {
+    margin-bottom: 0.3rem;
+}
+
+.form-control, .form-select, textarea {
+    margin-bottom: 0.5rem;
+}
+
+.navlinks {
+    gap: 5px !important;
 }

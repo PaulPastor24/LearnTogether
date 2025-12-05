@@ -18,6 +18,10 @@ $stmt->execute([$user_id]);
 $learner = $stmt->fetch(PDO::FETCH_ASSOC);
 $learner_id = $learner['id'] ?? null;
 
+if (!$learner_id) {
+    die("Learner profile not found.");
+}
+
 if (isset($_GET['delete']) && $learner_id) {
     $delete_id = (int) $_GET['delete'];
     $stmt = $pdo->prepare("DELETE FROM reservations WHERE id = ? AND learner_id = ?");
@@ -146,10 +150,10 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 </td>
                                 <td style="padding:10px;">
                                     <?php if ($req['status'] === 'Confirmed'): ?>
-                                        <button onclick="window.open('../agoraconvo.php?user=<?= $req['tutor_user_id'] ?>&reservation_id=<?= $req['reservation_id'] ?>', '_blank')"
-                                                style="padding:5px 10px;background:#4f46e5;color:white;border:none;border-radius:5px;">
+                                        <a href="../agoraconvo.php?user=<?= $req['tutor_user_id'] ?>&reservation_id=<?= $req['reservation_id'] ?>"
+                                                style="display:inline-block;padding:5px 10px;background:#4f46e5;color:white;border:none;border-radius:5px;text-decoration:none;">
                                             View
-                                        </button>
+                                        </a>
                                     <?php elseif ($req['status'] === 'Rejected'): ?>
                                         <a href="requests.php?delete=<?= $req['reservation_id'] ?>"
                                         onclick="return confirm('Delete this rejected request?');"
@@ -157,10 +161,10 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             Delete
                                         </a>
                                     <?php elseif ($req['status'] === 'Scheduled'): ?>
-                                        <button onclick="window.open('../agoraconvo.php?user=<?= $req['tutor_user_id'] ?>&reservation_id=<?= $req['reservation_id'] ?>', '_blank')"
-                                                style="padding:5px 10px;background:#4f46e5;color:white;border:none;border-radius:5px;">
+                                        <a href="../agoraconvo.php?user=<?= $req['tutor_user_id'] ?>&reservation_id=<?= $req['reservation_id'] ?>"
+                                                style="display:inline-block;padding:5px 10px;background:#4f46e5;color:white;border:none;border-radius:5px;text-decoration:none;">
                                             View
-                                        </button> 
+                                        </a> 
                                     <?php else: ?>
                                         <span style="color:#999;">N/A</span>
                                     <?php endif; ?>

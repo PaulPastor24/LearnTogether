@@ -34,6 +34,9 @@
             try {
                 $insert->execute([$learner_id, $tutor_id, $subject]);
                 $success = "Request sent successfully!";
+                // Redirect to requests page after successful submission
+                header("Location: requests.php");
+                exit;
             } catch (PDOException $e) {
                 $error = "Failed to send request. Please try again.";
             }
@@ -150,7 +153,17 @@
                             <div class="subject-title"><?= htmlspecialchars($t['first_name'] . ' ' . $t['last_name']) ?></div>
                         </div>
                         <div class="topics">
-                            <?php if ($subject_name) echo "<span class='topic'>" . htmlspecialchars($subject_name) . "</span>"; ?>
+                            <?php 
+                                // Display first subject with "..." if there are more
+                                $subjects_array = $t['subjects'] ? array_map('trim', explode(',', $t['subjects'])) : [];
+                                if (!empty($subjects_array)) {
+                                    echo "<span class='topic'>" . htmlspecialchars($subjects_array[0]);
+                                    if (count($subjects_array) > 1) {
+                                        echo "...";
+                                    }
+                                    echo "</span>";
+                                }
+                            ?>
                         </div>
 
                         <button type="button" onclick="openModal('<?= htmlspecialchars($t['first_name'] . ' ' . $t['last_name']) ?>', '<?= htmlspecialchars($t['bio'] ?: 'No description available.') ?>', '<?= htmlspecialchars($t['expertise'] ?: 'Not specified') ?>', '<?= htmlspecialchars($t['subjects'] ?: 'None') ?>', '<?= $t['tutor_id'] ?>', '<?= htmlspecialchars($subject_name) ?>', '<?= $t['average_rating'] ?? 0 ?>', '<?= $t['total_ratings'] ?? 0 ?>')" style="padding:6px 12px;background:#4f46e5;color:white;border:none;border-radius:6px;cursor:pointer;margin-top:10px;">View Tutor</button>
@@ -164,16 +177,53 @@
     <div id="tutorModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
-            <div class="modal-name" id="modalTutorName"></div>
-            <div class="modal-subject" id="modalSubject"></div>
-            <div class="modal-description">
-                <p><strong></strong> <span id="modalBio"></span></p>
-                <p><strong>Expertise:</strong> <span id="modalExpertise"></span></p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px;">
+                <!-- Left side: Description -->
+                <div>
+                    <h3 style="margin-bottom: 20px; font-size: 16px; font-weight: 600;">Tutor's description :</h3>
+                    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; min-height: 120px;">
+                        <p id="modalBio" style="margin: 0; color: #666; line-height: 1.6;"></p>
+                    </div>
+                    <div style="margin-top: 25px;">
+                        <p style="margin: 8px 0; font-size: 14px; font-weight: 600;">Expertise:</p>
+                        <p id="modalExpertise" style="margin: 8px 0; color: #666; font-size: 14px;"></p>
+                    </div>
+                </div>
+                
+                <!-- Right side: Information -->
+                <div>
+                    <h3 style="margin-bottom: 20px; font-size: 16px; font-weight: 600;">Tutor's information :</h3>
+                    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px;">
+                        <div style="margin-bottom: 20px;">
+                            <p style="margin: 8px 0; font-size: 15px; font-weight: 600; color: #333;" id="modalTutorName"></p>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <p style="margin: 8px 0; font-size: 14px; font-weight: 600;">Rating:</p>
+                            <div style="margin: 8px 0; font-size: 14px;">
+                                <span id="modalStars"></span>
+                                <span id="modalRatingValue" style="margin-left: 8px; font-weight: 600;"></span>
+                                <span id="modalReviews" style="margin-left: 8px; color: #999;"></span>
+                            </div>
+                        </div>
+                        <div>
+                            <p style="margin: 8px 0; font-size: 14px; font-weight: 600;">Subject:</p>
+                            <p id="modalSubject" style="margin: 8px 0; color: #4f46e5; font-size: 14px; font-weight: 500;"></p>
+                        </div>
+                    </div>
+                </div>
             </div>
+            
+            <div style="margin-bottom: 30px;">
+                <h3 style="margin-bottom: 25px; font-size: 16px; font-weight: 600;">Offered Subjects :</h3>
+                <div id="modalSubjectsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                </div>
+            </div>
+            
             <form method="POST" id="requestForm">
                 <input type="hidden" name="tutor_id" id="modalTutorId">
                 <input type="hidden" name="subject" id="modalSubjectHidden">
-                <button type="submit" name="request_tutor" class="request-btn">Request Tutor</button>
+                <input type="hidden" name="request_tutor" value="1">
             </form>
         </div>
     </div>
@@ -236,7 +286,30 @@
         document.getElementById('modalRatingValue').textContent = ratingNum > 0 ? ratingNum.toFixed(1) : 'N/A';
         document.getElementById('modalReviews').textContent = reviewsNum > 0 ? `(${reviewsNum} reviews)` : '(No reviews yet)';
         
+        // Populate offered subjects
+        const subjectsArray = subjects.split(',').map(s => s.trim()).filter(s => s);
+        const subjectsGrid = document.getElementById('modalSubjectsGrid');
+        subjectsGrid.innerHTML = '';
+        
+        subjectsArray.forEach(subj => {
+            const subjectCard = document.createElement('div');
+            subjectCard.style.cssText = 'border: 2px solid #d4d4d4; border-radius: 8px; padding: 20px; background: white; display: flex; flex-direction: column;';
+            subjectCard.innerHTML = `
+                <div style="background: #a8d5ba; padding: 15px; border-radius: 6px; text-align: center; margin-bottom: 15px;">
+                    <p style="margin: 0; font-weight: 600; color: #2d5f3f; font-size: 15px;">${subj}</p>
+                </div>
+                <p style="margin: 0 0 20px 0; color: #666; font-size: 13px; text-align: center; flex-grow: 1;">Description of the offered subject</p>
+                <button type="button" onclick="requestTutor('${subj}')" style="width: 100%; background: #4f46e5; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 14px; transition: background 0.3s;">Request Tutor</button>
+            `;
+            subjectsGrid.appendChild(subjectCard);
+        });
+        
         modal.style.display = 'flex';
+    }
+
+    function requestTutor(subject) {
+        document.getElementById('modalSubjectHidden').value = subject;
+        document.getElementById('requestForm').submit();
     }
 
     function closeModal() {

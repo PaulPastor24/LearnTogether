@@ -98,6 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings • Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS/style2.css">
     <link rel="stylesheet" href="../CSS/setting.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -105,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
 <body style="overflow-x: hidden;">
     <div class="app">
         <aside id="sidebar">
-            <div class="sidebar">
+            <div class="sidebar" style="width: 265px;">
                 <div class="profile-dropdown">
                     <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
                     <div>
@@ -114,29 +115,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                     </div>
                 </div>
                 <nav class="navlinks">
-                    <?php if ($user['role'] === 'tutor'): ?>
-                        <a href="tutorDashboard.php">🏠 Overview</a>
-                        <a href="subjects.php">📚 Subjects</a>
-                        <a href="calendar.php">📅 Schedule</a>
-                        <a href="requests.php">✉️ Requests</a>
-                        <a class="active" href="setting.php">⚙️ Settings</a>
-                        <a href="../logout.php">🚪 Logout</a>
-                    <?php else: ?>
-                        <a href="learnerDashboard.php">🏠 Overview</a>
-                        <a href="subjects.php">📚 My Subjects</a>
-                        <a href="searchTutors.php">🔎 Find Tutors</a>
-                        <a href="schedule.php">📅 My Schedule</a>
-                        <a href="requests.php">✉️ Requests</a>
-                        <a class="active" href="setting.php">⚙️ Settings</a>
-                        <a href="../logout.php">🚪 Logout</a>
-                    <?php endif; ?>
+                    <a href="learnerDashboard.php">🏠 Overview</a>
+                    <a href="subjects.php">📚 My Subjects</a>
+                    <a href="searchTutors.php">🔎 Find Tutors</a>
+                    <a href="schedule.php">📅 My Schedule</a>
+                    <a href="requests.php">✉️ Requests</a>
+                    <a class="active" href="setting.php">⚙️ Settings</a>
+                    <a href="../logout.php">🚪 Logout</a>
                 </nav>
             </div>
         </aside>
 
         <div class="overlay" id="overlay"></div>
 
-        <div class="nav" role="navigation" style="height: 85px;">
+        <div class="nav" role="navigation">
             <div class="hamburger" id="hamburger">
                 <span></span>
                 <span></span>
@@ -144,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
             </div>
             <div class="logo" style="display:flex; align-items:center;">
                 <div>
-                    <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px; margin-left:20px;">
+                    <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;">
                 </div>
                 <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
             </div>
@@ -163,10 +155,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                 </div>
             </div>
         </div>
-        <main class="hero" style="overflow-y: hidden;">
-            <div class="hero-header">
-                <h1 class="mb-4" style="font-weight:800">Settings</h1>
-            </div>
+        <main class="lt-main mb-4" style="margin-top: 30px; margin-left: 30px; margin-right: 30px;">
+            <h1 class="mb-4 text-center" style="font-weight:800;">Settings</h1>
 
             <?php if (isset($success_message)): ?>
                 <div class="alert alert-success text-center"><?= $success_message ?></div>
@@ -176,8 +166,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                 <div class="alert alert-danger text-center"><?= $error_message ?></div>
             <?php endif; ?>
 
-            <div class="row">
-                <div class="col-12 col-md-4">
+            <div class="row no-gap justify-content-center">
+                <div class="col-12 col-md-6">
                     <div class="card card-custom p-3 narrow-card">
                         <div class="card-body">
                             <h2 class="card-title h5 mb-3">Account Information</h2>
@@ -201,7 +191,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                     </div>
                 </div>
 
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-6">
+                    <div class="card card-custom p-3 narrow-card">
+                        <div class="card-body">
+                            <h2 class="card-title h5 mb-3">Profile Information</h2>
+                            <form method="POST">
+                                <input type="hidden" name="update_profile" value="1">
+                                <div class="mb-2">
+                                    <label class="form-label">Phone</label>
+                                    <input type="tel" name="phone" class="form-control" placeholder="Enter your phone number">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Bio</label>
+                                    <textarea name="bio" class="form-control" rows="4" placeholder="Write something about yourself"></textarea>
+                                </div>
+                                <button type="submit" class="btn-success btn mt-2 w-100">Save Changes</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
                     <div class="card card-custom p-3 narrow-card">
                         <div class="card-body">
                             <h2 class="card-title h5 mb-3">Password</h2>
@@ -225,7 +235,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                     </div>
                 </div>
 
-                <div class="col-6 col-md-4 col-lg-8" style="margin-left: 5px;">
+                <div class="col-12 col-md-6">
                     <div class="card card-custom p-3 narrow-card">
                         <div class="card-body">
                             <h2 class="card-title h5 mb-3">Feedback</h2>

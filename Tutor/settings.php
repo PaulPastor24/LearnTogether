@@ -61,6 +61,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password'])) {
         $success_message = "✅ Password updated successfully!";
     }
 }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
+    $name = trim($_POST['name']);
+    $email = trim($_POST['email']);
+    $message = trim($_POST['message']);
+
+    if (empty($name) || empty($email) || empty($message)) {
+        $error_message = "❌ All fields are required.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error_message = "❌ Invalid email format.";
+    } else {
+        $stmt = $pdo->prepare("INSERT INTO feedback (user_id, name, email, message, created_at) VALUES (?, ?, ?, ?, NOW())");
+        $stmt->execute([$user_id, $name, $email, $message]);
+        $success_message = "✅ Feedback submitted successfully!";
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -172,6 +188,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password'])) {
                             <input type="password" name="confirm_password" class="form-control" required>
                         </div>
                         <button type="submit" class="btn-success btn mt-2 w-100">Update Password</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <div class="card card-custom p-3 narrow-card">
+                <div class="card-body">
+                    <h2 class="card-title h5 mb-3">Feedback</h2>
+                    <p>Have questions or suggestions? We're here to help.</p>
+                    <form method="POST" class="text-start">
+                        <input type="hidden" name="submit_feedback" value="1">
+                        <div class="mb-2">
+                            <label class="form-label">Name</label>
+                            <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?>" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($tutor['email']) ?>" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Message</label>
+                            <textarea name="message" class="form-control" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success mt-2 w-100">Send Message</button>
                     </form>
                 </div>
             </div>

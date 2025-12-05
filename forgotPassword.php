@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_otp'])) {
         if ($status === 200 || $status === 201) {
             $_SESSION['reset_phone'] = $phone;
             $_SESSION['reset_step'] = 'verify';
-            header("Location: forgot_password.php");
+            header("Location: forgotPassword.php");
             exit;
         } else {
             $error = "Failed to send OTP. Please try again later.";
@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_otp'])) {
         if ($user && $user['otp_code'] == $entered_otp) {
             $_SESSION['reset_step'] = 'reset';
             $pdo->prepare("UPDATE users SET otp_code = NULL WHERE phone = ?")->execute([$phone]);
-            header("Location: forgot_password.php");
+            header("Location: forgotPassword.php");
             exit;
         } else {
             $error = "Invalid or expired OTP.";
@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password'])) {
         $pdo->prepare("UPDATE users SET password = ? WHERE phone = ?")->execute([$password, $phone]);
         unset($_SESSION['reset_phone'], $_SESSION['reset_step']);
         $_SESSION['reset_step'] = 'done';
-        header("Location: forgot_password.php");
+        header("Location: forgotPassword.php");
         exit;
     } else {
         $error = "Session expired. Please restart the process.";
