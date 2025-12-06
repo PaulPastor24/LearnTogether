@@ -119,9 +119,6 @@ foreach ($confirmed_sessions as $s) {
       <div class="calendar-wrapper">
         <div class="calendar-header">
           <div class="calendar-title">Weekly Schedule</div>
-          <div class="calendar-actions">
-            <a href="scheduleTutor.php" class="btn btn-sm btn-outline-secondary">Manage Pending</a>
-          </div>
         </div>
         <table class="calendar-table">
           <thead>

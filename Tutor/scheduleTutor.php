@@ -101,13 +101,19 @@ $pending_stmt = $pdo->prepare("
     SELECT r.id AS reservation_id,
            r.subject,
            r.date,
-           CONCAT(u.first_name, ' ', u.last_name) AS student_name
+           r.status,
+           CONCAT(u.first_name, ' ', u.last_name) AS student_name,
+           s.id AS schedule_id,
+           s.day_of_week,
+           s.start_time,
+           s.end_time
     FROM reservations r
     JOIN learners l ON r.learner_id = l.id
     JOIN users u ON l.user_id = u.id
+    LEFT JOIN schedules s ON r.id = s.reservation_id
     WHERE r.tutor_id = ? 
-      AND r.status = 'Confirmed'
-    ORDER BY r.id ASC
+      AND r.status IN ('Confirmed', 'Scheduled')
+    ORDER BY r.status ASC, r.id ASC
 ");
 
 $pending_stmt->execute([$tutor_id]);
@@ -179,28 +185,36 @@ $pending_requests = $pending_stmt->fetchAll(PDO::FETCH_ASSOC);
       <?php if (count($pending_requests) > 0): ?>
         <div class="container mt-2">
           <div class="row schedule-cards">
-            <?php foreach ($pending_requests as $req): ?>
+            <?php foreach ($pending_requests as $req): 
+              $isScheduled = $req['status'] === 'Scheduled' && !empty($req['schedule_id']);
+              $isConfirmed = $req['status'] === 'Confirmed' && empty($req['schedule_id']);
+            ?>
               <div class="col">
                 <div class="card custom-card">
-                  <div class="card-header text-center">Set Schedule</div>
+                  <div class="card-header text-center"><?= $isScheduled ? 'Edit Schedule' : 'Set Schedule' ?></div>
                   <div class="card-body">
                     <h5 class="card-title"><?= htmlspecialchars($req['subject']) ?></h5>
                     <p class="card-text">From: <?= htmlspecialchars($req['student_name']) ?></p>
+                    <?php if ($isScheduled): ?>
+                      <p class="text-muted" style="font-size: 0.9rem;">Current: <?= htmlspecialchars($req['day_of_week']) ?> • <?= htmlspecialchars($req['start_time']) ?> - <?= htmlspecialchars($req['end_time']) ?></p>
+                    <?php endif; ?>
                     <form method="POST">
                       <input type="hidden" name="request_id" value="<?= $req['reservation_id'] ?>">
                       <label>Day of Week</label>
                       <select name="session_day" class="form-control mb-2" required>
-                        <?php foreach (['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] as $day): ?>
-                          <option value="<?= $day ?>"><?= $day ?></option>
+                        <?php foreach (['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] as $day): 
+                          $selected = ($req['day_of_week'] === $day) ? 'selected' : '';
+                        ?>
+                          <option value="<?= $day ?>" <?= $selected ?>><?= $day ?></option>
                         <?php endforeach; ?>
                       </select>
                       <label>Time</label>
                       <div class="d-flex mb-3 gap-2">
-                        <input type="time" name="start_time" class="form-control" required>
+                        <input type="time" name="start_time" class="form-control" value="<?= htmlspecialchars($req['start_time'] ?? '') ?>" required>
                         <span style="align-self:center;">to</span>
-                        <input type="time" name="end_time" class="form-control" required>
+                        <input type="time" name="end_time" class="form-control" value="<?= htmlspecialchars($req['end_time'] ?? '') ?>" required>
                       </div>
-                      <button type="submit" class="custom-btn btn btn-success">Set Schedule</button>
+                      <button type="submit" class="custom-btn btn btn-success w-100"><?= $isScheduled ? 'Update Schedule' : 'Set Schedule' ?></button>
                     </form>
                   </div>
                 </div>

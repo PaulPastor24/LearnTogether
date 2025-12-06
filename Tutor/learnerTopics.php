@@ -14,7 +14,6 @@ if (!isset($_GET['learner_id'])) {
 }
 
 $learner_id = $_GET['learner_id'];
-$filter_subject = $_GET['subject'] ?? null;   
 
 $stmt = $pdo->prepare("SELECT id FROM tutors WHERE user_id = ?");
 $stmt->execute([$_SESSION['user_id']]);
@@ -46,7 +45,8 @@ if (!$learner) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_status') {
-     if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+    // Validate CSRF token
+    if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
         header('Content-Type: application/json');
         echo json_encode(['success' => false, 'error' => 'Security validation failed']);
         exit;
@@ -97,11 +97,6 @@ $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $allTopics = [];
 foreach ($reservations as $res) {
     $subject = $res['subject'];
-    
-     if ($filter_subject && $subject !== $filter_subject) {
-        continue;
-    }
-    
     $stmt = $pdo->prepare("
         SELECT topics
         FROM tutor_subjects
@@ -141,6 +136,7 @@ foreach ($allTopics as $topic) {
 $progress = $totalTopics > 0 ? round(($doneTopics / $totalTopics) * 100) : 0;
 $sessionsCount = count($allTopics);
 $pendingCount = $pendingTopics;
+$csrfToken = generateCSRFToken();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -183,7 +179,7 @@ $pendingCount = $pendingTopics;
     <div class="main-container bg-white p-4 rounded shadow-sm">
       <div class="mb-4 d-flex align-items-center justify-content-between">
         <div>
-          <h1 class="fw-bold text-success"><?= htmlspecialchars($filter_subject ?? $reservations[0]['subject'] ?? 'No Subject') ?></h1>
+          <h1 class="fw-bold text-success"><?= htmlspecialchars($reservations[0]['subject'] ?? 'No Subject') ?></h1>
           <h4 class="text-muted"><?= htmlspecialchars($learner['first_name'].' '.$learner['last_name']) ?></h4>
         </div>
         <div class="d-flex gap-3">
@@ -201,47 +197,41 @@ $pendingCount = $pendingTopics;
           </div>
         </div>
       </div>
-      <?php 
-        $filteredReservation = null;
-        foreach ($reservations as $res) {
-          if (!$filter_subject || $res['subject'] === $filter_subject) {
-            $filteredReservation = $res;
-            break;
-          }
-        }
-        if ($filteredReservation):
-      ?>
+      <?php foreach ($reservations as $res): ?>
         <div class="d-flex justify-content-end mb-4 gap-2">
-          <a href="../agoraconvo.php?reservation_id=<?= $filteredReservation['reservation_id'] ?>"
+          <a href="../agoraconvo.php?reservation_id=<?= $res['reservation_id'] ?>"
              class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center"
              style="width:50px;height:50px;font-size:20px;">💬</a>
-          <a href="../meetingPage.php?reservation_id=<?= $filteredReservation['reservation_id'] ?>"
+          <a href="../meetingPage.php?reservation_id=<?= $res['reservation_id'] ?>"
              class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center"
              style="width:50px;height:50px;font-size:20px;">🎥</a>
         </div>
-      <?php endif; ?>
+      <?php endforeach; ?>
       <div class="lessons-section">
         <h5 class="fw-bold text-secondary">Lessons</h5>
         <?php if (!empty($allTopics)): ?>
-           <h5 class="fw-semibold mt-4 mb-3 text-primary"><?= htmlspecialchars($filter_subject ?? $reservations[0]['subject'] ?? 'Topics') ?></h5>
-          <?php 
-          $num = 1;
-          foreach ($allTopics as $topic):
-            $status = $topic['status'];
-            $badgeClass = $status === 'Done' ? 'bg-success' : 'bg-warning';
-            $topicId = urlencode($topic['title']);
-          ?>
-            <div class="lesson-card d-flex justify-content-between align-items-center p-3 mb-2 border rounded bg-light text-decoration-none text-dark">
-              <div class="flex-grow-1">
-                <div class="fw-bold">Topic <?= $num++ ?></div>
-                <div><?= htmlspecialchars($topic['title']) ?></div>
+          <?php foreach ($reservations as $res): ?>
+            <h5 class="fw-semibold mt-4 mb-3 text-primary"><?= htmlspecialchars($res['subject']) ?></h5>
+            <?php 
+            $num = 1;
+            foreach ($allTopics as $topic):
+              if ($topic['subject'] !== $res['subject']) continue;
+              $status = $topic['status'];
+              $badgeClass = $status === 'Done' ? 'bg-success' : 'bg-warning';
+              $topicId = urlencode($topic['title']);
+            ?>
+              <div class="lesson-card d-flex justify-content-between align-items-center p-3 mb-2 border rounded bg-light text-decoration-none text-dark">
+                <div class="flex-grow-1">
+                  <div class="fw-bold">Topic <?= $num++ ?></div>
+                  <div><?= htmlspecialchars($topic['title']) ?></div>
+                </div>
+                <div class="status-badge <?= $badgeClass ?> px-3 py-1 rounded text-white fw-bold" 
+                     style="cursor: pointer; margin-left: auto;" 
+                     onclick="toggleStatus(event, '<?= htmlspecialchars($topic['subject']) ?>', '<?= htmlspecialchars($topic['title']) ?>', this)">
+                  <?= htmlspecialchars($status) ?>
+                </div>
               </div>
-              <div class="status-badge <?= $badgeClass ?> px-3 py-1 rounded text-white fw-bold" 
-                   style="cursor: pointer; margin-left: auto;" 
-                   onclick="toggleStatus(event, '<?= htmlspecialchars($topic['subject']) ?>', '<?= htmlspecialchars($topic['title']) ?>', this)">
-                <?= htmlspecialchars($status) ?>
-              </div>
-            </div>
+            <?php endforeach; ?>
           <?php endforeach; ?>
         <?php else: ?>
           <p class="no-topics text-muted">No topics available for this learner yet.</p>
@@ -270,15 +260,17 @@ function toggleStatus(event, subject, topic, element) {
     const currentStatus = element.textContent.trim();
     const newStatus = currentStatus === 'Done' ? 'Pending' : 'Done';
     
+    // Show loading state
     element.textContent = 'Updating...';
     element.style.opacity = '0.5';
     
+    // Send AJAX request
     fetch(window.location.href, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: `action=update_status&subject=${encodeURIComponent(subject)}&topic=${encodeURIComponent(topic)}&status=${encodeURIComponent(newStatus)}`
+        body: `action=update_status&csrf_token=<?= $csrfToken ?>&subject=${encodeURIComponent(subject)}&topic=${encodeURIComponent(topic)}&status=${encodeURIComponent(newStatus)}`
     })
     .then(response => response.json())
     .then(data => {
