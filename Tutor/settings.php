@@ -1,6 +1,7 @@
 <?php
 session_start();
 require '../db.php';
+require '../security.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: /LearnTogether/login.php");
@@ -22,59 +23,79 @@ $description = $tutorInfo['description'] ?? '';
 $phone = $tutorInfo['phone'] ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_account'])) {
-    $first = trim($_POST['first_name']);
-    $last = trim($_POST['last_name']);
-    $email = trim($_POST['email']);
+    // Validate CSRF token
+    if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+        $error_message = "Security validation failed. Please try again.";
+    } else {
+        $first = trim($_POST['first_name']);
+        $last = trim($_POST['last_name']);
+        $email = trim($_POST['email']);
 
-    $stmt = $pdo->prepare("UPDATE users SET first_name = ?, last_name = ?, email = ? WHERE id = ?");
-    $stmt->execute([$first, $last, $email, $user_id]);
-    $success_message = "Account information updated successfully!";
+        $stmt = $pdo->prepare("UPDATE users SET first_name = ?, last_name = ?, email = ? WHERE id = ?");
+        $stmt->execute([$first, $last, $email, $user_id]);
+        $success_message = "Account information updated successfully!";
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_tutor_info'])) {
-    $desc = trim($_POST['description']);
-    $phone_num = trim($_POST['phone']);
+    // Validate CSRF token
+    if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+        $error_message = "Security validation failed. Please try again.";
+    } else {
+        $desc = trim($_POST['description']);
+        $phone_num = trim($_POST['phone']);
 
-    $stmt = $pdo->prepare("UPDATE tutors SET description = ?, phone = ? WHERE id = ?");
-    $stmt->execute([$desc, $phone_num, $tutor_id]);
-    
-    $description = $desc;
-    $phone = $phone_num;
-    $success_message = "Profile information updated successfully!";
+        $stmt = $pdo->prepare("UPDATE tutors SET description = ?, phone = ? WHERE id = ?");
+        $stmt->execute([$desc, $phone_num, $tutor_id]);
+        
+        $description = $desc;
+        $phone = $phone_num;
+        $success_message = "Profile information updated successfully!";
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password'])) {
-    $current = $_POST['current_password'];
-    $new = $_POST['new_password'];
-    $confirm = $_POST['confirm_password'];
-
-    if (!password_verify($current, $tutor['password'])) {
-        $error_message = "❌ Current password is incorrect.";
-    } elseif ($new !== $confirm) {
-        $error_message = "❌ New password and confirmation do not match.";
-    } elseif (strlen($new) < 6) {
-        $error_message = "❌ Password must be at least 6 characters.";
+    // Validate CSRF token
+    if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+        $error_message = "Security validation failed. Please try again.";
     } else {
-        $new_hash = password_hash($new, PASSWORD_DEFAULT);
-        $update = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
-        $update->execute([$new_hash, $user_id]);
-        $success_message = "✅ Password updated successfully!";
+        $current = $_POST['current_password'];
+        $new = $_POST['new_password'];
+        $confirm = $_POST['confirm_password'];
+
+        if (!password_verify($current, $tutor['password'])) {
+            $error_message = "❌ Current password is incorrect.";
+        } elseif ($new !== $confirm) {
+            $error_message = "❌ New password and confirmation do not match.";
+        } elseif (strlen($new) < 6) {
+            $error_message = "❌ Password must be at least 6 characters.";
+        } else {
+            $new_hash = password_hash($new, PASSWORD_DEFAULT);
+            $update = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+            $update->execute([$new_hash, $user_id]);
+            $success_message = "✅ Password updated successfully!";
+        }
     }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
-    $name = trim($_POST['name']);
-    $email = trim($_POST['email']);
-    $message = trim($_POST['message']);
-
-    if (empty($name) || empty($email) || empty($message)) {
-        $error_message = "❌ All fields are required.";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error_message = "❌ Invalid email format.";
+    // Validate CSRF token
+    if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+        $error_message = "Security validation failed. Please try again.";
     } else {
-        $stmt = $pdo->prepare("INSERT INTO feedback (user_id, name, email, message, created_at) VALUES (?, ?, ?, ?, NOW())");
-        $stmt->execute([$user_id, $name, $email, $message]);
-        $success_message = "✅ Feedback submitted successfully!";
+        $name = trim($_POST['name']);
+        $email = trim($_POST['email']);
+        $message = trim($_POST['message']);
+
+        if (empty($name) || empty($email) || empty($message)) {
+            $error_message = "❌ All fields are required.";
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $error_message = "❌ Invalid email format.";
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO feedback (user_id, name, email, message, created_at) VALUES (?, ?, ?, ?, NOW())");
+            $stmt->execute([$user_id, $name, $email, $message]);
+            $success_message = "✅ Feedback submitted successfully!";
+        }
     }
 }
 ?>

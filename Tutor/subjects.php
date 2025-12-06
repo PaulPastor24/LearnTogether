@@ -1,6 +1,7 @@
 <?php
 session_start();
 require '../db.php';
+require '../security.php';
 
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id) {
@@ -24,22 +25,27 @@ $stmt->execute([$user_id]);
 $tutor = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $subject_name = trim($_POST['subject_name']);
-    $description = trim($_POST['description']);
-    $topics = isset($_POST['topics']) ? implode(",", array_filter($_POST['topics'])) : "";
+    // Validate CSRF token
+    if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+        $error = "Security validation failed. Please try again.";
+    } else {
+        $subject_name = trim($_POST['subject_name']);
+        $description = trim($_POST['description']);
+        $topics = isset($_POST['topics']) ? implode(",", array_filter($_POST['topics'])) : "";
 
-    if ($_POST['action'] === 'add') {
-        $stmt = $pdo->prepare("INSERT INTO tutor_subjects (tutor_id, subject_name, description, topics) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$tutor_id, $subject_name, $description, $topics]);
-        header("Location: subjects.php");
-        exit;
-    }
+        if ($_POST['action'] === 'add') {
+            $stmt = $pdo->prepare("INSERT INTO tutor_subjects (tutor_id, subject_name, description, topics) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$tutor_id, $subject_name, $description, $topics]);
+            header("Location: subjects.php");
+            exit;
+        }
 
-    if ($_POST['action'] === 'edit') {
-        $stmt = $pdo->prepare("UPDATE tutor_subjects SET subject_name=?, description=?, topics=? WHERE id=? AND tutor_id=?");
-        $stmt->execute([$subject_name, $description, $topics, $_POST['subject_id'], $tutor_id]);
-        header("Location: subjects.php");
-        exit;
+        if ($_POST['action'] === 'edit') {
+            $stmt = $pdo->prepare("UPDATE tutor_subjects SET subject_name=?, description=?, topics=? WHERE id=? AND tutor_id=?");
+            $stmt->execute([$subject_name, $description, $topics, $_POST['subject_id'], $tutor_id]);
+            header("Location: subjects.php");
+            exit;
+        }
     }
 }
 

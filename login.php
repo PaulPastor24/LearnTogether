@@ -1,46 +1,60 @@
 <?php
 session_start();
 require 'db.php';
+require 'security.php';
 
 $error = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email']);
-    $password = $_POST['password'];
-
-    if (!preg_match('/@g\.batstate-u\.edu\.ph$/', $email)) {
-        $error = "Please use your GSuite account (@g.batstate-u.edu.ph) to log in.";
+    // Validate CSRF token
+    if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+        $error = "Security validation failed. Please try again.";
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($user) {
-            if ($user['verified'] == 0) {
-                $error = "Please verify your account first via OTP.";
-            } elseif (password_verify($password, $user['password'])) {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['first_name'] = $user['first_name'];
-                $_SESSION['last_name'] = $user['last_name'];
-                $_SESSION['email'] = $user['email'];
-                $_SESSION['role'] = $user['role'];
-                $_SESSION['logged_in'] = true;
-
-                if (empty($user['role'])) {
-                    header("Location: roleSelector.php");
-                } else {
-                    if ($user['role'] === 'tutor') {
-                        header("Location: Tutor/tutorDashboard.php");
-                    } else {
-                        header("Location: Learner/learnerDashboard.php");
-                    }
-                }
-                exit;
-            } else {
-                $error = "Incorrect password. Please try again.";
-            }
+        // Rate limiting check
+        $email = trim($_POST['email']);
+        if (!checkRateLimit($email, 5, 30)) {
+            $error = "Too many login attempts. Please try again in 30 seconds.";
         } else {
-            $error = "No account found with that email.";
+            $password = $_POST['password'];
+
+            if (!preg_match('/@g\.batstate-u\.edu\.ph$/', $email)) {
+                $error = "Please use your GSuite account (@g.batstate-u.edu.ph) to log in.";
+            } else {
+                $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+                $stmt->execute([$email]);
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($user) {
+                    if ($user['verified'] == 0) {
+                        $error = "Please verify your account first via OTP.";
+                    } elseif (password_verify($password, $user['password'])) {
+                        // Regenerate session ID to prevent session fixation
+                        regenerateSession();
+                        
+                        $_SESSION['user_id'] = $user['id'];
+                        $_SESSION['first_name'] = $user['first_name'];
+                        $_SESSION['last_name'] = $user['last_name'];
+                        $_SESSION['email'] = $user['email'];
+                        $_SESSION['role'] = $user['role'];
+                        $_SESSION['logged_in'] = true;
+
+                        if (empty($user['role'])) {
+                            header("Location: roleSelector.php");
+                        } else {
+                            if ($user['role'] === 'tutor') {
+                                header("Location: Tutor/tutorDashboard.php");
+                            } else {
+                                header("Location: Learner/learnerDashboard.php");
+                            }
+                        }
+                        exit;
+                    } else {
+                        $error = "Incorrect password. Please try again.";
+                    }
+                } else {
+                    $error = "No account found with that email.";
+                }
+            }
         }
     }
 }
@@ -66,6 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <form method="POST" autocomplete="off">
+      <?= getCSRFTokenInput() ?>
       <div class="mb-3">
         <input type="email" name="email" class="form-control" placeholder="GSuite Email (@g.batstate-u.edu.ph)" required pattern=".*@g\.batstate-u\.edu\.ph$" title="Please use your GSuite account (@g.batstate-u.edu.ph)" style="border-radius:6px;">
       </div>

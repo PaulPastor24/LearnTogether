@@ -1,11 +1,18 @@
 <?php
 session_start();
 require_once '../db.php';
+require_once '../security.php';
 
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'error' => 'Invalid request method']);
+    exit;
+}
+
+// Validate CSRF token
+if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+    echo json_encode(['success' => false, 'error' => 'Security validation failed']);
     exit;
 }
 

@@ -10,12 +10,12 @@
 
   <div class="wrapper">
     <div class="error-box">
-      <img src="images/drama.png" alt="404 Illustration" class="error-img">
+      <img src="../images/drama.png" alt="403 Illustration" class="error-img">
 
-      <h1 class="error-code">404</h1>
-      <h2 class="error-message">Page Not Found</h2>
+      <h1 class="error-code">403</h1>
+      <h2 class="error-message">Access Forbidden</h2>
       <p class="error-description">
-        The page you're looking for doesn't exist or may have been moved.
+        You don't have permission to access this resource.
       </p>
 
       <button onclick="goBack()" class="home-btn">Go Back</button>

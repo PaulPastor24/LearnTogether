@@ -1,2 +1,4 @@
 DirectoryIndex landingpage.php
 ErrorDocument 404 /LearnTogether/error.php
+Options -Indexes
+ErrorDocument 403 /LearnTogether/error403.php

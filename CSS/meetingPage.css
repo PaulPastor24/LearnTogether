@@ -22,12 +22,16 @@ body {
     display: flex;
     gap: 0;
     padding: 0;
+    flex-direction: row;
 }
 
 #videoContainer.screen-sharing-active {
     background: #000000;
     display: flex;
     flex-direction: row;
+    justify-content: flex-start;
+    align-items: stretch;
+    overflow: hidden;
 }
 
 .video-box {
@@ -45,21 +49,21 @@ body {
     order: 0;
 }
 
-.video-box.remote {
+.video-box.participant-video {
     width: 100%;
     height: 100%;
     background-color: #000000;
     z-index: 1;
 }
 
-.video-box.remote video {
+.video-box.participant-video video {
     width: 100%;
     height: 100%;
     object-fit: cover;
     background-color: #000000;
 }
 
-.video-box.local {
+.video-box.my-video {
     width: 100%;
     height: 100%;
     border-radius: 0;
@@ -72,14 +76,14 @@ body {
     position: relative;
 }
 
-.video-box.local video {
+.video-box.my-video video {
     width: 100%;
     height: 100%;
     object-fit: contain;
     background-color: #000000;
 }
 
-.alone .video-box.local {
+.alone .video-box.my-video {
     width: 100% !important;
     height: 100% !important;
 }
@@ -150,58 +154,106 @@ body {
     display: block;
 }
 
-
-
-#videoContainer.screen-sharing-active .video-box.local.pip-mode {
-    position: absolute !important;
-    top: 10px !important;
-    right: 20px !important;
-    transform: none !important;
-    width: 18% !important;
-    height: auto !important;
-    max-height: 28vh !important;
-    z-index: 20 !important;
-    border: 3px solid white !important;
-    border-radius: 12px !important;
+/* Screen share container styles */
+.screen-share-container {
+    position: relative !important;
+    width: 65% !important;
+    height: 100% !important;
+    background-color: #000000 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     overflow: hidden !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
-    margin-left: 0 !important;
-    bottom: auto !important;
-    left: auto !important;
-    aspect-ratio: 16/9;
-    min-height: 120px;
+    z-index: 5 !important;
+    flex-shrink: 0;
+    min-width: 0;
 }
 
-#videoContainer.screen-sharing-active .video-box.local.pip-mode video {
+.screen-share-container video {
     width: 100% !important;
     height: 100% !important;
-    object-fit: cover !important;
+    object-fit: contain !important;
     background-color: #000000 !important;
+    display: block !important;
+    max-width: 100%;
+    max-height: 100%;
 }
 
-#videoContainer.screen-sharing-active .video-box.remote.remote-pip-mode {
-    position: absolute !important;
-    right: 20px !important;
-    width: 18% !important;
-    height: auto !important;
-    max-height: 28vh !important;
-    z-index: 19 !important;
-    border: 3px solid white !important;
-    border-radius: 12px !important;
-    overflow: hidden !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6) !important;
-    margin-left: 0 !important;
+/* Right panel for videos during screen sharing - Google Meet style */
+#video-panel-right {
+    width: 35% !important;
+    height: 100% !important;
+    background-color: #000000 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    padding: 8px !important;
+    gap: 8px !important;
+    z-index: 10 !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+}
+
+#videoContainer.screen-sharing-active::after {
+    content: '';
+    width: 35%;
+    height: 100%;
+    background-color: #000000;
+    position: relative;
+    display: block;
+    flex-shrink: 0;
+}
+
+#videoContainer.screen-sharing-active .video-box.my-video.pip-mode,
+#videoContainer.screen-sharing-active .video-box.participant-video,
+#video-panel-right .video-box,
+.video-box.participant-pip-mode {
+    position: relative !important;
+    width: 100% !important;
+    height: 200px !important;
+    max-height: 200px !important;
+    z-index: 10 !important;
     left: auto !important;
-    bottom: 20px !important;
+    right: auto !important;
     top: auto !important;
-    transform: none !important;
-    aspect-ratio: 16/9;
-    min-height: 120px;
+    bottom: auto !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    aspect-ratio: auto;
+    min-height: auto;
+    flex-grow: 0;
+    flex-shrink: 0;
+    display: block !important;
+    box-sizing: border-box !important;
 }
 
-#videoContainer.screen-sharing-active .video-box.remote.remote-pip-mode video {
+#videoContainer.screen-sharing-active .video-box.local.pip-mode video,
+#videoContainer.screen-sharing-active .video-box.remote video,
+#video-panel-right .video-box video,
+.video-box.remote-pip-mode video {
     width: 100% !important;
     height: 100% !important;
     object-fit: cover !important;
     background-color: #000000 !important;
+    display: block !important;
+}
+
+/* Styles for disabled/camera-off video boxes */
+.video-box[style*="background-color: rgb(26, 26, 26)"],
+.video-box.camera-disabled {
+    background-color: #1a1a1a !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.video-box[style*="background-color: rgb(26, 26, 26)"] div,
+.video-box.camera-disabled div {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
 }

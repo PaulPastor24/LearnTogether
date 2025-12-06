@@ -1,6 +1,7 @@
 <?php
 session_start();
 require 'db.php';
+require 'security.php';
 
 $apiToken = 'f7decd4cf2fe2e1fac8e7843dc67e4a315432d9e';
 $apiUrl = 'https://sms.iprogtech.com/api/v1/sms_messages';
@@ -8,6 +9,10 @@ $apiUrl = 'https://sms.iprogtech.com/api/v1/sms_messages';
 $error = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_account'])) {
+    // Validate CSRF token
+    if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+        $error = "Security validation failed. Please try again.";
+    }
     $first = $_POST['first_name'];
     $last = $_POST['last_name'];
     $email = $_POST['email'];

@@ -1,6 +1,7 @@
 <?php
 session_start();
 require '../db.php';
+require '../security.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: /LearnTogether/login.php");
@@ -44,6 +45,13 @@ if (!$learner) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_status') {
+    // Validate CSRF token
+    if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'error' => 'Security validation failed']);
+        exit;
+    }
+    
     $topic_title = $_POST['topic'] ?? '';
     $subject = $_POST['subject'] ?? '';
     $new_status = $_POST['status'] ?? 'Pending';
