@@ -14,7 +14,6 @@ $stmt = $pdo->prepare("SELECT first_name, last_name, email, password FROM users 
 $stmt->execute([$user_id]);
 $tutor = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Get tutor-specific info
 $stmt = $pdo->prepare("SELECT id, description, phone FROM tutors WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $tutorInfo = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -23,7 +22,6 @@ $description = $tutorInfo['description'] ?? '';
 $phone = $tutorInfo['phone'] ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_account'])) {
-    // Validate CSRF token
     if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
         $error_message = "Security validation failed. Please try again.";
     } else {
@@ -38,7 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_account'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_tutor_info'])) {
-    // Validate CSRF token
     if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
         $error_message = "Security validation failed. Please try again.";
     } else {
@@ -55,7 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_tutor_info']))
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password'])) {
-    // Validate CSRF token
     if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
         $error_message = "Security validation failed. Please try again.";
     } else {
@@ -79,7 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_password'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
-    // Validate CSRF token
     if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
         $error_message = "Security validation failed. Please try again.";
     } else {
@@ -246,7 +241,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
       document.querySelector('aside').classList.toggle('show');
     });
 
-    // Make profile clickable and show tooltip
     const sidebarProfile = document.getElementById('sidebarProfile');
     const tooltip = document.querySelector('.view-profile-tooltip');
 

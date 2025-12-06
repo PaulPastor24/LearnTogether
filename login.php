@@ -6,11 +6,9 @@ require 'security.php';
 $error = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Validate CSRF token
     if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
         $error = "Security validation failed. Please try again.";
     } else {
-        // Rate limiting check
         $email = trim($_POST['email']);
         if (!checkRateLimit($email, 5, 30)) {
             $error = "Too many login attempts. Please try again in 30 seconds.";
@@ -28,7 +26,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($user['verified'] == 0) {
                         $error = "Please verify your account first via OTP.";
                     } elseif (password_verify($password, $user['password'])) {
-                        // Regenerate session ID to prevent session fixation
                         regenerateSession();
                         
                         $_SESSION['user_id'] = $user['id'];

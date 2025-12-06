@@ -25,7 +25,6 @@ $stmt->execute([$user_id]);
 $tutor = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Validate CSRF token
     if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
         $error = "Security validation failed. Please try again.";
     } else {

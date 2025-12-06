@@ -204,7 +204,6 @@ body {
     max-height: 100%;
 }
 
-/* Right panel for videos during screen sharing - Google Meet style */
 #video-panel-right {
     width: 35% !important;
     height: 100% !important;
@@ -268,7 +267,6 @@ body {
     display: block !important;
 }
 
-/* Styles for disabled/camera-off video boxes */
 .video-box[style*="background-color: rgb(26, 26, 26)"],
 .video-box.camera-disabled {
     background-color: #1a1a1a !important;
@@ -285,7 +283,6 @@ body {
     width: 100% !important;
 }
 
-/* Chat Panel Styling - Teal/Green Theme */
 .chat-panel {
     position: fixed;
     right: 20px;
@@ -426,7 +423,6 @@ body {
     transform: translateY(0);
 }
 
-/* Video Panel and Layout Styles */
 #video-panel-right {
     display: flex !important;
     flex-direction: column !important;
@@ -444,12 +440,10 @@ body {
     order: 999;
 }
 
-/* Video box styling when screen sharing */
 #videoContainer.screen-sharing-active .video-box {
     margin-top: 10px;
 }
 
-/* Camera button with icon */
 #toggleCam {
     display: flex;
     align-items: center;
@@ -465,4 +459,33 @@ body {
 
 #toggleCam.inactive img {
     filter: invert(1) brightness(0.8);
+}
+
+.screen-share-status {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #00ff00;
+    padding: 15px 20px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 14px;
+    z-index: 1001;
+    border: 1px solid #00ff00;
+    display: none;
+}
+
+.screen-share-status.active {
+    display: block;
+    animation: pulse-screen 1s infinite;
+}
+
+@keyframes pulse-screen {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
 }

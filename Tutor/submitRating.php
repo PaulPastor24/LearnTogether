@@ -10,7 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Validate CSRF token
 if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
     echo json_encode(['success' => false, 'error' => 'Security validation failed']);
     exit;
@@ -40,22 +39,6 @@ try {
         echo json_encode(['success' => false, 'error' => 'Reservation not found']);
         exit;
     }
-
-    $pdo->exec("
-        CREATE TABLE IF NOT EXISTS tutor_ratings (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            reservation_id INT NOT NULL,
-            learner_id INT NOT NULL,
-            tutor_id INT NOT NULL,
-            rating INT NOT NULL CHECK(rating >= 1 AND rating <= 5),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            UNIQUE KEY unique_rating (learner_id, tutor_id, reservation_id),
-            FOREIGN KEY (reservation_id) REFERENCES reservations(id) ON DELETE CASCADE,
-            INDEX idx_tutor (tutor_id),
-            INDEX idx_learner (learner_id)
-        )
-    ");
 
     $stmt = $pdo->prepare("
         INSERT INTO tutor_ratings (reservation_id, learner_id, tutor_id, rating)

@@ -15,7 +15,6 @@ $client->setRedirectUri($redirect_uri);
 $client->addScope("email");
 $client->addScope("profile");
 
-// Force Google account selection and restrict to school domain
 $client->setAuthConfig([
     'client_id' => "630084650794-7dma8caltgmf1a97bc9411qn9g0cs71e.apps.googleusercontent.com",
     'client_secret' => "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",

@@ -34,7 +34,6 @@
             try {
                 $insert->execute([$learner_id, $tutor_id, $subject]);
                 $success = "Request sent successfully!";
-                // Redirect to requests page after successful submission
                 header("Location: requests.php");
                 exit;
             } catch (PDOException $e) {
@@ -63,6 +62,15 @@
         GROUP BY u.id, t.id, t.expertise, t.bio, t.average_rating, t.total_ratings
     ");
     $tutors = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $tutorSubjectsWithTopics = [];
+    foreach ($tutors as $tutor) {
+        $subjectStmt = $pdo->prepare("
+            SELECT subject_name, topics FROM tutor_subjects WHERE tutor_id = ?
+        ");
+        $subjectStmt->execute([$tutor['tutor_id']]);
+        $tutorSubjectsWithTopics[$tutor['tutor_id']] = $subjectStmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 ?>
 <!doctype html>
 <html lang="en">
@@ -147,26 +155,37 @@
                         $subjects_list = $t['subjects'] ? explode(',', $t['subjects']) : [];
                         $subject_name = trim($subjects_list[0] ?? 'Unknown');
                     ?>
-                    <div class="subject-card">
-                        <div class="subject-header">
-                            <div class="icon" style="background: linear-gradient(180deg,#2563eb,#1e40af)">👩‍🏫</div>
-                            <div class="subject-title"><?= htmlspecialchars($t['first_name'] . ' ' . $t['last_name']) ?></div>
-                        </div>
-                        <div class="topics">
-                            <?php 
-                                // Display first subject with "..." if there are more
-                                $subjects_array = $t['subjects'] ? array_map('trim', explode(',', $t['subjects'])) : [];
-                                if (!empty($subjects_array)) {
-                                    echo "<span class='topic'>" . htmlspecialchars($subjects_array[0]);
-                                    if (count($subjects_array) > 1) {
-                                        echo "...";
+                    <div class="subject-card" style="display: flex; flex-direction: column;">
+                        <div style="flex-grow: 1;">
+                            <div class="subject-header">
+                                <div class="icon" style="background: linear-gradient(180deg,#2563eb,#1e40af)">👩‍🏫</div>
+                                <div class="subject-title"><?= htmlspecialchars($t['first_name'] . ' ' . $t['last_name']) ?></div>
+                            </div>
+                            <div class="topics">
+                                <?php 
+                                    $subjects_array = $t['subjects'] ? array_map('trim', explode(',', $t['subjects'])) : [];
+                                    if (!empty($subjects_array)) {
+                                        echo "<span class='topic'>" . htmlspecialchars($subjects_array[0]);
+                                        if (count($subjects_array) > 1) {
+                                            echo "...";
+                                        }
+                                        echo "</span>";
                                     }
-                                    echo "</span>";
-                                }
-                            ?>
+                                ?>
+                            </div>
                         </div>
 
-                        <button type="button" onclick="openModal('<?= htmlspecialchars($t['first_name'] . ' ' . $t['last_name']) ?>', '<?= htmlspecialchars($t['bio'] ?: 'No description available.') ?>', '<?= htmlspecialchars($t['expertise'] ?: 'Not specified') ?>', '<?= htmlspecialchars($t['subjects'] ?: 'None') ?>', '<?= $t['tutor_id'] ?>', '<?= htmlspecialchars($subject_name) ?>', '<?= $t['average_rating'] ?? 0 ?>', '<?= $t['total_ratings'] ?? 0 ?>')" style="padding:6px 12px;background:#4f46e5;color:white;border:none;border-radius:6px;cursor:pointer;margin-top:10px;">View Tutor</button>
+                        <button type="button" class="view-tutor-btn" 
+                            data-name="<?= htmlspecialchars($t['first_name'] . ' ' . $t['last_name']) ?>"
+                            data-bio="<?= htmlspecialchars($t['bio'] ?: 'No description available.') ?>"
+                            data-expertise="<?= htmlspecialchars($t['expertise'] ?: 'Not specified') ?>"
+                            data-subjects="<?= htmlspecialchars($t['subjects'] ?: 'None') ?>"
+                            data-tutor-id="<?= $t['tutor_id'] ?>"
+                            data-subject-name="<?= htmlspecialchars($subject_name) ?>"
+                            data-rating="<?= $t['average_rating'] ?? 0 ?>"
+                            data-reviews="<?= $t['total_ratings'] ?? 0 ?>"
+                            data-subjects-json="<?= htmlspecialchars(json_encode($tutorSubjectsWithTopics[$t['tutor_id']] ?? [])) ?>"
+                            style="align-self: flex-end; padding:6px 12px;background:#16a34a;color:white;border:none;border-radius:6px;cursor:pointer;margin-top:10px;transition: background 0.3s;">View Tutor</button>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -179,7 +198,6 @@
             <span class="close" onclick="closeModal()">&times;</span>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px;">
-                <!-- Left side: Description -->
                 <div>
                     <h3 style="margin-bottom: 20px; font-size: 16px; font-weight: 600;">Tutor's description :</h3>
                     <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; min-height: 120px;">
@@ -191,7 +209,6 @@
                     </div>
                 </div>
                 
-                <!-- Right side: Information -->
                 <div>
                     <h3 style="margin-bottom: 20px; font-size: 16px; font-weight: 600;">Tutor's information :</h3>
                     <div style="background: #f5f5f5; padding: 20px; border-radius: 8px;">
@@ -215,9 +232,13 @@
             </div>
             
             <div style="margin-bottom: 30px;">
-                <h3 style="margin-bottom: 25px; font-size: 16px; font-weight: 600;">Offered Subjects :</h3>
-                <div id="modalSubjectsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                <h3 style="margin-bottom: 25px; font-size: 16px; font-weight: 600;">Offered Subjects & Topics:</h3>
+                <div id="modalSubjectsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
                 </div>
+            </div>
+            
+            <div id="requestSessionDiv" style="display: none; text-align: center; padding: 20px; background: #f0f9ff; border-radius: 8px; border: 2px solid #16a34a;">
+                <button type="button" onclick="requestSession()" style="width: 200px; background: #16a34a; color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 15px; transition: background 0.3s;">Request Session</button>
             </div>
             
             <form method="POST" id="requestForm">
@@ -266,15 +287,13 @@
         if (!profile.contains(e.target)) dropdown.style.display = 'none';
     });
 
-    function openModal(name, bio, expertise, subjects, tutorId, subject, rating, reviews) {
+    function openModal(name, bio, expertise, subjects, tutorId, subject, rating, reviews, subjectsWithTopics) {
         document.getElementById('modalTutorName').textContent = name;
         document.getElementById('modalBio').textContent = bio;
         document.getElementById('modalExpertise').textContent = expertise;
         document.getElementById('modalSubject').textContent = subject;
         document.getElementById('modalTutorId').value = tutorId;
-        document.getElementById('modalSubjectHidden').value = subject;
         
-        // Display rating
         const ratingNum = parseFloat(rating) || 0;
         const reviewsNum = parseInt(reviews) || 0;
         const stars = Math.round(ratingNum);
@@ -286,29 +305,55 @@
         document.getElementById('modalRatingValue').textContent = ratingNum > 0 ? ratingNum.toFixed(1) : 'N/A';
         document.getElementById('modalReviews').textContent = reviewsNum > 0 ? `(${reviewsNum} reviews)` : '(No reviews yet)';
         
-        // Populate offered subjects
-        const subjectsArray = subjects.split(',').map(s => s.trim()).filter(s => s);
         const subjectsGrid = document.getElementById('modalSubjectsGrid');
         subjectsGrid.innerHTML = '';
         
-        subjectsArray.forEach(subj => {
+        subjectsWithTopics.forEach(subj => {
+            const topicsArray = subj.topics ? subj.topics.split(',').map(t => t.trim()) : [];
             const subjectCard = document.createElement('div');
-            subjectCard.style.cssText = 'border: 2px solid #d4d4d4; border-radius: 8px; padding: 20px; background: white; display: flex; flex-direction: column;';
+            subjectCard.style.cssText = 'border: 2px solid #d4d4d4; border-radius: 8px; padding: 20px; background: white; display: flex; flex-direction: column; cursor: pointer; transition: all 0.3s;';
+            subjectCard.onmouseover = () => subjectCard.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+            subjectCard.onmouseout = () => subjectCard.style.boxShadow = 'none';
+            
+            const topicsHTML = topicsArray.length > 0 
+                ? topicsArray.map(t => `<div style="background: #e8f5e9; padding: 6px 12px; border-radius: 4px; margin-bottom: 8px; font-size: 13px; color: #2d5f3f;">${t}</div>`).join('')
+                : '<p style="margin: 0; color: #999; font-size: 13px;">No topics specified</p>';
+            
             subjectCard.innerHTML = `
-                <div style="background: #a8d5ba; padding: 15px; border-radius: 6px; text-align: center; margin-bottom: 15px;">
-                    <p style="margin: 0; font-weight: 600; color: #2d5f3f; font-size: 15px;">${subj}</p>
+                <div style="background: linear-gradient(135deg, #a8d5ba, #82c2a4); padding: 15px; border-radius: 6px; text-align: center; margin-bottom: 15px;">
+                    <p style="margin: 0; font-weight: 600; color: white; font-size: 15px;">${subj.subject_name}</p>
                 </div>
-                <p style="margin: 0 0 20px 0; color: #666; font-size: 13px; text-align: center; flex-grow: 1;">Description of the offered subject</p>
-                <button type="button" onclick="requestTutor('${subj}')" style="width: 100%; background: #4f46e5; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 14px; transition: background 0.3s;">Request Tutor</button>
+                <div style="flex-grow: 1; margin-bottom: 15px;">
+                    ${topicsHTML}
+                </div>
+                <button type="button" onclick="selectSubject(event, '${subj.subject_name}', this.parentElement)" style="width: 100%; background: #16a34a; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; font-size: 14px; transition: background 0.3s;">Select Subject</button>
             `;
             subjectsGrid.appendChild(subjectCard);
         });
         
+        document.getElementById('requestSessionDiv').style.display = 'none';
         modal.style.display = 'flex';
     }
 
-    function requestTutor(subject) {
+    function selectSubject(event, subject, cardElement) {
+        event.preventDefault();
+        
+        // Remove green border from all subject cards
+        document.querySelectorAll('#modalSubjectsGrid > div').forEach(card => {
+            card.style.borderColor = '#d4d4d4';
+        });
+        
+        // Add green border to selected card
+        if (cardElement) {
+            cardElement.style.borderColor = '#16a34a';
+            cardElement.style.borderWidth = '3px';
+        }
+        
         document.getElementById('modalSubjectHidden').value = subject;
+        document.getElementById('requestSessionDiv').style.display = 'block';
+    }
+
+    function requestSession() {
         document.getElementById('requestForm').submit();
     }
 
@@ -322,7 +367,6 @@
         }
     }
 
-    // Debounce function for performance
     function debounce(func, delay) {
       let timeout;
       return function(...args) {
@@ -332,6 +376,25 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      // Handle View Tutor buttons
+      document.querySelectorAll('.view-tutor-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const subjectsJson = JSON.parse(this.getAttribute('data-subjects-json'));
+          openModal(
+            this.getAttribute('data-name'),
+            this.getAttribute('data-bio'),
+            this.getAttribute('data-expertise'),
+            this.getAttribute('data-subjects'),
+            this.getAttribute('data-tutor-id'),
+            this.getAttribute('data-subject-name'),
+            this.getAttribute('data-rating'),
+            this.getAttribute('data-reviews'),
+            subjectsJson
+          );
+        });
+      });
+
+      // Search functionality
       const searchInput = document.getElementById('searchInput');
       const searchFilter = document.getElementById('searchFilter');
       const clearSearch = document.getElementById('clearSearch');

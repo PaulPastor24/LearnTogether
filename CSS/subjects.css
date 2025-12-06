@@ -1,10 +1,9 @@
 .subjects-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 28px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
     width: 100%;
-    max-width: 1200px;   /* optional to avoid stretching too wide */
-    margin: 10px auto;   /* centers the grid */
+    margin: 20px 0;
 }
 
 @media (max-width: 992px) {
@@ -19,38 +18,67 @@
     }
 }
 
-
 .subject-card {
     background: #ffffff;
-    border-radius: 18px;
-    padding: 30px;
+    border-radius: 12px;
+    padding: 18px;
     width: 100%;
-    min-height: 400px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    min-height: auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: transform .15s ease, box-shadow .15s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e6f2ee;
 }
 
 .subject-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.18);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
-.subject-card h4 {
-    font-size: 20px;
+.subject-header {
+    margin-bottom: 16px;
+}
+
+.subject-title {
+    font-size: 18px;
     font-weight: 700;
-    margin-bottom: 6px;
+    color: #1a1a1a;
+    margin: 0;
     word-wrap: break-word;
 }
 
-.subject-card p {
+.subject-desc {
     font-size: 14px;
     color: #666;
-    margin-bottom: 12px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    margin-bottom: 16px;
+    flex-grow: 1;
+}
+
+.subject-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+    justify-content: flex-end;
+}
+
+.view-btn {
+    background: #16a34a;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: background 0.3s ease;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.view-btn:hover {
+    background: #15803d;
 }
 
 .topic-badge {
@@ -61,6 +89,7 @@
     margin: 4px 4px 0 0;
     display: inline-block;
     font-weight: 500;
+    color: #2d5f3f;
 }
 
 .subject-card.add-card {
@@ -69,10 +98,12 @@
     justify-content: center;
     text-align: center;
     cursor: pointer;
+    border: 2px dashed #0d6efd;
 }
 
 .subject-card.add-card:hover {
     background: #f5fff3;
+    border-color: #0b5ed7;
 }
 
 .add-icon {
@@ -84,4 +115,6 @@
 .add-label {
     margin-top: 8px;
     font-weight: 700;
+    color: #0d6efd;
 }
+

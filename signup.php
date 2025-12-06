@@ -9,7 +9,6 @@ $apiUrl = 'https://sms.iprogtech.com/api/v1/sms_messages';
 $error = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_account'])) {
-    // Validate CSRF token
     if (!isset($_POST['csrf_token']) || !validateCSRFToken($_POST['csrf_token'])) {
         $error = "Security validation failed. Please try again.";
     }

@@ -10,7 +10,6 @@
         exit;
     }
 
-    // Helper function to adjust color brightness
     function adjustBrightness($color, $percent) {
         $color = str_replace('#', '', $color);
         $rgb = [
@@ -131,7 +130,6 @@
       <?php if (!empty($learners)): ?>
         <div class="learners-grid">
           <?php foreach ($learners as $l): 
-            // Generate color based on subject
             $colors = [
               'Mathematics' => '#10B981',
               'Science' => '#3B82F6',

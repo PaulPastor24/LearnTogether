@@ -1,0 +1,26 @@
+.profile-section {
+  border-left: 4px solid #007bff !important;
+}
+
+.rating-card {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
+}
+
+.rating-card:hover {
+  transform: translateY(-5px);
+}
+
+.subject-card {
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.subject-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.topic-item {
+  border-left: 3px solid #007bff;
+  padding-left: 12px !important;
+}

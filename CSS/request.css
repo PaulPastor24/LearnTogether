@@ -28,18 +28,18 @@ body {
         width: 100% !important; 
         left: 0 !important;
         right: 0 !important;
-        margin: 18px !important; /* Simplified margin for consistency */
-        padding: 10px 18px !important; /* Ensure padding is consistent */
-        box-sizing: border-box !important; /* Include padding in width calculation */
+        margin: 18px !important; 
+        padding: 10px 18px !important;
+        box-sizing: border-box !important; 
     }
 }
 
 @media (max-width: 640px) {
     .nav {
-        margin: 12px !important; /* Reduce margin for smaller screens */
-        padding: 8px 12px !important; /* Adjust padding */
-        height: auto !important; /* Allow height to adjust */
-        flex-wrap: wrap !important; /* Allow wrapping if needed */
+        margin: 12px !important; 
+        padding: 8px 12px !important; 
+        height: auto !important;
+        flex-wrap: wrap !important; 
     }
     .logo {
         font-size: 14px !important;

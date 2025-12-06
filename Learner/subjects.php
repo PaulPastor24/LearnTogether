@@ -111,7 +111,7 @@
       <div class="subjects-grid" id="subjectsGrid">
         <?php if (!empty($reservations)): ?>
           <?php foreach ($reservations as $res): ?>
-            <div class="subject-card">
+            <div class="subject-card" style = "width:50%;">
               <div class="subject-header">
                 <div class="subject-title"><?= htmlspecialchars($res['subject']) ?></div>
               </div>
@@ -168,7 +168,6 @@
         if (!profile.contains(e.target)) dropdown.style.display = 'none';
     });
 
-    // Debounce function for performance
     function debounce(func, delay) {
       let timeout;
       return function(...args) {

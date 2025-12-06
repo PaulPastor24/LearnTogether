@@ -173,7 +173,7 @@ h1 {
 .subjects-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
+    gap: 10px;
 }
 
 .subject-card {
@@ -185,7 +185,7 @@ h1 {
 }
 
 .subject-card {
-    width: 250px;
+    max-width: 250px;
 }
 
 .subject-actions {

@@ -20,32 +20,6 @@ $AGORA_APP_ID = "ba85d26a0db94dec82214e061ceaa39c";
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Session Meeting - Improved Screen Share</title>
 <link rel="stylesheet" href="CSS/meetingPage.css">
-<style>
-    .screen-share-status {
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        background: rgba(0,0,0,0.8);
-        color: #00ff00;
-        padding: 15px 20px;
-        border-radius: 8px;
-        font-family: monospace;
-        font-size: 14px;
-        z-index: 1001;
-        border: 1px solid #00ff00;
-        display: none;
-    }
-    
-    .screen-share-status.active {
-        display: block;
-        animation: pulse 1s infinite;
-    }
-    
-    @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.7; }
-    }
-</style>
 <script>
 const AGORA_APP_ID = "<?= $AGORA_APP_ID ?>";
 const RESERVATION_ID = "<?= $reservationId ?>";

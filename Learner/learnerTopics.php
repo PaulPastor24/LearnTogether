@@ -89,6 +89,14 @@ foreach ($allTopics as $topic) {
 $progress = $totalTopics > 0 ? round(($doneTopics / $totalTopics) * 100) : 0;
 $sessionsCount = $totalTopics;
 $pendingCount = $pendingTopics;
+
+$stmt_rating = $pdo->prepare("
+    SELECT id FROM tutor_ratings 
+    WHERE reservation_id = ? AND learner_id = ?
+");
+$stmt_rating->execute([$reservation_id, $learner_id]);
+$existingRating = $stmt_rating->fetch(PDO::FETCH_ASSOC);
+$hasRated = !empty($existingRating);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -254,6 +262,7 @@ overlay.addEventListener('click', () => {
 let currentRating = 0;
 let allTopicsDone = false;
 let ratingSubmitted = false;
+let hasRated = <?= json_encode($hasRated) ?>;
 
 document.querySelectorAll('.star').forEach(star => {
     star.addEventListener('click', function() {
@@ -329,7 +338,7 @@ function checkAllTopicsDone() {
 }
 
 function showRatingModal() {
-    if (allTopicsDone && !ratingSubmitted) {
+    if (allTopicsDone && !ratingSubmitted && !hasRated) {
         const modal = document.getElementById('ratingModal');
         modal.style.display = 'block';
         modal.classList.add('show');

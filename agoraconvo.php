@@ -62,7 +62,6 @@ $contacts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $chat_with = isset($_GET['user']) ? (int)$_GET['user'] : null;
 $reservation_id = isset($_GET['reservation_id']) ? (int)$_GET['reservation_id'] : null;
 
-// If reservation_id is provided, get the other user from that reservation
 if ($reservation_id && !$chat_with) {
     $resStmt = $pdo->prepare("
         SELECT 
@@ -121,7 +120,6 @@ foreach ($contacts as $c) {
         break;
     }
 }
-// If chat_with is set but contactName is empty, get the name from the reservation query
 if ($chat_with && !$contactName && $reservation_id) {
     $nameStmt = $pdo->prepare("
         SELECT CONCAT(u.first_name, ' ', u.last_name) AS name
@@ -178,7 +176,7 @@ if ($chat_with && !$contactName && $reservation_id) {
 
                     <?php if ($chat_with && $reservation_id): ?>
                         <button class="video-btn btn btn-sm btn-primary"
-                            onclick="window.open('meetingPage.php?reservation_id=<?= $reservation_id ?>')">
+                            onclick="window.location.href='meetingPage.php?reservation_id=<?= $reservation_id ?>'">
                             🎥 Video
                         </button>
                     <?php endif; ?>

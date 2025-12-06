@@ -78,6 +78,7 @@ $isOwnProfile = isset($_SESSION['tutor_id']) && $_SESSION['tutor_id'] == $tutor_
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../CSS/style2.css">
 <link rel="stylesheet" href="../CSS/tutor.css">
+<link rel="stylesheet" href="../CSS/viewProfile.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
@@ -134,7 +135,6 @@ $isOwnProfile = isset($_SESSION['tutor_id']) && $_SESSION['tutor_id'] == $tutor_
         <?php endif; ?>
       </div>
 
-      <!-- Profile Header -->
       <div class="profile-section mt-5 p-4 border rounded bg-light">
         <div class="row">
           <div class="col-md-6">
@@ -156,7 +156,6 @@ $isOwnProfile = isset($_SESSION['tutor_id']) && $_SESSION['tutor_id'] == $tutor_
         </div>
       </div>
 
-      <!-- Ratings Section -->
       <div class="mt-5">
         <h3 class="mb-4">Overall Ratings</h3>
         
@@ -206,7 +205,6 @@ $isOwnProfile = isset($_SESSION['tutor_id']) && $_SESSION['tutor_id'] == $tutor_
         </div>
       </div>
 
-      <!-- Subjects Section -->
       <div class="mt-5">
         <h3 class="mb-4">Subjects & Topics</h3>
 
@@ -239,7 +237,6 @@ $isOwnProfile = isset($_SESSION['tutor_id']) && $_SESSION['tutor_id'] == $tutor_
         <?php endif; ?>
       </div>
 
-      <!-- Back Button -->
       <div class="mt-5">
         <a href="<?= $isOwnProfile ? 'tutorDashboard.php' : 'javascript:history.back()' ?>" class="btn btn-secondary">
           ← Back
@@ -249,35 +246,6 @@ $isOwnProfile = isset($_SESSION['tutor_id']) && $_SESSION['tutor_id'] == $tutor_
     </div>
   </main>
 </div>
-
-<style>
-.profile-section {
-  border-left: 4px solid #007bff !important;
-}
-
-.rating-card {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: transform 0.3s;
-}
-
-.rating-card:hover {
-  transform: translateY(-5px);
-}
-
-.subject-card {
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.subject-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-}
-
-.topic-item {
-  border-left: 3px solid #007bff;
-  padding-left: 12px !important;
-}
-</style>
 
 <script>
 const hamburger = document.getElementById('hamburger');

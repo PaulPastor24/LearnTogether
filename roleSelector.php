@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
     </form>
 
-    <p class="mt-4 text-muted">You can always switch roles later from your profile settings.</p>
+    <p class="mt-4 text-muted">Share new knowledge. Seek new Skills.</p>
   </div>
 
 </body>
