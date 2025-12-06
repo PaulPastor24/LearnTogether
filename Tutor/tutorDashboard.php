@@ -10,6 +10,22 @@
         exit;
     }
 
+    // Helper function to adjust color brightness
+    function adjustBrightness($color, $percent) {
+        $color = str_replace('#', '', $color);
+        $rgb = [
+            'r' => hexdec(substr($color, 0, 2)),
+            'g' => hexdec(substr($color, 2, 2)),
+            'b' => hexdec(substr($color, 4, 2))
+        ];
+        
+        foreach ($rgb as $key => $value) {
+            $rgb[$key] = max(0, min(255, $value + ($value * $percent / 100)));
+        }
+        
+        return '#' . dechex($rgb['r']) . dechex($rgb['g']) . dechex($rgb['b']);
+    }
+
     $user_id = $_SESSION['user_id'];
 
     $stmt = $pdo->prepare("SELECT id AS tutor_id FROM tutors WHERE user_id = ?");
@@ -37,14 +53,13 @@
             l.id AS learner_id,
             u.first_name,
             u.last_name,
-            GROUP_CONCAT(DISTINCT r.subject SEPARATOR ', ') AS subjects
+            r.subject
         FROM reservations r
         JOIN learners l ON r.learner_id = l.id
         JOIN users u ON l.user_id = u.id
         WHERE r.tutor_id = ?
           AND r.status = 'Scheduled'
-        GROUP BY l.id, u.first_name, u.last_name
-        ORDER BY u.first_name ASC
+        ORDER BY u.first_name ASC, r.subject ASC
     ");
     $stmt->execute([$tutor_id]);
 
@@ -115,19 +130,35 @@
       <p>Connect, Learn, and grow</p>
       <?php if (!empty($learners)): ?>
         <div class="learners-grid">
-          <?php foreach ($learners as $l): ?>
+          <?php foreach ($learners as $l): 
+            // Generate color based on subject
+            $colors = [
+              'Mathematics' => '#10B981',
+              'Science' => '#3B82F6',
+              'English' => '#8B5CF6',
+              'History' => '#F59E0B',
+              'Art' => '#EC4899',
+              'Music' => '#06B6D4',
+              'Physics' => '#14B8A6',
+              'Chemistry' => '#F97316',
+              'Biology' => '#84CC16',
+              'Literature' => '#6366F1',
+            ];
+            $subject = $l['subject'];
+            $bgColor = $colors[$subject] ?? '#0F766E';
+          ?>
           <div class="learner-card">
-              <div class="learner-avatar">
+              <div class="learner-avatar" style="background: linear-gradient(135deg, <?= $bgColor ?>, <?= adjustBrightness($bgColor, -20) ?>);">
                   <?= strtoupper($l['first_name'][0] . $l['last_name'][0]) ?>
               </div>
               <div class="learner-info">
                   <div class="learner-name">
                       <?= htmlspecialchars($l['first_name'] . ' ' . $l['last_name']) ?>
                   </div>
-                  <div class="learner-subject">
-                      <?= htmlspecialchars($l['subjects']) ?>
+                  <div class="learner-subject" style="color: <?= $bgColor ?>; font-weight: 600;">
+                      <?= htmlspecialchars($subject) ?>
                   </div>
-                  <a href="learnerTopics.php?learner_id=<?= $l['learner_id'] ?>" class="view-btn btn btn-success mt-2">View</a>
+                  <a href="learnerTopics.php?learner_id=<?= $l['learner_id'] ?>&subject=<?= urlencode($subject) ?>" class="view-btn btn btn-success mt-2">View</a>
               </div>
           </div>
           <?php endforeach; ?>

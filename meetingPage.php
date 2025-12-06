@@ -13,6 +13,10 @@ if (!$reservationId) die("Reservation ID missing");
 
 $AGORA_APP_ID = "ba85d26a0db94dec82214e061ceaa39c";
 $userRole = $_SESSION['role'] ?? null;
+$userName = $_SESSION['first_name'] ?? 'User';
+if (isset($_SESSION['last_name']) && $_SESSION['last_name']) {
+    $userName .= ' ' . $_SESSION['last_name'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,28 +25,11 @@ $userRole = $_SESSION['role'] ?? null;
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Session Meeting</title>
 <link rel="stylesheet" href="CSS/meetingPage.css">
-<style>
-    #video-panel-right {
-        display: flex !important;
-        flex-direction: column !important;
-    }
-    
-    .video-box {
-        order: 1;
-    }
-    
-    .my-video {
-        order: 1;
-    }
-    
-    .participant-video {
-        order: 999;
-    }
-</style>
 <script>
 const AGORA_APP_ID = "<?= $AGORA_APP_ID ?>";
 const RESERVATION_ID = "<?= $reservationId ?>";
 const USER_ROLE = "<?= $userRole ?>";
+const USER_NAME = "<?= htmlspecialchars($userName) ?>";
 const IS_TUTOR = USER_ROLE === 'tutor';
 const IS_LEARNER = USER_ROLE === 'learner';
 </script>
@@ -52,6 +39,18 @@ const IS_LEARNER = USER_ROLE === 'learner';
 <div id="videoContainer"></div>
 
 <div class="controls" id="callControls"></div>
+
+<div id="chatPanel" class="chat-panel">
+    <div class="chat-header">
+        <h3>Chat</h3>
+        <button id="closeChatBtn" class="close-btn">✕</button>
+    </div>
+    <div id="chatMessages" class="chat-messages"></div>
+    <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Type a message..." class="chat-input">
+        <button id="sendChatBtn" class="send-btn">Send</button>
+    </div>
+</div>
 
 <script src="https://download.agora.io/sdk/release/AgoraRTC_N.js"></script>
 <script>
@@ -83,6 +82,35 @@ let isScreenSharing = false;
 let screenSharerUid = null;
 let screenSharerPresenterUid = null;
 
+let currentUserUid = null;
+
+let userInfo = {};
+
+async function fetchUserInfo(uid) {
+    if (userInfo[uid]) {
+        return userInfo[uid];
+    }
+    
+    try {
+        const response = await fetch(`getUserInfo.php?uid=${uid}`);
+        const data = await response.json();
+        
+        userInfo[uid] = {
+            name: data.name || `User ${uid}`,
+            role: data.role || 'participant'
+        };
+        
+        return userInfo[uid];
+    } catch (err) {
+        console.error("Error fetching user info:", err);
+        userInfo[uid] = {
+            name: `User ${uid}`,
+            role: 'participant'
+        };
+        return userInfo[uid];
+    }
+}
+
 async function leaveCall() {
     for (let t of Object.values(myTracks)) if (t) { t.stop(); t.close(); }
     if (screenTrack) { await screenTrack.close(); screenTrack = null; }
@@ -91,12 +119,107 @@ async function leaveCall() {
     
     // Redirect based on user role
     if (IS_TUTOR) {
-        window.location.href = '../Tutor/learnerTopics.php';
+        window.location.href = '/LearnTogether/Tutor/learnerTopics.php';
     } else if (IS_LEARNER) {
-        window.location.href = '../Learner/learnerTopics.php';
+        window.location.href = '/LearnTogether/Learner/learnerTopics.php';
     } else {
-        window.location.href = document.referrer || '../';
+        window.location.href = document.referrer || '/LearnTogether/';
     }
+}
+
+let chatMessages = [];
+
+function toggleChatPanel() {
+    const chatPanel = document.getElementById("chatPanel");
+    chatPanel.classList.toggle("open");
+}
+
+function addChatMessage(sender, message) {
+    chatMessages.push({ sender, message, timestamp: new Date() });
+    const chatMessagesDiv = document.getElementById("chatMessages");
+    
+    const messageEl = document.createElement("div");
+    messageEl.className = "chat-message";
+    const isOwnMessage = sender === "You";
+    messageEl.style.backgroundColor = isOwnMessage ? "#e3f2fd" : "white";
+    messageEl.style.borderLeftColor = isOwnMessage ? "#2196F3" : "#667eea";
+    messageEl.innerHTML = `
+        <strong>${sender}:</strong> ${escapeHtml(message)}
+        <span class="chat-time">${new Date().toLocaleTimeString()}</span>
+    `;
+    chatMessagesDiv.appendChild(messageEl);
+    chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+}
+
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+function sendChatMessage(message) {
+    console.log("Message sent:", message);
+    addChatMessage("You", message);
+}
+
+function setupChatListeners() {
+    const chatInput = document.getElementById("chatInput");
+    const sendBtn = document.getElementById("sendChatBtn");
+    const closeBtn = document.getElementById("closeChatBtn");
+
+    sendBtn.onclick = () => {
+        const message = chatInput.value.trim();
+        if (message) {
+            sendChatMessage(message);
+            chatInput.value = "";
+        }
+    };
+
+    chatInput.onkeypress = (e) => {
+        if (e.key === "Enter") {
+            const message = chatInput.value.trim();
+            if (message) {
+                sendChatMessage(message);
+                chatInput.value = "";
+            }
+        }
+    };
+
+    closeBtn.onclick = toggleChatPanel;
+
+    const chatPanel = document.getElementById("chatPanel");
+    const chatHeader = document.querySelector(".chat-header");
+    let isDragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    chatHeader.style.cursor = "grab";
+    chatHeader.onmousedown = (e) => {
+        isDragging = true;
+        const rect = chatPanel.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        chatHeader.style.cursor = "grabbing";
+    };
+
+    document.onmousemove = (e) => {
+        if (isDragging) {
+            chatPanel.style.right = "auto";
+            chatPanel.style.left = (e.clientX - offsetX) + "px";
+            chatPanel.style.top = (e.clientY - offsetY) + "px";
+            chatPanel.style.transform = "none";
+        }
+    };
+
+    document.onmouseup = () => {
+        isDragging = false;
+        chatHeader.style.cursor = "grab";
+    };
 }
 
 function setupControls() {
@@ -105,12 +228,17 @@ function setupControls() {
         <button id="toggleMic" class="control-btn active">🎤</button>
         <button id="toggleCam" class="control-btn active">📷</button>
         <button id="shareScreenBtn" class="control-btn">🖥️</button>
+        <button id="chatBtn" class="control-btn">💬</button>
         <button id="leaveBtn" class="control-btn end-call">📞</button>
     `;
 
     const micBtn = document.getElementById("toggleMic");
     const camBtn = document.getElementById("toggleCam");
     const shareBtn = document.getElementById("shareScreenBtn");
+
+    micBtn.title = "Mute microphone";
+    camBtn.title = "Turn off camera";
+    shareBtn.title = "Share screen";
 
     micBtn.onclick = async () => {
         try {
@@ -121,6 +249,7 @@ function setupControls() {
             micEnabled = !micEnabled;
             await myTracks.audioTrack.setEnabled(micEnabled);
             micBtn.className = micEnabled ? "control-btn active" : "control-btn inactive";
+            micBtn.title = micEnabled ? "Mute microphone" : "Unmute microphone";
             micBtn.innerText = micEnabled ? "🎤" : "🔇";
         } catch (err) {
             console.error("Error toggling microphone:", err);
@@ -138,7 +267,14 @@ function setupControls() {
             camEnabled = !camEnabled;
             await myTracks.videoTrack.setEnabled(camEnabled);
             camBtn.className = camEnabled ? "control-btn active" : "control-btn inactive";
-            camBtn.innerText = camEnabled ? "📷" : "📹";
+            camBtn.title = camEnabled ? "Turn off camera" : "Turn on camera";
+            const camImg = camBtn.querySelector("img");
+            if (camImg) {
+                camImg.src = camEnabled ? 
+                    "https://cdn-icons-png.flaticon.com/512/3050/3050161.png" : 
+                    "https://cdn-icons-png.flaticon.com/512/3050/3050163.png";
+                camImg.alt = camEnabled ? "Camera On" : "Camera Off";
+            }
         } catch (err) {
             console.error("Error toggling camera:", err);
             camEnabled = !camEnabled; 
@@ -147,6 +283,9 @@ function setupControls() {
     };
 
     shareBtn.onclick = toggleScreenShare;
+
+    const chatBtn = document.getElementById("chatBtn");
+    chatBtn.onclick = toggleChatPanel;
 
     document.getElementById("leaveBtn").onclick = leaveCall;
 }
@@ -206,9 +345,7 @@ function updateLayout() {
     
     container.classList.add("screen-sharing-active");
     
-    // Only apply styles if we have the video panel (split layout mode)
     if (!videoPanelRight) {
-        // Fallback to absolute positioning if panel doesn't exist
         const myVideoBox = document.querySelector(".video-box.my-video");
         if (myVideoBox) {
             myVideoBox.style.display = "block";
@@ -249,7 +386,6 @@ function updateLayout() {
             }
         });
     } else {
-        // Apply styles for videos inside the panel (split layout)
         const myVideoBox = document.querySelector(".video-box.my-video");
         if (myVideoBox) {
             myVideoBox.style.position = "relative";
@@ -294,11 +430,9 @@ function applyRoleBasedScreenShareLayout() {
     const myVideoBox = document.querySelector(".video-box.my-video");
     const participantBoxes = Array.from(participantVideos.values()).filter(box => !box.classList.contains('my-video'));
     
-    // Clear existing order
     videoPanelRight.innerHTML = '';
     
     if (IS_TUTOR) {
-        // Tutor at top, learners at bottom
         console.log("Layout: TUTOR at top");
         if (myVideoBox) {
             myVideoBox.style.order = "1";
@@ -309,7 +443,6 @@ function applyRoleBasedScreenShareLayout() {
             videoPanelRight.appendChild(box);
         });
     } else if (IS_LEARNER) {
-        // Learner at top, tutors at bottom
         console.log("Layout: LEARNER at top");
         if (myVideoBox) {
             myVideoBox.style.order = "1";
@@ -321,7 +454,6 @@ function applyRoleBasedScreenShareLayout() {
         });
     }
     
-    // Apply flexbox order property
     videoPanelRight.style.display = "flex";
     videoPanelRight.style.flexDirection = "column";
 }
@@ -489,6 +621,12 @@ function addVideoBox(track, name, uid, isMyVideo = false) {
         return;
     }
 
+    if (isMyVideo) {
+        userInfo[uid] = { name: USER_NAME, role: USER_ROLE };
+    } else {
+        userInfo[uid] = { name: name, role: 'participant' };
+    }
+
     const box = document.createElement("div");
     box.id = `user-${uid}`;
     box.className = isMyVideo ? "video-box my-video" : "video-box participant-video";
@@ -507,7 +645,6 @@ function addVideoBox(track, name, uid, isMyVideo = false) {
 
     box.appendChild(label);
     
-    // If screen sharing is active and this is a participant, add to video panel
     if (container.classList.contains("screen-sharing-active") && !isMyVideo) {
         const videoPanelRight = document.getElementById("video-panel-right");
         if (videoPanelRight) {
@@ -560,7 +697,6 @@ async function toggleScreenShare() {
 
             const container = document.getElementById("videoContainer");
             
-            // Collect all existing video boxes before reorganizing
             const allBoxes = container.querySelectorAll('.video-box');
             const detachedBoxes = [];
             allBoxes.forEach(box => {
@@ -598,12 +734,10 @@ async function toggleScreenShare() {
             videoPanelContainer.style.boxSizing = "border-box";
             container.appendChild(videoPanelContainer);
             
-            // Re-attach detached boxes to the video panel with proper styling
             detachedBoxes.forEach(box => {
                 const isMyVideo = box.classList.contains('my-video');
                 box.className = isMyVideo ? 'video-box my-video participant-pip-mode' : 'video-box participant-video participant-pip-mode';
                 
-                // Apply inline styles for proper display in panel
                 box.style.position = "relative";
                 box.style.width = "100%";
                 box.style.height = "200px";
@@ -623,7 +757,6 @@ async function toggleScreenShare() {
                 console.log("Playing screen track...");
                 await screenTrack.play(screenBox);
                 
-                // Ensure video element has proper styling
                 const videoElements = screenBox.querySelectorAll('video');
                 videoElements.forEach(video => {
                     video.style.width = "100%";
@@ -642,11 +775,9 @@ async function toggleScreenShare() {
             try {
                 console.log("Publishing screen track...");
                 try {
-                    // Unpublish camera before publishing screen (Agora limitation)
                     await client.unpublish([myTracks.videoTrack]);
                     console.log("✓ Camera unpublished");
                     
-                    // Now publish the screen track
                     await client.publish(screenTrack);
                     console.log("✓ Screen track published");
                 } catch (e) {
@@ -656,10 +787,9 @@ async function toggleScreenShare() {
                 
                 container.classList.add("screen-sharing-active");
                 shareBtn.classList.add("active");
-                shareBtn.innerText = "🖥️ Stop";
+                shareBtn.title = "Stop sharing screen";
                 isScreenSharing = true;
                 
-                // Apply role-based layout
                 applyRoleBasedScreenShareLayout();
                 
                 console.log("✅ Screen sharing started");
@@ -688,29 +818,26 @@ async function toggleScreenShare() {
                 console.log("✓ Screen box removed");
             }
 
-            // Remove the right panel container and restore videos
             const videoPanelRight = document.getElementById('video-panel-right');
             if (videoPanelRight) {
                 const children = Array.from(videoPanelRight.children);
                 children.forEach(child => {
-                    // Clone the child to avoid DOM manipulation issues
-                    const clonedChild = child.cloneNode(true);
-                    // Remove old references and reset styles
-                    clonedChild.className = clonedChild.classList.contains('my-video') ? 'video-box my-video' : 'video-box participant-video';
-                    clonedChild.style.position = "";
-                    clonedChild.style.width = "";
-                    clonedChild.style.height = "";
-                    clonedChild.style.border = "";
-                    clonedChild.style.borderRadius = "";
-                    clonedChild.style.overflow = "";
-                    clonedChild.style.margin = "";
-                    clonedChild.style.padding = "";
-                    clonedChild.style.maxHeight = "";
-                    clonedChild.style.display = "block";
-                    container.appendChild(clonedChild);
-                    // Update participantVideos reference
+                    child.className = child.classList.contains('my-video') ? 'video-box my-video' : 'video-box participant-video';
+                    child.style.position = "";
+                    child.style.width = "";
+                    child.style.height = "";
+                    child.style.border = "";
+                    child.style.borderRadius = "";
+                    child.style.overflow = "";
+                    child.style.margin = "";
+                    child.style.padding = "";
+                    child.style.maxHeight = "";
+                    child.style.display = "block";
+                    container.appendChild(child);
                     const uid = child.id.replace('user-', '');
-                    participantVideos[uid] = clonedChild;
+                    if (participantVideos[uid]) {
+                        console.log(`✓ Restored video for uid: ${uid}`);
+                    }
                 });
                 videoPanelRight.remove();
                 console.log("✓ Video panel removed");
@@ -734,7 +861,6 @@ async function toggleScreenShare() {
             
             container.classList.remove("screen-sharing-active");
             
-            // Republish camera track since we unpublished it for screen share
             console.log("Republishing camera track...");
             try {
                 await client.publish([myTracks.videoTrack]);
@@ -811,7 +937,6 @@ async function startMeeting() {
                     
                     const container = document.getElementById("videoContainer");
                     
-                    // Collect all video boxes and their references
                     const allBoxes = container.querySelectorAll('.video-box');
                     const boxes = {
                         myVideo: null,
@@ -826,7 +951,6 @@ async function startMeeting() {
                         }
                     });
                     
-                    // Detach all existing boxes from DOM (but keep their content)
                     const detachedBoxes = [];
                     allBoxes.forEach(box => {
                         detachedBoxes.push(container.removeChild(box));
@@ -834,7 +958,6 @@ async function startMeeting() {
                     
                     container.classList.add("screen-sharing-active");
                     
-                    // Create screen share box on the left (65%)
                     const screenBox = document.createElement("div");
                     screenBox.id = "screen-share-remote";
                     screenBox.className = "screen-share-container";
@@ -851,7 +974,6 @@ async function startMeeting() {
                     screenBox.style.minWidth = "0";
                     container.appendChild(screenBox);
 
-                    // Create video panel on the right (35%)
                     const videoPanelContainer = document.createElement("div");
                     videoPanelContainer.id = "video-panel-right";
                     videoPanelContainer.style.width = "35%";
@@ -868,12 +990,10 @@ async function startMeeting() {
                     videoPanelContainer.style.position = "relative";
                     container.appendChild(videoPanelContainer);
                     
-                    // Re-attach detached boxes to the video panel with proper styling
                     detachedBoxes.forEach(box => {
                         const isMyVideo = box.classList.contains('my-video');
                         box.className = isMyVideo ? 'video-box my-video participant-pip-mode' : 'video-box participant-video participant-pip-mode';
                         
-                        // Apply inline styles for proper display in panel
                         box.style.position = "relative";
                         box.style.width = "100%";
                         box.style.height = "200px";
@@ -892,7 +1012,6 @@ async function startMeeting() {
                     try {
                         await user.videoTrack.play(screenBox);
                         
-                        // Ensure video element has proper styling
                         const videoElements = screenBox.querySelectorAll('video');
                         videoElements.forEach(video => {
                             video.style.width = "100%";
@@ -904,7 +1023,6 @@ async function startMeeting() {
                         
                         console.log("Remote screen track playing");
                         
-                        // Apply role-based layout for remote screen share
                         applyRoleBasedScreenShareLayout();
                     } catch (e) {
                         console.error("Error playing remote screen track:", e);
@@ -942,7 +1060,6 @@ async function startMeeting() {
             if (mediaType === "video") {
                 console.log("Remote video unpublished for user", user.uid);
                 
-                // Check if this is the screen share that was unpublished
                 if (user.uid === screenSharerUid) {
                     console.log("Remote screen share stopped by user", user.uid);
                     screenSharerUid = null;
@@ -955,29 +1072,24 @@ async function startMeeting() {
                         console.log("Remote screen box removed");
                     }
                     
-                    // Remove the right panel and restore videos to container
                     const videoPanelRight = document.getElementById('video-panel-right');
                     if (videoPanelRight) {
                         const children = Array.from(videoPanelRight.children);
                         children.forEach(child => {
-                            // Clone the child to avoid DOM manipulation issues
-                            const clonedChild = child.cloneNode(true);
-                            // Remove old references and reset styles
-                            clonedChild.className = clonedChild.classList.contains('my-video') ? 'video-box my-video' : 'video-box participant-video';
-                            clonedChild.style.position = "";
-                            clonedChild.style.width = "";
-                            clonedChild.style.height = "";
-                            clonedChild.style.border = "";
-                            clonedChild.style.borderRadius = "";
-                            clonedChild.style.overflow = "";
-                            clonedChild.style.margin = "";
-                            clonedChild.style.padding = "";
-                            clonedChild.style.maxHeight = "";
-                            clonedChild.style.display = "block";
-                            container.appendChild(clonedChild);
-                            // Update participantVideos reference
+                            child.className = child.classList.contains('my-video') ? 'video-box my-video' : 'video-box participant-video';
+                            child.style.position = "";
+                            child.style.width = "";
+                            child.style.height = "";
+                            child.style.border = "";
+                            child.style.borderRadius = "";
+                            child.style.overflow = "";
+                            child.style.margin = "";
+                            child.style.padding = "";
+                            child.style.maxHeight = "";
+                            child.style.display = "block";
+                            container.appendChild(child);
                             const uid = child.id.replace('user-', '');
-                            participantVideos[uid] = clonedChild;
+                            participantVideos[uid] = child;
                         });
                         videoPanelRight.remove();
                         console.log("✓ Video panel removed");
@@ -995,9 +1107,17 @@ async function startMeeting() {
                         label.style.left = "5px";
                         label.style.color = "white";
                         label.style.backgroundColor = "rgba(0,0,0,0.5)";
-                        label.style.padding = "2px 5px";
+                        label.style.padding = "4px 8px";
                         label.style.borderRadius = "4px";
-                        label.innerText = `User ${user.uid} (camera off)`;
+                        label.style.fontSize = "12px";
+                        label.style.fontWeight = "500";
+                        label.style.whiteSpace = "nowrap";
+                        
+                        (async () => {
+                            const info = await fetchUserInfo(user.uid);
+                            label.innerText = `${info.name} (${info.role})`;
+                        })();
+                        
                         videoBox.appendChild(label);
                         videoBox.style.backgroundColor = "#1a1a1a";
                     }
@@ -1020,30 +1140,25 @@ async function startMeeting() {
                 const screenBox = document.getElementById("screen-share-remote");
                 if (screenBox) screenBox.remove();
                 
-                // Remove the right panel and restore videos to container
                 const container = document.getElementById("videoContainer");
                 const videoPanelRight = document.getElementById('video-panel-right');
                 if (videoPanelRight) {
                     const children = Array.from(videoPanelRight.children);
                     children.forEach(child => {
-                        // Clone the child to avoid DOM manipulation issues
-                        const clonedChild = child.cloneNode(true);
-                        // Remove old references and reset styles
-                        clonedChild.className = clonedChild.classList.contains('my-video') ? 'video-box my-video' : 'video-box participant-video';
-                        clonedChild.style.position = "";
-                        clonedChild.style.width = "";
-                        clonedChild.style.height = "";
-                        clonedChild.style.border = "";
-                        clonedChild.style.borderRadius = "";
-                        clonedChild.style.overflow = "";
-                        clonedChild.style.margin = "";
-                        clonedChild.style.padding = "";
-                        clonedChild.style.maxHeight = "";
-                        clonedChild.style.display = "block";
-                        container.appendChild(clonedChild);
-                        // Update participantVideos reference
+                        child.className = child.classList.contains('my-video') ? 'video-box my-video' : 'video-box participant-video';
+                        child.style.position = "";
+                        child.style.width = "";
+                        child.style.height = "";
+                        child.style.border = "";
+                        child.style.borderRadius = "";
+                        child.style.overflow = "";
+                        child.style.margin = "";
+                        child.style.padding = "";
+                        child.style.maxHeight = "";
+                        child.style.display = "block";
+                        container.appendChild(child);
                         const uid = child.id.replace('user-', '');
-                        participantVideos[uid] = clonedChild;
+                        participantVideos[uid] = child;
                     });
                     videoPanelRight.remove();
                 }
@@ -1056,10 +1171,11 @@ async function startMeeting() {
         });
 
         const uid = await client.join(AGORA_APP_ID, data.channelName, data.token, data.uid);
+        currentUserUid = uid;
+        
         [myTracks.audioTrack, myTracks.videoTrack] =
             await AgoraRTC.createMicrophoneAndCameraTracks();
 
-        // Add my video FIRST to ensure it appears at grid-row 1 (top)
         addVideoBox(myTracks.videoTrack, "You", uid, true);
         console.log("✓ My video added, uid:", uid);
         console.log("✓ participantVideos:", participantVideos);
@@ -1068,6 +1184,7 @@ async function startMeeting() {
         console.log("✓ Tracks published");
 
         setupControls();
+        setupChatListeners();
     } catch (err) {
         console.error("Full error:", err);
         
