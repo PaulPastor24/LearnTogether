@@ -14,6 +14,12 @@ if (!isset($_GET['learner_id'])) {
 }
 
 $learner_id = $_GET['learner_id'];
+$subject = $_GET['subject'] ?? null;
+
+if (!$subject) {
+    header("Location: tutorDashboard.php");
+    exit;
+}
 
 $stmt = $pdo->prepare("SELECT id FROM tutors WHERE user_id = ?");
 $stmt->execute([$_SESSION['user_id']]);
@@ -89,9 +95,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 $stmt = $pdo->prepare("
     SELECT r.id AS reservation_id, r.subject, r.status
     FROM reservations r
-    WHERE r.learner_id = ? AND r.tutor_id = ? AND r.status = 'Scheduled'
+    WHERE r.learner_id = ? AND r.tutor_id = ? AND r.status = 'Scheduled' AND r.subject = ?
 ");
-$stmt->execute([$learner_id, $tutor_id]);
+$stmt->execute([$learner_id, $tutor_id, $subject]);
 $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $allTopics = [];
@@ -197,41 +203,36 @@ $csrfToken = generateCSRFToken();
           </div>
         </div>
       </div>
-      <?php foreach ($reservations as $res): ?>
-        <div class="d-flex justify-content-end mb-4 gap-2">
-          <a href="../agoraconvo.php?reservation_id=<?= $res['reservation_id'] ?>"
-             class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center"
-             style="width:50px;height:50px;font-size:20px;">💬</a>
-          <a href="../meetingPage.php?reservation_id=<?= $res['reservation_id'] ?>"
-             class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center"
-             style="width:50px;height:50px;font-size:20px;">🎥</a>
-        </div>
-      <?php endforeach; ?>
+      <div class="d-flex justify-content-end mb-4 gap-2">
+        <a href="../agoraconvo.php?reservation_id=<?= $reservations[0]['reservation_id'] ?? '' ?>"
+           class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center"
+           style="width:50px;height:50px;font-size:20px;">💬</a>
+        <a href="../meetingPage.php?reservation_id=<?= $reservations[0]['reservation_id'] ?? '' ?>"
+           class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center"
+           style="width:50px;height:50px;font-size:20px;">🎥</a>
+      </div>
       <div class="lessons-section">
         <h5 class="fw-bold text-secondary">Lessons</h5>
         <?php if (!empty($allTopics)): ?>
-          <?php foreach ($reservations as $res): ?>
-            <h5 class="fw-semibold mt-4 mb-3 text-primary"><?= htmlspecialchars($res['subject']) ?></h5>
-            <?php 
-            $num = 1;
-            foreach ($allTopics as $topic):
-              if ($topic['subject'] !== $res['subject']) continue;
-              $status = $topic['status'];
-              $badgeClass = $status === 'Done' ? 'bg-success' : 'bg-warning';
-              $topicId = urlencode($topic['title']);
-            ?>
-              <div class="lesson-card d-flex justify-content-between align-items-center p-3 mb-2 border rounded bg-light text-decoration-none text-dark">
-                <div class="flex-grow-1">
-                  <div class="fw-bold">Topic <?= $num++ ?></div>
-                  <div><?= htmlspecialchars($topic['title']) ?></div>
-                </div>
-                <div class="status-badge <?= $badgeClass ?> px-3 py-1 rounded text-white fw-bold" 
-                     style="cursor: pointer; margin-left: auto;" 
-                     onclick="toggleStatus(event, '<?= htmlspecialchars($topic['subject']) ?>', '<?= htmlspecialchars($topic['title']) ?>', this)">
-                  <?= htmlspecialchars($status) ?>
-                </div>
+          <h5 class="fw-semibold mt-4 mb-3 text-primary"><?= htmlspecialchars($subject) ?></h5>
+          <?php 
+          $num = 1;
+          foreach ($allTopics as $topic):
+            $status = $topic['status'];
+            $badgeClass = $status === 'Done' ? 'bg-success' : 'bg-warning';
+            $topicId = urlencode($topic['title']);
+          ?>
+            <div class="lesson-card d-flex justify-content-between align-items-center p-3 mb-2 border rounded bg-light text-decoration-none text-dark">
+              <div class="flex-grow-1">
+                <div class="fw-bold">Topic <?= $num++ ?></div>
+                <div><?= htmlspecialchars($topic['title']) ?></div>
               </div>
-            <?php endforeach; ?>
+              <div class="status-badge <?= $badgeClass ?> px-3 py-1 rounded text-white fw-bold" 
+                   style="cursor: pointer; margin-left: auto;" 
+                   onclick="toggleStatus(event, '<?= htmlspecialchars($topic['subject']) ?>', '<?= htmlspecialchars($topic['title']) ?>', this)">
+                <?= htmlspecialchars($status) ?>
+              </div>
+            </div>
           <?php endforeach; ?>
         <?php else: ?>
           <p class="no-topics text-muted">No topics available for this learner yet.</p>

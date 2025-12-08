@@ -63,6 +63,7 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([$tutor_id]);
 $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$csrfToken = generateCSRFToken();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -154,6 +155,7 @@ $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
                       <form method="POST">
                           <input type="hidden" name="action" value="edit">
                           <input type="hidden" name="subject_id" value="<?= $sub['id'] ?>">
+                          <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
 
                           <div class="modal-header">
                               <h5 class="modal-title">Edit Subject</h5>
@@ -216,6 +218,7 @@ $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
           </div>
 
           <div class="modal-body">
+            <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
 
             <label>Subject Name</label>
             <input type="text" name="subject_name" class="form-control mb-3" required>
