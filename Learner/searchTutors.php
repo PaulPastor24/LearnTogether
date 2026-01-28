@@ -82,72 +82,94 @@
     <link rel="stylesheet" href="../CSS/style2.css">
     <link rel="stylesheet" href="../CSS/tutor2.css">
     <link rel="stylesheet" href="../CSS/search.css">
+    <script src="../JS/advancedSearch.js" defer></script>
 </head>
-<body>
+<body style="overflow-x: hidden;">
     <div class="app">
+        <nav class="navbar-top">
+            <button class="menu-toggle" id="hamburger">☰</button>
+            <div class="navbar-brand-section">
+                <div class="navbar-logo">
+                    <img src="../images/LT.png" alt="LearnTogether Logo" class="logo-img">
+                    <span class="brand-name">LearnTogether</span>
+                </div>
+            </div>
+            <div class="navbar-search">
+                <input type="text" id="searchInput" placeholder="Search tutors, subjects or topics" class="search-input"
+                       style="border: 2px solid rgba(16, 185, 129, 0.2); background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(52, 211, 153, 0.05) 100%); transition: all 0.3s;">
+            </div>
+            <div class="navbar-user">
+                <div class="user-info">
+                    <span class="user-name"><?= htmlspecialchars($currentUser['first_name'] ?? 'Learner') ?></span>
+                    <span class="user-role"><?= $currentUser['role'] == 'tutor' ? 'Tutor' : 'Learner' ?></span>
+                </div>
+                <div class="user-avatar">
+                    <?= strtoupper(substr($currentUser['first_name'], 0, 1) . substr($currentUser['last_name'], 0, 1)) ?>
+                </div>
+            </div>
+        </nav>
+
         <aside id="sidebar">
             <div class="sidebar">
-                <div class="profile-dropdown" id="profileDropdown" style="position:relative;cursor:pointer;">
-                    <div class="avatar"><?= strtoupper($currentUser['first_name'][0]) ?></div>
-                    <div>
-                        <div style="font-weight:700"><?= htmlspecialchars($currentUser['first_name'] . ' ' . $currentUser['last_name']) ?></div>
-                        <div style="font-size:13px;color:var(--muted)">Active Learner</div>
+                <div class="profile" id="sidebarProfile" title="View Profile">
+                    <div class="avatar">
+                        <?= strtoupper($currentUser['first_name'][0]) ?>
                     </div>
+                    <div class="profile-text">
+                        <div class="profile-name"><?= htmlspecialchars($currentUser['first_name'].' '.$currentUser['last_name']) ?></div>
+                        <div class="profile-status"><?= $currentUser['role'] == 'tutor' ? 'Active Tutor' : 'Active Learner' ?></div>
+                    </div>
+                    <div class="view-profile-tooltip">View Profile</div>
                 </div>
 
                 <nav class="navlinks">
-                    <a href="learnerDashboard.php">🏠 Overview</a>
-                    <a href="subjects.php">📚 My Subjects</a>
-                    <a class="active" href="searchTutors.php">🔎 Find Tutors</a>
-                    <a href="schedule.php">📅 My Schedule</a>
-                    <a href="requests.php">✉️ Requests</a>
-                    <a href="setting.php">⚙️ Settings</a>
-                    <a href="../logout.php">🚪 Logout</a>
+                    <a class="nav-link" href="learnerDashboard.php">
+                        <span class="nav-text">Overview</span>
+                    </a>
+                    <a class="nav-link" href="subjects.php">
+                        <span class="nav-text">My Subjects</span>
+                    </a>
+                    <a class="nav-link active" href="searchTutors.php">
+                        <span class="nav-text">Find Tutors</span>
+                    </a>
+                    <a class="nav-link" href="schedule.php">
+                        <span class="nav-text">My Schedule</span>
+                    </a>
+                    <a class="nav-link" href="requests.php">
+                        <span class="nav-text">Requests</span>
+                    </a>
+                    <a class="nav-link" href="setting.php">
+                        <span class="nav-text">Settings</span>
+                    </a>
+                    <a class="nav-link logout" href="../logout.php">
+                        <span class="nav-text">Log Out</span>
+                    </a>
                 </nav>
             </div>
         </aside>
 
         <div class="overlay" id="overlay"></div>
 
-        <div class="nav" role="navigation">
-            <div class="hamburger" id="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-            <div class="logo" style="display:flex; align-items:center;">
-                <div>
-                    <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;">
+        <main class="dashboard-main">
+            <h1 class="welcome-title">Find Tutors</h1>
+            <p class="welcome-subtitle">Search and connect with qualified tutors</p>
+
+            <?php if (!empty($success)) echo "<p style='color:green;'>$success</p>"; ?>
+            <?php if (!empty($error)) echo "<p style='color:red;'>$error</p>"; ?>
+
+            <!-- Search & Filter Section -->
+            <div style="margin-bottom: 30px; display: grid; grid-template-columns: 1fr 200px 100px; gap: 15px; align-items: end;">
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="searchInput" placeholder="Search tutors by name, subjects, or topics..." 
+                           style="flex: 1; padding: 12px 16px; border: 2px solid rgba(16, 185, 129, 0.2); border-radius: 8px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(52, 211, 153, 0.05) 100%); font-size: 14px; transition: all 0.3s;">
                 </div>
-                <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
-            </div>
-            <div class="search">
-                <input id="searchInput" placeholder="Search tutors, subjects or topics" />
-                <select id="searchFilter">
+                <select id="searchFilter" style="padding: 12px 16px; border: 2px solid rgba(16, 185, 129, 0.2); border-radius: 8px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(52, 211, 153, 0.05) 100%); font-size: 14px; cursor: pointer;">
                     <option value="all">All</option>
                     <option value="name">Name</option>
                     <option value="subject">Subject</option>
                 </select>
-                <button id="clearSearch" title="Clear search">✕</button>
+                <button id="clearSearch" style="padding: 12px 16px; background: linear-gradient(135deg, #10b981 0%, #34d399 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">Clear</button>
             </div>
-            <div class="nav-actions">
-                <div style="display:flex;align-items:center;gap:8px">
-                    <div style="text-align:right;margin-right:6px">
-                        <div style="font-weight:700"><?= htmlspecialchars($currentUser['first_name']) ?></div>
-                        <div style="font-size:12px;color:var(--muted)">Learner</div>
-                    </div>
-                    <div class="avatar" style="width:40px;height:40px;border-radius:10px">
-                        <?= strtoupper(substr($currentUser['first_name'], 0, 1) . substr($currentUser['last_name'], 0, 1)) ?>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <main>
-            <h1>Find Tutors</h1>
-
-            <?php if (!empty($success)) echo "<p style='color:green;'>$success</p>"; ?>
-            <?php if (!empty($error)) echo "<p style='color:red;'>$error</p>"; ?>
 
             <div class="subjects-grid">
                 <?php foreach ($tutors as $t): ?>
@@ -189,7 +211,7 @@
                     </div>
                 <?php endforeach; ?>
             </div>
-            <p id="noResults">No tutors found matching your search.</p>
+            <p id="noResults" style="display: none;">No tutors found matching your search.</p>
         </main>
     </div>
 
@@ -331,7 +353,7 @@
             subjectsGrid.appendChild(subjectCard);
         });
         
-        document.getElementById('requestSessionDiv').style.display = 'none';
+        document.getElementById('requestSessionDiv').style.display = 'block';
         modal.style.display = 'flex';
     }
 

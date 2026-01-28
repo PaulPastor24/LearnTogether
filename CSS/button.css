@@ -1,3 +1,8 @@
+html, body {
+    scrollbar-gutter: stable;
+    line-height: 1.5 !important;
+}
+
 .learners-grid {
     display: grid;
     grid-template-columns: 3fr;
@@ -56,8 +61,25 @@
 }
 
 main {
-    margin-left: 250px; 
-    padding: 140px 50px 40px 50px;
+    margin-left: 315px !important;
+    margin-right: 32px !important;
+    padding: 32px !important;
+}
+
+h1 {
+    margin-bottom: 24px !important;
+    margin-top: 0 !important;
+    color: #065f46;
+    font-weight: 800;
+    font-size: 32px !important;
+    letter-spacing: -0.5px;
+    transition: opacity 0.3s ease;
+    text-align: left !important;
+    line-height: 1.2 !important;
+}
+
+h2, h3, h4, h5 {
+    line-height: 1.2 !important;
 }
 
 @media (max-width: 992px) {

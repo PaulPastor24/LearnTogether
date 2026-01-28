@@ -95,20 +95,31 @@ $step = $_SESSION['step'] ?? 'create';
   <title>LearnTogether Signup</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="CSS/signup.css">
+  <style>
+    :root { --primary: #10b981; }
+    body { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
+    .card { background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 253, 244, 0.95) 100%); backdrop-filter: blur(8px); border: 1px solid rgba(16, 185, 129, 0.1); border-radius: 16px; box-shadow: 0 20px 40px rgba(16, 185, 129, 0.15); }
+    h2 { background: linear-gradient(135deg, #10b981 0%, #34d399 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
+    .text-success { color: var(--primary) !important; }
+    .form-control { background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(52, 211, 153, 0.05) 100%); border: 1px solid rgba(16, 185, 129, 0.2); }
+    .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+    .btn-success { background: linear-gradient(135deg, #10b981 0%, #34d399 100%) !important; border: none !important; }
+    a { color: var(--primary); }
+  </style>
 </head>
 
 <body class="d-flex align-items-center justify-content-center vh-100">
 
 <?php if ($step === 'create'): ?>
-<div id="create" class="card shadow p-4 auth-card active">
+<div id="create" class="card p-4 auth-card active">
   <div class="d-flex justify-content-between mb-3 text-muted">
-    <span class="fw-bold text-success">1 Create</span>
+    <span class="fw-bold" style="color: var(--primary);">1 Create</span>
     <span>2 Confirm</span>
     <span>3 Complete</span>
   </div>
 
   <h2 class="mb-3">Create Your Account</h2>
-  <p class="text-muted">Join the <span class="fw-bold text-success">LearnTogether</span> community!</p>
+  <p class="text-muted">Join the <span class="fw-bold" style="color: var(--primary);">LearnTogether</span> community!</p>
 
   <?php if ($error): ?>
     <p class="text-danger"><?= htmlspecialchars($error) ?></p>
@@ -142,10 +153,10 @@ $step = $_SESSION['step'] ?? 'create';
 <?php endif; ?>
 
 <?php if ($step === 'verify'): ?>
-<div id="verify" class="card shadow p-4 auth-card active text-center">
+<div id="verify" class="card p-4 auth-card active text-center">
   <div class="d-flex justify-content-between mb-3 text-muted">
     <span>1 Create</span>
-    <span class="fw-bold text-success">2 Confirm</span>
+    <span class="fw-bold" style="color: var(--primary);">2 Confirm</span>
     <span>3 Complete</span>
   </div>
 
@@ -174,14 +185,14 @@ $step = $_SESSION['step'] ?? 'create';
 <?php endif; ?>
 
 <?php if ($step === 'complete'): ?>
-<div id="complete" class="card shadow p-4 auth-card active text-center">
+<div id="complete" class="card p-4 auth-card active text-center">
   <div class="d-flex justify-content-between mb-3 text-muted">
     <span>1 Create</span>
     <span>2 Confirm</span>
-    <span class="fw-bold text-success">3 Complete</span>
+    <span class="fw-bold" style="color: var(--primary);">3 Complete</span>
   </div>
 
-  <h2 class="mb-3 text-success">✅ Your Account is Ready!</h2>
+  <h2 class="mb-3" style="color: var(--primary);">✅ Your Account is Ready!</h2>
   <p>Welcome to the community! You can now securely access all features and connect with your peers.</p>
   <a href="login.php" class="btn btn-success w-100">Go to login</a>
 </div>

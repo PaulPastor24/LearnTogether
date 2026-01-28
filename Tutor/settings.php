@@ -100,37 +100,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Settings • Tutor Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS/req.css">
     <link rel="stylesheet" href="../CSS/setting.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-
-<aside>
-    <div class="sidebar" style="width: 230px; height: 420px;">
-        <div class="profile" id="sidebarProfile" style="cursor: pointer; position: relative; border-radius: 8px; padding: 10px; transition: all 0.3s ease;" title="View Profile">
-            <div class="avatar"><?= strtoupper($tutor['first_name'][0] ?? 'T') ?></div>
-            <div>
-                <div style="font-weight:750"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
-                <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
-            </div>
-            <div class="view-profile-tooltip" style="position: absolute; bottom: -35px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 10;">👤 View Profile</div>
+  <div class="app">
+    <aside id="sidebar">
+      <div class="sidebar">
+        <div class="profile" id="sidebarProfile" title="View Profile">
+          <div class="avatar"><?= strtoupper($tutor['first_name'][0] ?? 'T') ?></div>
+          <div class="profile-text">
+            <div class="profile-name"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
+            <div class="profile-status">Active Tutor</div>
+          </div>
+          <div class="view-profile-tooltip">View Profile</div>
         </div>
-        <nav class="navlinks fw-bold" style="margin-top: 12px;">
-            <a href="tutorDashboard.php">🏠 Overview</a>
-            <a href="subjects.php">📚 Subjects</a>
-            <a href="calendar.php">📅 Schedule</a>
-            <a href="requests.php">✉️ Requests</a>
-            <a class="active" href="settings.php">⚙️ Settings</a>
-            <a href="../logout.php">🚪 Logout</a>
+        <nav class="navlinks">
+          <a class="nav-link" href="tutorDashboard.php">
+            <span class="nav-text">Overview</span>
+          </a>
+          <a class="nav-link" href="subjects.php">
+            <span class="nav-text">My Subjects</span>
+          </a>
+          <a class="nav-link" href="calendar.php">
+            <span class="nav-text">My Schedule</span>
+          </a>
+          <a class="nav-link" href="requests.php">
+            <span class="nav-text">Requests</span>
+          </a>
+          <a class="nav-link active" href="settings.php">
+            <span class="nav-text">Settings</span>
+          </a>
+          <a class="nav-link logout" href="../logout.php">
+            <span class="nav-text">Log Out</span>
+          </a>
         </nav>
-    </div>
-</aside>
+      </div>
+    </aside>
 
-<button class="menu-toggle" style="position: fixed; top: 10px; left: 10px; z-index: 1000;">&#9776;</button>
+    <div class="overlay" id="overlay"></div>
 
-<main class="lt-main mb-4" style="margin-top: 30px; margin-left: 30px;">
-    <h1 class="mb-4 text-center" style="font-weight:800">Settings</h1>
+    <nav class="navbar-top">
+      <button class="menu-toggle" id="hamburger">☰</button>
+      <div class="navbar-brand-section">
+        <div class="navbar-logo">
+          <img src="../images/LT.png" alt="LearnTogether Logo" class="logo-img">
+          <span class="brand-name">LearnTogether</span>
+        </div>
+      </div>
+      <div class="navbar-search">
+        <input type="text" placeholder="Search settings..." class="search-input">
+      </div>
+      <div class="navbar-user">
+        <div class="user-info">
+          <span class="user-name"><?= htmlspecialchars($tutor['first_name'] ?? 'Tutor') ?></span>
+          <span class="user-role">Tutor</span>
+        </div>
+        <div class="user-avatar">
+          <?= strtoupper(substr($tutor['first_name'], 0, 1) . substr($tutor['last_name'], 0, 1)) ?>
+        </div>
+      </div>
+    </nav>
+
+    <main class="lt-main mb-4">
+    <h1 class="mb-4" style="font-weight:800">Settings</h1>
 
     <?php if (isset($success_message)): ?>
         <div class="alert alert-success text-center"><?= $success_message ?></div>
@@ -140,8 +175,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
         <div class="alert alert-danger text-center"><?= $error_message ?></div>
     <?php endif; ?>
 
-    <div class="row no-gap justify-content-center">
-        <div class="col-12 col-md-6">
+    <div class="row no-gap">
+        <div class="col-12">
             <div class="card card-custom p-3 narrow-card">
                 <div class="card-body">
                     <h2 class="card-title h5 mb-3">Account Information</h2>
@@ -165,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
             </div>
         </div>
 
-        <div class="col-12 col-md-6">
+        <div class="col-12">
             <div class="card card-custom p-3 narrow-card">
                 <div class="card-body">
                     <h2 class="card-title h5 mb-3">Profile Information</h2>
@@ -185,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
             </div>
         </div>
 
-        <div class="col-12 col-md-6">
+        <div class="col-12">
             <div class="card card-custom p-3 narrow-card">
                 <div class="card-body">
                     <h2 class="card-title h5 mb-3">Password</h2>
@@ -209,7 +244,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
             </div>
         </div>
 
-        <div class="col-12 col-md-6">
+        <div class="col-12">
             <div class="card card-custom p-3 narrow-card">
                 <div class="card-body">
                     <h2 class="card-title h5 mb-3">Feedback</h2>
@@ -237,26 +272,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
 </main>
   <script src="../JS/dashboardSearch.js"></script>
   <script>
-    document.querySelector('.menu-toggle').addEventListener('click', function() {
-      document.querySelector('aside').classList.toggle('show');
+    const hamburger = document.getElementById('hamburger');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const profile = document.getElementById('profileDropdown');
+    const dropdown = document.getElementById('dropdownMenu');
+
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('open');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('show');
     });
 
-    const sidebarProfile = document.getElementById('sidebarProfile');
-    const tooltip = document.querySelector('.view-profile-tooltip');
+    overlay.addEventListener('click', () => {
+        hamburger.classList.remove('open');
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
+    });
 
-    if (sidebarProfile) {
-      sidebarProfile.addEventListener('mouseenter', function() {
-        tooltip.style.opacity = '1';
-      });
+    profile.addEventListener('click', () => {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    });
 
-      sidebarProfile.addEventListener('mouseleave', function() {
-        tooltip.style.opacity = '0';
-      });
-
-      sidebarProfile.addEventListener('click', function() {
-        window.location.href = 'viewProfile.php';
-      });
-    }
+    document.addEventListener('click', (e) => {
+        if (!profile.contains(e.target)) dropdown.style.display = 'none';
+    });
   </script>
 </body>
 </html>

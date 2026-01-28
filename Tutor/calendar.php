@@ -70,52 +70,72 @@ foreach ($confirmed_sessions as $s) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Calendar — LearnTogether</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../CSS/req.css">
   <link rel="stylesheet" href="../CSS/calendar.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
   <div class="app">
-    <aside>
-      <div class="sidebar" style="width: 230px; height: 420px;">
-        <div class="profile" id="sidebarProfile" style="cursor: pointer; position: relative; border-radius: 8px; padding: 10px; transition: all 0.3s ease;" title="View Profile">
-          <div class="avatar"><?= isset($tutor['first_name'], $tutor['last_name']) ? strtoupper($tutor['first_name'][0]) : 'T' ?></div>
-          <div>
-            <div style="font-weight:750"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
-            <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
+    <aside id="sidebar">
+      <div class="sidebar">
+        <div class="profile" id="sidebarProfile" title="View Profile">
+          <div class="avatar"><?= strtoupper($tutor['first_name'][0] ?? 'T') ?></div>
+          <div class="profile-text">
+            <div class="profile-name"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
+            <div class="profile-status">Active Tutor</div>
           </div>
-          <div class="view-profile-tooltip" style="position: absolute; bottom: -35px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 10;">👤 View Profile</div>
+          <div class="view-profile-tooltip">View Profile</div>
         </div>
-        <nav class="navlinks fw-bold" style="margin-top: 12px;">
-          <a href="tutorDashboard.php">🏠 Overview</a>
-          <a href="subjects.php">📚 Subjects</a>
-          <a class="active" href="calendar.php">📅 Schedule</a>
-          <a href="requests.php">✉️ Requests</a>
-          <a href="settings.php">⚙️ Settings</a>
-          <a href="../logout.php">🚪 Logout</a>
+        <nav class="navlinks">
+          <a class="nav-link" href="tutorDashboard.php">
+            <span class="nav-text">Overview</span>
+          </a>
+          <a class="nav-link" href="subjects.php">
+            <span class="nav-text">My Subjects</span>
+          </a>
+          <a class="nav-link active" href="calendar.php">
+            <span class="nav-text">My Schedule</span>
+          </a>
+          <a class="nav-link" href="requests.php">
+            <span class="nav-text">Requests</span>
+          </a>
+          <a class="nav-link" href="settings.php">
+            <span class="nav-text">Settings</span>
+          </a>
+          <a class="nav-link logout" href="../logout.php">
+            <span class="nav-text">Log Out</span>
+          </a>
         </nav>
       </div>
     </aside>
-    <div class="nav" style="height: 85px;">
-      <button class="menu-toggle">&#9776;</button>
-      <div class="logo" style="display:flex; align-items:center;">
-        <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px; margin-left:20px;">
-        <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
-      </div>
-      
-      <div class="nav-actions" style="display: flex; align-items: center; gap: 12px; margin-left: auto;"> 
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div class="profile-info">
-            <div><?= htmlspecialchars($tutor['first_name'] ?? 'Tutor') ?></div>
-            <div>Tutor</div>
-          </div>
-          <div class="avatar"><?= isset($tutor['first_name'], $tutor['last_name']) ? strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]) : 'T' ?></div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <nav class="navbar-top">
+      <button class="menu-toggle" id="hamburger">☰</button>
+      <div class="navbar-brand-section">
+        <div class="navbar-logo">
+          <img src="../images/LT.png" alt="LearnTogether Logo" class="logo-img">
+          <span class="brand-name">LearnTogether</span>
         </div>
       </div>
-    </div>
+      <div class="navbar-search">
+        <input type="text" placeholder="Search schedules..." class="search-input">
+      </div>
+      <div class="navbar-user">
+        <div class="user-info">
+          <span class="user-name"><?= htmlspecialchars($tutor['first_name'] ?? 'Tutor') ?></span>
+          <span class="user-role">Tutor</span>
+        </div>
+        <div class="user-avatar">
+          <?= strtoupper(substr($tutor['first_name'], 0, 1) . substr($tutor['last_name'], 0, 1)) ?>
+        </div>
+      </div>
+    </nav>
 
-    <main class="calendar-main" style="margin-top: 130px; margin-left: 280px;">
-      <h1 style="margin-bottom: 24px; font-weight: 800; font-size: 40px;">Schedule</h1>
+    <main class="dashboard-main">
+      <h1 class="welcome-title">Schedule</h1>
       <div class="calendar-wrapper">
         <div class="calendar-header">
           <div class="calendar-title">Weekly Schedule</div>
@@ -155,26 +175,31 @@ foreach ($confirmed_sessions as $s) {
   </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  document.querySelector('.menu-toggle').addEventListener('click', function() {
-    document.querySelector('aside').classList.toggle('show');
+  const hamburger = document.getElementById('hamburger');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  const profile = document.getElementById('profileDropdown');
+  const dropdown = document.getElementById('dropdownMenu');
+
+  hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('open');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('show');
   });
 
-  const sidebarProfile = document.getElementById('sidebarProfile');
-  const tooltip = document.querySelector('.view-profile-tooltip');
+  overlay.addEventListener('click', () => {
+      hamburger.classList.remove('open');
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+  });
 
-  if (sidebarProfile) {
-    sidebarProfile.addEventListener('mouseenter', function() {
-      tooltip.style.opacity = '1';
-    });
+  profile.addEventListener('click', () => {
+      dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+  });
 
-    sidebarProfile.addEventListener('mouseleave', function() {
-      tooltip.style.opacity = '0';
-    });
-
-    sidebarProfile.addEventListener('click', function() {
-      window.location.href = 'viewProfile.php';
-    });
-  }
+  document.addEventListener('click', (e) => {
+      if (!profile.contains(e.target)) dropdown.style.display = 'none';
+  });
 </script>
 </body>
 </html>

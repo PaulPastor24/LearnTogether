@@ -110,35 +110,86 @@ $hasRated = !empty($existingRating);
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
-<body>
+<body style="overflow-x: hidden;">
 <div class="app">
+
+  <nav class="navbar-top">
+    <button class="menu-toggle" id="hamburger">☰</button>
+    <div class="navbar-brand-section">
+      <div class="navbar-logo">
+        <img src="../images/LT.png" alt="LearnTogether Logo" class="logo-img">
+        <span class="brand-name">LearnTogether</span>
+      </div>
+    </div>
+    <div class="navbar-search">
+      <input type="text" id="searchInput" placeholder="Search topics..." class="search-input">
+    </div>
+    <div class="navbar-user">
+      <div class="user-info">
+        <span class="user-name"><?= htmlspecialchars($user['first_name'] ?? 'User') ?></span>
+        <span class="user-role"><?= $role ?></span>
+      </div>
+      <div class="user-avatar">
+        <?= strtoupper(substr($user['first_name'], 0, 1) . substr($user['last_name'], 0, 1)) ?>
+      </div>
+    </div>
+  </nav>
 
   <aside id="sidebar">
     <div class="sidebar">
-      <div class="profile-dropdown">
-        <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
-        <div>
-          <div style="font-weight:700"><?= htmlspecialchars($user['first_name'].' '.$user['last_name']) ?></div>
-          <div style="font-size:13px;color:var(--muted)">Active <?= $role ?></div>
+      <div class="profile" id="sidebarProfile" title="View Profile">
+        <div class="avatar">
+          <?= strtoupper($user['first_name'][0]) ?>
         </div>
+        <div class="profile-text">
+          <div class="profile-name"><?= htmlspecialchars($user['first_name'].' '.$user['last_name']) ?></div>
+          <div class="profile-status">Active <?= $role ?></div>
+        </div>
+        <div class="view-profile-tooltip">View Profile</div>
       </div>
 
       <nav class="navlinks">
         <?php if ($reservation['learner_user_id'] == $user_id): ?>
-          <a href="learnerDashboard.php">🏠 Overview</a>
-          <a href="subjects.php">📚 My Subjects</a>
-          <a href="searchTutors.php">🔎 Find Tutors</a>
-          <a href="schedule.php">📅 My Schedule</a>
-          <a href="requests.php">✉️ Requests</a>
-          <a href="setting.php">⚙️ Settings</a>
-          <a href="../logout.php">🚪 Logout</a>
+          <a class="nav-link" href="learnerDashboard.php">
+            <span class="nav-text">Overview</span>
+          </a>
+          <a class="nav-link active" href="subjects.php">
+            <span class="nav-text">My Subjects</span>
+          </a>
+          <a class="nav-link" href="searchTutors.php">
+            <span class="nav-text">Find Tutors</span>
+          </a>
+          <a class="nav-link" href="schedule.php">
+            <span class="nav-text">My Schedule</span>
+          </a>
+          <a class="nav-link" href="requests.php">
+            <span class="nav-text">Requests</span>
+          </a>
+          <a class="nav-link" href="setting.php">
+            <span class="nav-text">Settings</span>
+          </a>
+          <a class="nav-link logout" href="../logout.php">
+            <span class="nav-text">Log Out</span>
+          </a>
         <?php else: ?>
-          <a href="tutorDashboard.php">🏠 Overview</a>
-          <a href="subjects.php">📚 Subjects</a>
-          <a href="calendar.php">📅 Schedule</a>
-          <a href="requests.php">✉️ Requests</a>
-          <a href="setting.php">⚙️ Settings</a>
-          <a href="../logout.php">🚪 Logout</a>
+          <a class="nav-link" href="../Tutor/tutorDashboard.php">
+            <span class="nav-text">Overview</span>
+          </a>
+          <a class="nav-link active" href="../Tutor/subjects.php">
+            <span class="nav-text">Subjects</span>
+          </a>
+          <a class="nav-link" href="../Tutor/calendar.php">
+            <span class="nav-text">Schedule</span>
+          </a>
+          <a class="nav-link" href="../Tutor/requests.php">
+            <span class="nav-text">Requests</span>
+          </a>
+          <a class="nav-link" href="../Tutor/setting.php">
+            <span class="nav-text">Settings</span>
+          </a>
+          <a class="nav-link logout" href="../logout.php">
+            <span class="nav-text">Log Out</span>
+          </a>
         <?php endif; ?>
       </nav>
     </div>
@@ -146,18 +197,14 @@ $hasRated = !empty($existingRating);
 
   <div class="overlay" id="overlay"></div>
 
-  <main class="hero" style="margin-top: 10px;">
+  <main class="dashboard-main">
 
     <div class="main-container bg-white p-4 rounded shadow-sm">
 
       <div class="header-section d-flex justify-content-between align-items-start">
 
         <div class="header-left">
-          <div class="hamburger" id="hamburger">
-            <span></span><span></span><span></span>
-          </div>
-
-          <h1>Topics for <?= htmlspecialchars($subject) ?></h1>
+          <h1 class="welcome-title">Topics for <?= htmlspecialchars($subject) ?></h1>
 
           <p><?= htmlspecialchars($reservation['learner_first'].' '.$reservation['learner_last']) ?></p>
 

@@ -68,7 +68,15 @@ async function leaveCall() {
     }
     remoteUsers = {};
     if (client) await client.leave();
-    window.location.href = document.referrer || '/LearnTogether/';
+    
+    // Redirect based on user role
+    if (typeof IS_TUTOR !== 'undefined' && IS_TUTOR) {
+        window.location.href = '/LearnTogether/Tutor/tutorDashboard.php';
+    } else if (typeof IS_LEARNER !== 'undefined' && IS_LEARNER) {
+        window.location.href = '/LearnTogether/Learner/learnerDashboard.php';
+    } else {
+        window.location.href = document.referrer || '/LearnTogether/';
+    }
 }
 
 function setupControls() {

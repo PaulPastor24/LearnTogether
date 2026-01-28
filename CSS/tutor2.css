@@ -1,7 +1,7 @@
 .modal {
     display: none;
     position: fixed;
-    z-index: 1000;
+    z-index: 2000;
     left: 0;
     top: 0;
     width: 100%;
@@ -9,7 +9,14 @@
     background-color: rgba(0,0,0,0.5);
     justify-content: center;
     align-items: center;
+    padding: 10px;
+    pointer-events: auto;
 }
+
+.modal.show {
+    display: flex !important;
+}
+
 .modal-content {
     background-color: white;
     padding: 20px;
@@ -20,20 +27,33 @@
     min-height: 400px;
     display: flex;
     flex-direction: column;
+    max-height: 90vh;
+    overflow-y: auto;
 }
+
 .close {
     position: absolute;
     top: 10px;
     right: 10px;
     font-size: 24px;
     cursor: pointer;
+    background: none;
+    border: none;
+    color: #6b7280;
+    transition: color 0.2s;
 }
+
+.close:hover {
+    color: #000;
+}
+
 .modal-name {
     font-size: 24px;
     font-weight: bold;
     text-align: start;
     margin-bottom: 20px;
 }
+
 .modal-subject {
     background-color: #065f46;
     color: white;
@@ -41,20 +61,111 @@
     text-align: center;
     font-weight: bold;
     margin-bottom: 20px;
+    border-radius: 4px;
 }
+
 .modal-description {
     flex-grow: 1;
     margin-bottom: 20px;
+    line-height: 1.6;
 }
+
 .request-btn {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    position: relative;
     padding: 10px 20px;
     background: #4f46e5;
     color: white;
     border: none;
     border-radius: 6px;
     cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.request-btn:hover {
+    background: #4338ca;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .modal-content {
+        padding: 16px;
+        max-width: 95%;
+    }
+    
+    .modal-name {
+        font-size: 20px;
+    }
+    
+    .modal-subject {
+        padding: 8px;
+        font-size: 14px;
+    }
+    
+    .modal-description {
+        margin-bottom: 16px;
+        font-size: 14px;
+    }
+    
+    .request-btn {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal {
+        padding: 8px;
+    }
+    
+    .modal-content {
+        padding: 12px;
+        border-radius: 6px;
+    }
+    
+    .close {
+        font-size: 20px;
+        top: 8px;
+        right: 8px;
+    }
+    
+    .modal-name {
+        font-size: 18px;
+        margin-bottom: 12px;
+    }
+    
+    .modal-subject {
+        padding: 6px;
+        font-size: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .modal-description {
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+    
+    .request-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 360px) {
+    .modal-content {
+        padding: 10px;
+    }
+    
+    .modal-name {
+        font-size: 16px;
+    }
+    
+    .modal-subject {
+        padding: 4px;
+        font-size: 11px;
+    }
+    
+    .modal-description {
+        font-size: 12px;
+    }
 }

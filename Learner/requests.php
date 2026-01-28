@@ -58,63 +58,75 @@ $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <title>My Requests — LearnTogether</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../CSS/style2.css">
+<link rel="stylesheet" href="../CSS/request.css">
 <link rel="stylesheet" href="../CSS/search.css">
 </head>
-<body>
+<body style="overflow-x: hidden;">
     <div class="app">
+        <nav class="navbar-top">
+            <button class="menu-toggle" id="hamburger">☰</button>
+            <div class="navbar-brand-section">
+                <div class="navbar-logo">
+                    <img src="../images/LT.png" alt="LearnTogether Logo" class="logo-img">
+                    <span class="brand-name">LearnTogether</span>
+                </div>
+            </div>
+            <div class="navbar-search">
+                <input type="text" id="searchInput" placeholder="Search requests..." class="search-input">
+            </div>
+            <div class="navbar-user">
+                <div class="user-info">
+                    <span class="user-name"><?= htmlspecialchars($user['first_name'] ?? 'Learner') ?></span>
+                    <span class="user-role"><?= $user['role'] == 'tutor' ? 'Tutor' : 'Learner' ?></span>
+                </div>
+                <div class="user-avatar">
+                    <?= strtoupper(substr($user['first_name'], 0, 1) . substr($user['last_name'], 0, 1)) ?>
+                </div>
+            </div>
+        </nav>
+
         <aside id="sidebar">
             <div class="sidebar">
-                <div class="profile-dropdown" id="profileDropdown" style="position:relative;cursor:pointer;">
-                    <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
-                    <div>
-                        <div style="font-weight:700"><?= htmlspecialchars($user['first_name'].' '.$user['last_name']) ?></div>
-                        <div style="font-size:13px;color:var(--muted)">Active Learner</div>
+                <div class="profile" id="sidebarProfile" title="View Profile">
+                    <div class="avatar">
+                        <?= strtoupper($user['first_name'][0]) ?>
                     </div>
+                    <div class="profile-text">
+                        <div class="profile-name"><?= htmlspecialchars($user['first_name'].' '.$user['last_name']) ?></div>
+                        <div class="profile-status"><?= $user['role'] == 'tutor' ? 'Active Tutor' : 'Active Learner' ?></div>
+                    </div>
+                    <div class="view-profile-tooltip">View Profile</div>
                 </div>
                 <nav class="navlinks">
-                    <a href="learnerDashboard.php">🏠 Overview</a>
-                    <a href="subjects.php">📚 My Subjects</a>
-                    <a href="searchTutors.php">🔎 Find Tutors</a>
-                    <a href="schedule.php">📅 My Schedule</a>
-                    <a class="active" href="requests.php">✉️ Requests</a>
-                    <a href="setting.php">⚙️ Settings</a>
-                    <a href="../logout.php">🚪 Logout</a>
+                    <a class="nav-link" href="learnerDashboard.php">
+                        <span class="nav-text">Overview</span>
+                    </a>
+                    <a class="nav-link" href="subjects.php">
+                        <span class="nav-text">My Subjects</span>
+                    </a>
+                    <a class="nav-link" href="searchTutors.php">
+                        <span class="nav-text">Find Tutors</span>
+                    </a>
+                    <a class="nav-link" href="schedule.php">
+                        <span class="nav-text">My Schedule</span>
+                    </a>
+                    <a class="nav-link active" href="requests.php">
+                        <span class="nav-text">Requests</span>
+                    </a>
+                    <a class="nav-link" href="setting.php">
+                        <span class="nav-text">Settings</span>
+                    </a>
+                    <a class="nav-link logout" href="../logout.php">
+                        <span class="nav-text">Log Out</span>
+                    </a>
                 </nav>
             </div>
         </aside>
 
         <div class="overlay" id="overlay"></div>
 
-        <div class="nav" role="navigation">
-            <div class="hamburger" id="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-            <div class="logo" style="display:flex; align-items:center;">
-                <div>
-                    <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px;">
-                </div>
-                <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
-            </div>
-            <div class="search">
-                <input placeholder="Search tutors, subjects or topics" />
-            </div>
-            <div class="nav-actions">
-                <div style="display:flex;align-items:center;gap:8px">
-                    <div style="text-align:right;margin-right:6px">
-                        <div style="font-weight:700"><?= htmlspecialchars($user['first_name']) ?></div>
-                        <div style="font-size:12px;color:var(--muted)">Learner</div>
-                    </div>
-                    <div class="avatar" style="width:40px;height:40px;border-radius:10px">
-                        <?= strtoupper(substr($user['first_name'], 0, 1) . substr($user['last_name'], 0, 1)) ?>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <main>
-            <h1>My Requests to Tutors</h1>
+        <main class="dashboard-main">
+            <h1 class="welcome-title">My Requests to Tutors</h1>
 
             <?php if (empty($requests)): ?>
                 <p style="color:#666;">You haven't sent any session requests yet.</p>

@@ -8,17 +8,21 @@ body {
 }
 
 aside { 
-  width: 250px; 
+  width: 315px !important; 
 }
 
 .sidebar {
-  width: 255px;     
-  padding: 20px;  
+  width: 315px !important;
+  max-width: 315px !important;
+  max-height: calc(100vh - 110px);
+  padding: 20px 16px;
+  overflow-y: auto;
 }
 
 main{ 
   flex: 1; 
-  padding: 20px; 
+  padding: 20px;
+  margin-left: 0;
 }
 
 .hamburger {
@@ -142,7 +146,7 @@ main{
     top: 0;
     left: 0;
     height: 100%;
-    width: 250px;
+    width: 315px;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
     z-index: 1000;

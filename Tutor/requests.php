@@ -79,53 +79,71 @@ $avatar_initial = strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]);
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tutor Requests — LearnTogether</title>
-  <link rel="stylesheet" href="../CSS/req.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../CSS/req.css"> 
   <link rel="stylesheet" href="../CSS/request.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 </head>
-<body style="background: var(linear-gradient(180deg,#f6fbf6 0%, #e9f8f2 100%));">
-  <aside>
-    <div class="sidebar" style="width: 230px; height: 420px;">
-      <div class="profile" id="sidebarProfile" style="cursor: pointer; position: relative; border-radius: 8px; padding: 10px; transition: all 0.3s ease;" title="View Profile">
-        <div class="avatar"><?= strtoupper($tutor['first_name'][0]) ?></div>
-        <div>
-          <div style="font-weight:750"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
-          <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
+<body>
+  <div class="app">
+    <aside id="sidebar">
+      <div class="sidebar">
+        <div class="profile" id="sidebarProfile" title="View Profile">
+          <div class="avatar"><?= strtoupper($tutor['first_name'][0]) ?></div>
+          <div class="profile-text">
+            <div class="profile-name"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
+            <div class="profile-status">Active Tutor</div>
+          </div>
+          <div class="view-profile-tooltip">View Profile</div>
         </div>
-        <div class="view-profile-tooltip" style="position: absolute; bottom: -35px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 10;">👤 View Profile</div>
+        <nav class="navlinks">
+          <a class="nav-link" href="tutorDashboard.php">
+            <span class="nav-text">Overview</span>
+          </a>
+          <a class="nav-link" href="subjects.php">
+            <span class="nav-text">My Subjects</span>
+          </a>
+          <a class="nav-link" href="calendar.php">
+            <span class="nav-text">My Schedule</span>
+          </a>
+          <a class="nav-link active" href="requests.php">
+            <span class="nav-text">Requests</span>
+          </a>
+          <a class="nav-link" href="settings.php">
+            <span class="nav-text">Settings</span>
+          </a>
+          <a class="nav-link logout" href="../logout.php">
+            <span class="nav-text">Log Out</span>
+          </a>
+        </nav>
       </div>
-      <nav class="navlinks fw-bold" style="margin-top: 12px;">
-        <a href="tutorDashboard.php">🏠 Overview</a>
-        <a href="subjects.php">📚 Subjects</a>
-        <a href="calendar.php">📅 Schedule</a>
-        <a class="active" href="requests.php">✉️ Requests</a>
-        <a href="settings.php">⚙️ Settings</a>
-        <a href="../logout.php">🚪 Logout</a>
-      </nav>
-    </div>
-  </aside>
+    </aside>
 
-  <div class="nav" style="height: 85px; width: calc(100% - 317px);">
-    <button class="menu-toggle">&#9776;</button>
-    <div class="logo" style="display:flex; align-items:center;">
-        <div>
-            <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px; margin-left:20px;">
+    <div class="overlay" id="overlay"></div>
+
+    <nav class="navbar-top">
+      <button class="menu-toggle" id="hamburger">☰</button>
+      <div class="navbar-brand-section">
+        <div class="navbar-logo">
+          <img src="../images/LT.png" alt="LearnTogether Logo" class="logo-img">
+          <span class="brand-name">LearnTogether</span>
         </div>
-        <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
-    </div>
-    
-    <div class="nav-actions" style="display: flex; align-items: center; gap: 12px; margin-left: auto;"> 
-      <div style="display:flex;align-items:center;gap:8px;">
-        <div class="profile-info">
-          <div><?= htmlspecialchars($tutor['first_name']) ?></div>
-          <div>Tutor</div>
-        </div>
-        <div class="avatar"><?= $avatar_initial ?></div>
       </div>
-    </div>
-  </div>
+      <div class="navbar-search">
+        <input type="text" placeholder="Search requests..." class="search-input">
+      </div>
+      <div class="navbar-user">
+        <div class="user-info">
+          <span class="user-name"><?= htmlspecialchars($tutor['first_name']) ?></span>
+          <span class="user-role">Tutor</span>
+        </div>
+        <div class="user-avatar">
+          <?= strtoupper(substr($tutor['first_name'], 0, 1) . substr($tutor['last_name'], 0, 1)) ?>
+        </div>
+      </div>
+    </nav>
 
-  <main class="lt-main mb-4">
+    <main class="lt-main mb-4">
     <div class="content-wrap">
       <h1 class="page-title" style="font-weight:800">Session Requests</h1>
 
@@ -204,28 +222,31 @@ $avatar_initial = strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]);
     };
   </script>
   <script>
-    // Hamburger menu toggle functionality
-    document.querySelector('.menu-toggle').addEventListener('click', function() {
-      document.querySelector('aside').classList.toggle('show');
+    const hamburger = document.getElementById('hamburger');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const profile = document.getElementById('profileDropdown');
+    const dropdown = document.getElementById('dropdownMenu');
+
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('open');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('show');
     });
 
-    // Make profile clickable and show tooltip
-    const sidebarProfile = document.getElementById('sidebarProfile');
-    const tooltip = document.querySelector('.view-profile-tooltip');
+    overlay.addEventListener('click', () => {
+        hamburger.classList.remove('open');
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
+    });
 
-    if (sidebarProfile) {
-      sidebarProfile.addEventListener('mouseenter', function() {
-        tooltip.style.opacity = '1';
-      });
+    profile.addEventListener('click', () => {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    });
 
-      sidebarProfile.addEventListener('mouseleave', function() {
-        tooltip.style.opacity = '0';
-      });
-
-      sidebarProfile.addEventListener('click', function() {
-        window.location.href = 'viewProfile.php';
-      });
-    }
+    document.addEventListener('click', (e) => {
+        if (!profile.contains(e.target)) dropdown.style.display = 'none';
+    });
   </script>
 </body>
 </html>

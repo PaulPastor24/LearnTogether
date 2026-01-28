@@ -23,7 +23,304 @@ if (isset($_SESSION['last_name']) && $_SESSION['last_name']) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Session Meeting</title>
+<title>Session Meeting - LearnTogether</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #10b981;
+    --secondary: #34d399;
+    --accent: #6ee7b7;
+    --dark: #111827;
+    --light: #f3f4f6;
+}
+
+body {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    overflow: hidden;
+}
+
+#videoContainer {
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+}
+
+#videoContainer.alone {
+    justify-content: center;
+}
+
+.video-box {
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(16, 185, 129, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.video-box:hover {
+    border-color: rgba(16, 185, 129, 0.6);
+    box-shadow: 0 20px 60px rgba(16, 185, 129, 0.2);
+}
+
+.video-box video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.video-label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+}
+
+.video-box.my-video {
+    border-color: rgba(16, 185, 129, 0.8);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.pip-mode {
+    min-width: 150px !important;
+    min-height: 120px !important;
+}
+
+.controls {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 16px 24px;
+    border-radius: 50px;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    z-index: 100;
+}
+
+.control-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(16, 185, 129, 0.2);
+    color: white;
+    font-weight: 600;
+}
+
+.control-btn:hover {
+    background: rgba(16, 185, 129, 0.4);
+    transform: scale(1.1);
+}
+
+.control-btn.active {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+}
+
+.control-btn.inactive {
+    background: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+}
+
+.control-btn.inactive:hover {
+    background: rgba(239, 68, 68, 0.5);
+}
+
+.control-btn.end-call {
+    background: rgba(239, 68, 68, 0.3);
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
+}
+
+.control-btn.end-call:hover {
+    background: rgba(239, 68, 68, 0.7);
+    transform: scale(1.15);
+}
+
+.chat-panel {
+    position: fixed;
+    right: -350px;
+    bottom: 40px;
+    width: 320px;
+    height: 400px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 50;
+    border: 2px solid rgba(16, 185, 129, 0.2);
+}
+
+.chat-panel.open {
+    right: 20px;
+}
+
+.chat-header {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    cursor: grab;
+    user-select: none;
+}
+
+.chat-header h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #f9fafb;
+}
+
+.chat-message {
+    background: white;
+    padding: 10px 12px;
+    border-left: 4px solid #2196F3;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.4;
+    word-break: break-word;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.chat-time {
+    display: block;
+    font-size: 11px;
+    opacity: 0.6;
+    margin-top: 4px;
+}
+
+.chat-input-area {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid rgba(16, 185, 129, 0.1);
+    background: white;
+    border-radius: 0 0 10px 10px;
+}
+
+.chat-input {
+    flex-grow: 1;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.chat-input:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.send-btn {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.send-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.send-btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .chat-panel {
+        width: 280px;
+        bottom: 100px;
+    }
+    
+    .controls {
+        gap: 8px;
+        padding: 12px 16px;
+    }
+    
+    .control-btn {
+        width: 42px;
+        height: 42px;
+        font-size: 18px;
+    }
+}
+</style>
 <link rel="stylesheet" href="CSS/meetingPage.css">
 <script>
 const AGORA_APP_ID = "<?= $AGORA_APP_ID ?>";
@@ -119,9 +416,9 @@ async function leaveCall() {
     
     // Redirect based on user role
     if (IS_TUTOR) {
-        window.location.href = '/LearnTogether/Tutor/learnerTopics.php';
+        window.location.href = '/LearnTogether/Tutor/tutorDashboard.php';
     } else if (IS_LEARNER) {
-        window.location.href = '/LearnTogether/Learner/learnerTopics.php';
+        window.location.href = '/LearnTogether/Learner/learnerDashboard.php';
     } else {
         window.location.href = document.referrer || '/LearnTogether/';
     }
@@ -172,16 +469,23 @@ function setupChatListeners() {
     const sendBtn = document.getElementById("sendChatBtn");
     const closeBtn = document.getElementById("closeChatBtn");
 
+    if (!sendBtn || !chatInput) {
+        console.error("Chat elements not found");
+        return;
+    }
+
     sendBtn.onclick = () => {
         const message = chatInput.value.trim();
         if (message) {
             sendChatMessage(message);
             chatInput.value = "";
+            chatInput.focus();
         }
     };
 
     chatInput.onkeypress = (e) => {
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
             const message = chatInput.value.trim();
             if (message) {
                 sendChatMessage(message);
@@ -190,16 +494,30 @@ function setupChatListeners() {
         }
     };
 
-    closeBtn.onclick = toggleChatPanel;
+    if (closeBtn) {
+        closeBtn.onclick = toggleChatPanel;
+    }
 
     const chatPanel = document.getElementById("chatPanel");
+    if (!chatPanel) {
+        console.error("Chat panel not found");
+        return;
+    }
+
     const chatHeader = document.querySelector(".chat-header");
+    if (!chatHeader) {
+        console.error("Chat header not found");
+        return;
+    }
+
     let isDragging = false;
     let offsetX = 0;
     let offsetY = 0;
 
     chatHeader.style.cursor = "grab";
+    
     chatHeader.onmousedown = (e) => {
+        if (e.target === closeBtn) return;
         isDragging = true;
         const rect = chatPanel.getBoundingClientRect();
         offsetX = e.clientX - rect.left;
@@ -225,20 +543,23 @@ function setupChatListeners() {
 function setupControls() {
     const controls = document.getElementById("callControls");
     controls.innerHTML = `
-        <button id="toggleMic" class="control-btn active">🎤</button>
-        <button id="toggleCam" class="control-btn active">📷</button>
-        <button id="shareScreenBtn" class="control-btn">🖥️</button>
-        <button id="chatBtn" class="control-btn">💬</button>
-        <button id="leaveBtn" class="control-btn end-call">📞</button>
+        <button id="toggleMic" class="control-btn active" title="Mute microphone">🎤</button>
+        <button id="toggleCam" class="control-btn active" title="Turn off camera">📷</button>
+        <button id="shareScreenBtn" class="control-btn" title="Share screen">🖥️</button>
+        <button id="chatBtn" class="control-btn" title="Open chat">💬</button>
+        <button id="leaveBtn" class="control-btn end-call" title="End call">📞</button>
     `;
 
     const micBtn = document.getElementById("toggleMic");
     const camBtn = document.getElementById("toggleCam");
     const shareBtn = document.getElementById("shareScreenBtn");
+    const chatBtn = document.getElementById("chatBtn");
+    const leaveBtn = document.getElementById("leaveBtn");
 
-    micBtn.title = "Mute microphone";
-    camBtn.title = "Turn off camera";
-    shareBtn.title = "Share screen";
+    if (!micBtn || !camBtn || !shareBtn || !chatBtn || !leaveBtn) {
+        console.error("Control buttons not found");
+        return;
+    }
 
     micBtn.onclick = async () => {
         try {
@@ -248,7 +569,8 @@ function setupControls() {
             }
             micEnabled = !micEnabled;
             await myTracks.audioTrack.setEnabled(micEnabled);
-            micBtn.className = micEnabled ? "control-btn active" : "control-btn inactive";
+            micBtn.classList.toggle("active");
+            micBtn.classList.toggle("inactive");
             micBtn.title = micEnabled ? "Mute microphone" : "Unmute microphone";
             micBtn.innerText = micEnabled ? "🎤" : "🔇";
         } catch (err) {
@@ -266,15 +588,10 @@ function setupControls() {
             }
             camEnabled = !camEnabled;
             await myTracks.videoTrack.setEnabled(camEnabled);
-            camBtn.className = camEnabled ? "control-btn active" : "control-btn inactive";
+            camBtn.classList.toggle("active");
+            camBtn.classList.toggle("inactive");
             camBtn.title = camEnabled ? "Turn off camera" : "Turn on camera";
-            const camImg = camBtn.querySelector("img");
-            if (camImg) {
-                camImg.src = camEnabled ? 
-                    "https://cdn-icons-png.flaticon.com/512/3050/3050161.png" : 
-                    "https://cdn-icons-png.flaticon.com/512/3050/3050163.png";
-                camImg.alt = camEnabled ? "Camera On" : "Camera Off";
-            }
+            camBtn.innerText = camEnabled ? "📷" : "📹";
         } catch (err) {
             console.error("Error toggling camera:", err);
             camEnabled = !camEnabled; 
@@ -284,10 +601,9 @@ function setupControls() {
 
     shareBtn.onclick = toggleScreenShare;
 
-    const chatBtn = document.getElementById("chatBtn");
     chatBtn.onclick = toggleChatPanel;
 
-    document.getElementById("leaveBtn").onclick = leaveCall;
+    leaveBtn.onclick = leaveCall;
 }
 
 function updateLayout() {

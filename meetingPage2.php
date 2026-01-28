@@ -119,9 +119,9 @@ async function leaveCall() {
     
     // Redirect based on user role
     if (IS_TUTOR) {
-        window.location.href = '/LearnTogether/Tutor/learnerTopics.php';
+        window.location.href = '/LearnTogether/Tutor/tutorDashboard.php';
     } else if (IS_LEARNER) {
-        window.location.href = '/LearnTogether/Learner/learnerTopics.php';
+        window.location.href = '/LearnTogether/Learner/learnerDashboard.php';
     } else {
         window.location.href = document.referrer || '/LearnTogether/';
     }

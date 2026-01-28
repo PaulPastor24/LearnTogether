@@ -22,12 +22,13 @@ body {
 }
 
 aside {
-  width: 250px;
+  width: 315px !important;
   background: linear-gradient(180deg,#ffffff,#f7fffb);
   border-right: none;
   box-shadow: var(--shadow);
-  padding: 22px;
+  padding: 22px 0px;
   border-radius: 0 16px 16px 0;
+  box-sizing: border-box;
 }
 
 .sidebar .profile {
@@ -66,12 +67,17 @@ aside {
   position: absolute;
   top: 60px;
   left: 0;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
   min-width: 180px;
   z-index: 10;
+  animation: slideInDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: top;
+  opacity: 1;
+  visibility: visible;
 }
 
 .dropdown-menu a {
@@ -80,11 +86,28 @@ aside {
   text-decoration: none;
   color: #333;
   font-size: 14px;
-  transition: background 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-left: 3px solid transparent;
+  font-weight: 500;
 }
 
 .dropdown-menu a:hover {
-  background: #f3f4f6;
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+  color: var(--primary);
+  border-left-color: var(--primary);
+  padding-left: 18px;
+  text-shadow: 0 0 8px rgba(99, 102, 241, 0.1);
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .navlinks {

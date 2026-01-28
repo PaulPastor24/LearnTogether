@@ -17,17 +17,36 @@
 
 html, body {
   overflow-x: hidden;
+  scrollbar-gutter: stable;
+  line-height: 1.5 !important;
 }
 
 main.calendar-main{ 
   overflow-x: auto;
   position: relative;
   z-index: 5;
-  margin-left: 260px;
-  margin-top: 120px;
-  padding: var(--page-padding);
+  margin-left: 315px !important;
+  margin-right: 32px !important;
+  margin-top: 70px !important;
+  padding: 32px !important;
   box-sizing: border-box;
   background: linear-gradient(180deg,#f6fbf6 0%, #ecfdf3 100%);
+}
+
+h1 {
+    margin-bottom: 24px !important;
+    margin-top: 0 !important;
+    color: #065f46;
+    font-weight: 800;
+    font-size: 32px !important;
+    letter-spacing: -0.5px;
+    transition: opacity 0.3s ease;
+    text-align: left !important;
+    line-height: 1.2 !important;
+}
+
+h2, h3, h4, h5 {
+    line-height: 1.2 !important;
 }
 
 .calendar-wrapper {
@@ -165,18 +184,18 @@ main.calendar-main{
 
 @media (max-width: 1600px){
   :root { --day-min-width: 120px; }
-  main.calendar-main { margin-left: 220px; margin-top: 130px; }
+  main.calendar-main { margin-left: 315px; margin-top: 130px; }
 }
 
 @media (max-width: 1400px){
   :root { --day-min-width: 110px; }
-  main.calendar-main { margin-left: 220px; margin-top: 130px; }
+  main.calendar-main { margin-left: 315px; margin-top: 130px; }
   .time-col { width: 110px; }
 }
 
 @media (max-width: 1200px){
   :root { --day-min-width: 110px; }
-  main.calendar-main { margin-left: 220px; margin-top: 130px; }
+  main.calendar-main { margin-left: 315px; margin-top: 130px; }
   .time-col { width: 100px; }
 }
 

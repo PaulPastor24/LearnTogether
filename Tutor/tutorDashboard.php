@@ -70,63 +70,74 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tutor Dashboard - LearnTogether</title>
-+  <link rel="stylesheet" href="../CSS/req.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../CSS/req.css">
   <link rel="stylesheet" href="../CSS/button.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
   <div class="app">
     <aside id="sidebar">
-      <div class="sidebar" style="width: 230px; height: 420px;">
-        <div class="profile" id="sidebarProfile" style="cursor: pointer; position: relative; border-radius: 8px; padding: 10px; transition: all 0.3s ease;" title="View Profile">
-          <div class="avatar">
-            <?= isset($tutor['first_name'], $tutor['last_name']) ? strtoupper($tutor['first_name'][0]) : 'T' ?>
+      <div class="sidebar">
+        <div class="profile" id="sidebarProfile" title="View Profile">
+          <div class="avatar"><?= strtoupper($tutor['first_name'][0] ?? 'T') ?></div>
+          <div class="profile-text">
+            <div class="profile-name"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
+            <div class="profile-status">Active Tutor</div>
           </div>
-          <div>
-            <div style="font-weight:750"><?= htmlspecialchars($tutor['first_name'] . ' ' . $tutor['last_name']) ?></div>
-            <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
-          </div>
-          <div class="view-profile-tooltip" style="position: absolute; bottom: -35px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 10;">👤 View Profile</div>
+          <div class="view-profile-tooltip">View Profile</div>
         </div>
-
-        <nav class="navlinks fw-bold" style="margin-top: 12px;">
-          <a class="active" href="tutorDashboard.php">🏠 Overview</a>
-          <a href="subjects.php">📚 Subjects</a>
-          <a href="calendar.php">📅 Schedule</a>
-          <a href="requests.php">✉️ Requests</a>
-          <a href="settings.php">⚙️ Settings</a>
-          <a href="../logout.php">🚪 Logout</a>
+        <nav class="navlinks">
+          <a class="nav-link active" href="tutorDashboard.php">
+            <span class="nav-text">Overview</span>
+          </a>
+          <a class="nav-link" href="subjects.php">
+            <span class="nav-text">My Subjects</span>
+          </a>
+          <a class="nav-link" href="calendar.php">
+            <span class="nav-text">My Schedule</span>
+          </a>
+          <a class="nav-link" href="requests.php">
+            <span class="nav-text">Requests</span>
+          </a>
+          <a class="nav-link" href="settings.php">
+            <span class="nav-text">Settings</span>
+          </a>
+          <a class="nav-link logout" href="../logout.php">
+            <span class="nav-text">Log Out</span>
+          </a>
         </nav>
       </div>
     </aside>
 
     <div class="overlay" id="overlay"></div>
 
-    <div class="nav" style="height: 85px;">
+    <nav class="navbar-top">
       <button class="menu-toggle" id="hamburger">☰</button>
-      <div class="logo" style="display:flex; align-items:center;">
-          <div>
-              <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px; margin-left:20px;">
-          </div>
-          <div style="font-weight:700; margin-left:8px;">LearnTogether</div>
-      </div>
-
-      <div class="nav-actions" style="display: flex; align-items: center; gap: 12px; margin-left: auto;"> 
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div class="profile-info">
-            <div><?= htmlspecialchars($tutor['first_name'] ?? 'Tutor') ?></div>
-            <div>Tutor</div>
-          </div>
-          <div class="avatar">
-            <?= strtoupper($tutor['first_name'][0] . $tutor['last_name'][0]) ?>
-          </div>
+      <div class="navbar-brand-section">
+        <div class="navbar-logo">
+          <img src="../images/LT.png" alt="LearnTogether Logo" class="logo-img">
+          <span class="brand-name">LearnTogether</span>
         </div>
       </div>
-    </div>
+      <div class="navbar-search">
+        <input type="text" id="searchInput" placeholder="Search learners or subjects..." class="search-input" 
+               style="border: 2px solid rgba(16, 185, 129, 0.2); background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(52, 211, 153, 0.05) 100%); transition: all 0.3s;">
+      </div>
+      <div class="navbar-user">
+        <div class="user-info">
+          <span class="user-name"><?= htmlspecialchars($tutor['first_name'] ?? 'Tutor') ?></span>
+          <span class="user-role">Tutor</span>
+        </div>
+        <div class="user-avatar">
+          <?= strtoupper(substr($tutor['first_name'], 0, 1) . substr($tutor['last_name'], 0, 1)) ?>
+        </div>
+      </div>
+    </nav>
 
-    <main class="lt-main mb-4">
-      <h1 style="font-weight:800">Welcome back, <?= htmlspecialchars($tutor['first_name']) ?> 👋</h1>
-      <p>Connect, Learn, and grow</p>
+    <main class="dashboard-main">
+      <h1 class="welcome-title">Welcome back, <?= htmlspecialchars($tutor['first_name']) ?> 👋</h1>
+      <p class="welcome-subtitle">Connect, Learn, and grow</p>
       <?php if (!empty($learners)): ?>
         <div class="learners-grid">
           <?php foreach ($learners as $l): 
@@ -178,51 +189,33 @@
         }
     };
   </script>
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const profile = document.getElementById('profileDropdown');
+    const dropdown = document.getElementById('dropdownMenu');
 
-<script>
-  const hamburger = document.getElementById('hamburger');
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('overlay');
-
-  hamburger.addEventListener('click', () => {
-      hamburger.classList.toggle('open');
-      sidebar.classList.toggle('show');
-      overlay.classList.toggle('show');
-  });
-
-  overlay.addEventListener('click', () => {
-      hamburger.classList.remove('open');
-      sidebar.classList.remove('show');
-      overlay.classList.remove('show');
-  });
-
-  function checkScreenSize() {
-      if (window.innerWidth <= 940) {
-          hamburger.style.display = 'block';
-      } else {
-          hamburger.style.display = 'none';
-      }
-  }
-  window.addEventListener('resize', checkScreenSize);
-  checkScreenSize();
-
-  const sidebarProfile = document.getElementById('sidebarProfile');
-  const tooltip = document.querySelector('.view-profile-tooltip');
-
-  if (sidebarProfile) {
-    sidebarProfile.addEventListener('mouseenter', function() {
-      tooltip.style.opacity = '1';
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('open');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('show');
     });
 
-    sidebarProfile.addEventListener('mouseleave', function() {
-      tooltip.style.opacity = '0';
+    overlay.addEventListener('click', () => {
+        hamburger.classList.remove('open');
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
     });
 
-    sidebarProfile.addEventListener('click', function() {
-      window.location.href = 'viewProfile.php';
+    profile.addEventListener('click', () => {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
     });
-  }
-</script>
+
+    document.addEventListener('click', (e) => {
+        if (!profile.contains(e.target)) dropdown.style.display = 'none';
+    });
+  </script>
 
 <script src="../JS/dashboardSearch.js"></script>
 </body>

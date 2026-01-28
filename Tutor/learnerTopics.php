@@ -150,38 +150,70 @@ $csrfToken = generateCSRFToken();
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Topics for <?= htmlspecialchars($learner['first_name'].' '.$learner['last_name']) ?></title>
-    <link rel="stylesheet" href="../CSS/style2.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS/req.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<div class="app">
-  <aside>
-    <div class="sidebar" style="width:230px; height: 400px;">
-      <div class="profile">
-        <div class="avatar"><?= strtoupper($tutor['first_name'][0]) ?></div>
-        <div>
-          <div style="font-weight:750"><?= htmlspecialchars($tutor['first_name'].' '.$tutor['last_name']) ?></div>
-          <div style="font-size:13px;color:var(--muted)">Active Tutor</div>
+  <div class="app">
+    <aside id="sidebar">
+      <div class="sidebar">
+        <div class="profile" id="sidebarProfile" title="View Profile">
+          <div class="avatar"><?= strtoupper($tutor['first_name'][0]) ?></div>
+          <div class="profile-text">
+            <div class="profile-name"><?= htmlspecialchars($tutor['first_name'].' '.$tutor['last_name']) ?></div>
+            <div class="profile-status">Active Tutor</div>
+          </div>
+          <div class="view-profile-tooltip">View Profile</div>
+        </div>
+        <nav class="navlinks">
+          <a class="nav-link" href="tutorDashboard.php">
+            <span class="nav-text">Overview</span>
+          </a>
+          <a class="nav-link" href="subjects.php">
+            <span class="nav-text">My Subjects</span>
+          </a>
+          <a class="nav-link" href="calendar.php">
+            <span class="nav-text">My Schedule</span>
+          </a>
+          <a class="nav-link" href="requests.php">
+            <span class="nav-text">Requests</span>
+          </a>
+          <a class="nav-link" href="settings.php">
+            <span class="nav-text">Settings</span>
+          </a>
+          <a class="nav-link logout" href="../logout.php">
+            <span class="nav-text">Log Out</span>
+          </a>
+        </nav>
+      </div>
+    </aside>
+
+    <div class="overlay" id="overlay"></div>
+
+    <nav class="navbar-top">
+      <button class="menu-toggle" id="hamburger">☰</button>
+      <div class="navbar-brand-section">
+        <div class="navbar-logo">
+          <img src="../images/LT.png" alt="LearnTogether Logo" class="logo-img">
+          <span class="brand-name">LearnTogether</span>
         </div>
       </div>
-      <nav class="navlinks fw-bold" style="margin-top:12px;">
-        <a href="tutorDashboard.php">🏠 Overview</a>
-        <a href="subjects.php">📚 Subjects</a>
-        <a href="calendar.php">📅 Schedule</a>
-        <a href="requests.php">✉️ Requests</a>
-        <a href="settings.php">⚙️ Settings</a>
-        <a href="../logout.php">🚪 Logout</a>
-      </nav>
-    </div>
-  </aside>
-  <div class="nav" style="height:85px;">
-    <div class="logo">
-      <img src="../images/LT.png" alt="LearnTogether Logo" style="width:50px; height:40px; margin-left:20px;">
-      <div>LearnTogether</div>
-    </div>
-  </div>
-  <main class="main-content" style="margin-top: 120px;">
+      <div class="navbar-search">
+        <input type="text" placeholder="Search topics..." class="search-input">
+      </div>
+      <div class="navbar-user">
+        <div class="user-info">
+          <span class="user-name"><?= htmlspecialchars($tutor['first_name'] ?? 'Tutor') ?></span>
+          <span class="user-role">Tutor</span>
+        </div>
+        <div class="user-avatar">
+          <?= strtoupper(substr($tutor['first_name'], 0, 1) . substr($tutor['last_name'], 0, 1)) ?>
+        </div>
+      </div>
+    </nav>
+
+    <main class="lt-main">
     <div class="main-container bg-white p-4 rounded shadow-sm">
       <div class="mb-4 d-flex align-items-center justify-content-between">
         <div>
@@ -252,6 +284,32 @@ $csrfToken = generateCSRFToken();
             return false;
         }
     };
+
+    const hamburger = document.getElementById('hamburger');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const profile = document.getElementById('profileDropdown');
+    const dropdown = document.getElementById('dropdownMenu');
+
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('open');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('show');
+    });
+
+    overlay.addEventListener('click', () => {
+        hamburger.classList.remove('open');
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
+    });
+
+    profile.addEventListener('click', () => {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!profile.contains(e.target)) dropdown.style.display = 'none';
+    });
   </script>
 <script>
 function toggleStatus(event, subject, topic, element) {

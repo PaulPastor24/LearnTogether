@@ -63,12 +63,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Log In - LearnTogether</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root { --primary: #10b981; }
+    body { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
+    .card { background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 253, 244, 0.95) 100%); backdrop-filter: blur(8px); border: 1px solid rgba(16, 185, 129, 0.1); border-radius: 16px; box-shadow: 0 20px 40px rgba(16, 185, 129, 0.15); }
+    h2 { background: linear-gradient(135deg, #10b981 0%, #34d399 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
+    .form-control { background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(52, 211, 153, 0.05) 100%); border: 1px solid rgba(16, 185, 129, 0.2); }
+    .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+    .btn-success { background: linear-gradient(135deg, #10b981 0%, #34d399 100%) !important; border: none !important; }
+    a { color: var(--primary); }
+  </style>
 </head>
-<body class="d-flex align-items-center justify-content-center vh-100 bg-light" style="background:#f8f9fa;">
+<body class="d-flex align-items-center justify-content-center vh-100">
 
-  <div class="card shadow p-4" style="max-width:400px;width:100%;border-radius:12px;">
-    <h2 class="mb-3 text-center">Log In</h2>
-    <p class="text-muted text-center">Access your <span class="fw-bold text-success">LearnTogether</span> account</p>
+  <div class="card p-4" style="max-width:400px;width:100%;">
+    <h2 class="mb-2 text-center">Welcome Back</h2>
+    <p class="text-muted text-center mb-4">Access your <span class="fw-bold" style="color: var(--primary);">LearnTogether</span> account</p>
 
     <?php if ($error): ?>
       <div class="alert alert-danger py-2 text-center" style="margin-bottom:15px;">

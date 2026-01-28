@@ -2,6 +2,7 @@ main.hero {
   padding: 15px;
   transition: margin-left 0.3s ease;
   box-sizing: border-box;
+  margin-top: 70px;
 }
 
 .hero-header {
@@ -10,7 +11,7 @@ main.hero {
   border-radius:8px;
   margin-bottom:20px;
 }
-.hero-header h1 { font-size:38px; margin:0; font-weight:800; }
+.hero-header h1 { font-size:38px; margin:8px 0 0 0; font-weight:800; }
 .hero-header p { margin:8px 0 0; color:#374151 }
 
 .card-lg {
@@ -47,7 +48,7 @@ main.hero {
 
 @media (min-width: 941px) {
   main.hero {
-    margin-left: 290px;
+    margin-left: 315px;
   }
   .card-lg {
     max-width: 1200px;
@@ -153,29 +154,173 @@ main.hero {
 }
 
 @media (max-width: 1024px) {
+  main.hero {
+    margin-left: 0;
+    padding: 12px;
+  }
+  
   .schedule-table th,
   .schedule-table td {
     font-size: 13px;
     padding: 10px;
   }
+  
+  .hero-header h1 {
+    font-size: 28px;
+  }
 }
 
 @media (max-width: 768px) {
+  main.hero {
+    margin-left: 0;
+    padding: 10px;
+  }
+  
   .lt-main h1 {
     font-size: 1.6rem;
   }
+  
   .schedule-table-container {
     padding: 10px;
   }
+  
+  .schedule-table {
+    min-width: 100%;
+  }
+  
+  .hero-header h1 {
+    font-size: 24px;
+  }
+  
+  .session-list .session-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+  
+  .session-list .date {
+    width: 100%;
+    padding: 8px;
+  }
 }
 
-@media (max-width: 500px) {
-  .lt-main h1 {
-    font-size: 1.4rem;
+@media (max-width: 640px) {
+  main.hero {
+    padding: 8px;
+    margin-top: 70px;
   }
+  
+  .hero-header h1 {
+    font-size: 20px;
+    margin-top: 6px !important;
+  }
+  
+  .hero-header {
+    padding: 6px;
+  }
+  
+  .card-lg {
+    padding: 10px;
+  }
+  
+  .session-list .session-item {
+    gap: 8px;
+    padding: 10px;
+  }
+  
+  .session-list .date {
+    flex: 0 1 60px;
+    padding: 6px;
+    font-size: 12px;
+  }
+  
+  .session-list .meta div:first-child {
+    font-size: 13px;
+  }
+  
+  .session-list .meta div:last-child {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  main.hero {
+    padding: 6px;
+    margin-top: 70px;
+  }
+  
+  .lt-main h1 {
+    font-size: 1.2rem;
+    margin-top: 6px;
+  }
+  
+  .hero-header h1 {
+    font-size: 18px;
+    margin-top: 6px !important;
+  }
+  
+  .hero-header p {
+    font-size: 12px;
+  }
+  
+  .card-lg {
+    padding: 8px;
+    border-radius: 6px;
+  }
+  
   .schedule-table th,
   .schedule-table td {
-    font-size: 12px;
+    font-size: 10px;
+    padding: 6px;
+  }
+  
+  .session-list .session-item {
+    gap: 6px;
     padding: 8px;
+    flex-direction: column;
+  }
+  
+  .session-list .date {
+    flex: 0 1 50px;
+    padding: 4px;
+    font-size: 11px;
+  }
+  
+  .session-list .meta div:first-child {
+    font-size: 12px;
+  }
+  
+  .session-list .meta div:last-child {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  main.hero {
+    padding: 4px;
+  }
+  
+  .hero-header h1 {
+    font-size: 16px;
+  }
+  
+  .hero-header p {
+    font-size: 11px;
+  }
+  
+  .card-lg {
+    padding: 6px;
+  }
+  
+  .session-list .session-item {
+    gap: 4px;
+    padding: 6px;
+  }
+  
+  .session-list .date {
+    flex: 0 1 45px;
+    padding: 3px;
+    font-size: 10px;
   }
 }

@@ -76,49 +76,91 @@ $isOwnProfile = isset($_SESSION['tutor_id']) && $_SESSION['tutor_id'] == $tutor_
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= htmlspecialchars($tutor['first_name'].' '.$tutor['last_name']) ?> - Tutor Profile</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../CSS/style2.css">
+<link rel="stylesheet" href="../CSS/req.css">
 <link rel="stylesheet" href="../CSS/tutor.css">
 <link rel="stylesheet" href="../CSS/viewProfile.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
-<div class="app">
+  <div class="app">
+    <aside id="sidebar">
+      <div class="sidebar">
+        <div class="profile" id="sidebarProfile" title="View Profile">
+          <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
+          <div class="profile-text">
+            <div class="profile-name"><?= htmlspecialchars($user['first_name'].' '.$user['last_name']) ?></div>
+            <div class="profile-status"><?= htmlspecialchars($user['role']) ?></div>
+          </div>
+          <div class="view-profile-tooltip">View Profile</div>
+        </div>
+        <nav class="navlinks">
+          <?php if ($user['role'] === 'Learner'): ?>
+            <a class="nav-link" href="../Learner/learnerDashboard.php">
+              <span class="nav-text">Overview</span>
+            </a>
+            <a class="nav-link" href="../Learner/subjects.php">
+              <span class="nav-text">My Subjects</span>
+            </a>
+            <a class="nav-link" href="../Learner/searchTutors.php">
+              <span class="nav-text">Find Tutors</span>
+            </a>
+            <a class="nav-link" href="../Learner/schedule.php">
+              <span class="nav-text">My Schedule</span>
+            </a>
+            <a class="nav-link" href="../Learner/requests.php">
+              <span class="nav-text">Requests</span>
+            </a>
+            <a class="nav-link" href="../Learner/setting.php">
+              <span class="nav-text">Settings</span>
+            </a>
+          <?php else: ?>
+            <a class="nav-link" href="tutorDashboard.php">
+              <span class="nav-text">Overview</span>
+            </a>
+            <a class="nav-link" href="subjects.php">
+              <span class="nav-text">My Subjects</span>
+            </a>
+            <a class="nav-link" href="calendar.php">
+              <span class="nav-text">My Schedule</span>
+            </a>
+            <a class="nav-link" href="requests.php">
+              <span class="nav-text">Requests</span>
+            </a>
+            <a class="nav-link" href="settings.php">
+              <span class="nav-text">Settings</span>
+            </a>
+          <?php endif; ?>
+          <a class="nav-link logout" href="../logout.php">
+            <span class="nav-text">Log Out</span>
+          </a>
+        </nav>
+      </div>
+    </aside>
 
-  <aside id="sidebar">
-    <div class="sidebar">
-      <div class="profile-dropdown">
-        <div class="avatar"><?= strtoupper($user['first_name'][0]) ?></div>
-        <div>
-          <div style="font-weight:700"><?= htmlspecialchars($user['first_name'].' '.$user['last_name']) ?></div>
-          <div style="font-size:13px;color:var(--muted)"><?= htmlspecialchars($user['role']) ?></div>
+    <div class="overlay" id="overlay"></div>
+
+    <nav class="navbar-top">
+      <button class="menu-toggle" id="hamburger">☰</button>
+      <div class="navbar-brand-section">
+        <div class="navbar-logo">
+          <img src="../images/LT.png" alt="LearnTogether Logo" class="logo-img">
+          <span class="brand-name">LearnTogether</span>
         </div>
       </div>
-
-      <nav class="navlinks">
-        <?php if ($user['role'] === 'Learner'): ?>
-          <a href="../Learner/learnerDashboard.php">🏠 Overview</a>
-          <a href="../Learner/subjects.php">📚 My Subjects</a>
-          <a href="../Learner/searchTutors.php">🔎 Find Tutors</a>
-          <a href="../Learner/schedule.php">📅 My Schedule</a>
-          <a href="../Learner/requests.php">✉️ Requests</a>
-          <a href="../Learner/settings.php">⚙️ Settings</a>
-          <a href="../logout.php">🚪 Logout</a>
-        <?php else: ?>
-          <a href="tutorDashboard.php">🏠 Overview</a>
-          <a href="subjects.php">📚 Subjects</a>
-          <a href="calendar.php">📅 Schedule</a>
-          <a href="requests.php">✉️ Requests</a>
-          <a href="settings.php">⚙️ Settings</a>
-          <a href="../logout.php">🚪 Logout</a>
-        <?php endif; ?>
-      </nav>
-    </div>
-  </aside>
-
-  <div class="overlay" id="overlay"></div>
-
-  <main class="hero" style="margin-top: 10px;">
+      <div class="navbar-search">
+        <input type="text" placeholder="Search profiles..." class="search-input">
+      </div>
+      <div class="navbar-user">
+        <div class="user-info">
+          <span class="user-name"><?= htmlspecialchars($user['first_name']) ?></span>
+          <span class="user-role"><?= htmlspecialchars($user['role']) ?></span>
+        </div>
+        <div class="user-avatar">
+          <?= strtoupper(substr($user['first_name'], 0, 1) . substr($user['last_name'], 0, 1)) ?>
+        </div>
+      </div>
+    </nav>  <main class="hero" style="margin-top: 10px;">
 
     <div class="main-container bg-white p-4 rounded shadow-sm">
 
@@ -251,6 +293,8 @@ $isOwnProfile = isset($_SESSION['tutor_id']) && $_SESSION['tutor_id'] == $tutor_
 const hamburger = document.getElementById('hamburger');
 const sidebar = document.getElementById('sidebar');
 const overlay = document.getElementById('overlay');
+const profile = document.getElementById('profileDropdown');
+const dropdown = document.getElementById('dropdownMenu');
 
 hamburger.addEventListener('click', () => {
     hamburger.classList.toggle('open');
@@ -262,6 +306,14 @@ overlay.addEventListener('click', () => {
     hamburger.classList.remove('open');
     sidebar.classList.remove('open');
     overlay.classList.remove('show');
+});
+
+profile.addEventListener('click', () => {
+    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+});
+
+document.addEventListener('click', (e) => {
+    if (!profile.contains(e.target)) dropdown.style.display = 'none';
 });
 </script>
 
